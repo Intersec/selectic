@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "esnext",
+        "moduleResolution": "node",
+
+        "outDir": "lib",
+        "declaration": true,
+        "declarationDir": "types",
+
+        "strict": true,
+        "strictPropertyInitialization": false,
+        "strictNullChecks": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noEmitOnError": true,
+
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+
+        "jsx": "react",
+        "jsxFactory": "h"
+    },
+    "include": [
+        "src/**/*.tsx"
+    ]
+}

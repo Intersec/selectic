@@ -1,0 +1,30 @@
+{
+  "name": "selectic",
+  "version": "1.0.0",
+  "description": "Smart Select for VueJS 2.x",
+  "main": "dist/selectic.common.js",
+  "module": "dist/selectic.esm.js",
+  "types": "types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intersec/selectic.git"
+  },
+  "author": "Intersec",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/intersec/selectic/issues"
+  },
+  "homepage": "https://github.com/intersec/selectic#readme",
+  "scripts": {
+    "build": "npm run build:ts && npm run build:bundle",
+    "build:ts": "tsc -p .",
+    "build:bundle": "rollup -c"
+  },
+  "dependencies": {
+    "vtyx": "^2.2.0"
+  },
+  "devDependencies": {
+    "rollup": "1.22.0",
+    "typescript": "~3.6"
+  }
+}
