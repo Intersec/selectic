@@ -15,6 +15,15 @@
     "url": "https://github.com/intersec/selectic/issues"
   },
   "homepage": "https://github.com/intersec/selectic#readme",
+  "keywords": [
+    "select",
+    "multiselect",
+    "vue",
+    "vue.js",
+    "vueJS",
+    "vtyx",
+    "component"
+  ],
   "scripts": {
     "build": "npm run build:ts && npm run build:bundle",
     "build:ts": "tsc -p .",
