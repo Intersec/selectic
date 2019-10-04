@@ -9,12 +9,6 @@ export default {
         format: 'esm',
     }],
     external: [
-        'vue',
-        'vue-class-component',
-        'vue-property-decorator',
-        'underscore',
-        'jquery',
-        'bootstrap',
         'vtyx',
     ],
     context: "this",
