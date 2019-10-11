@@ -12,7 +12,6 @@ export default class List extends Vue<Props> {
     };
     private store;
     private itemHeight;
-    private nbItems;
     private groupId;
     private doNotScroll;
     readonly filteredOptions: OptionItem[];

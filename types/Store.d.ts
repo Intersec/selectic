@@ -114,6 +114,7 @@ export default class SelecticStore extends Vue<Props> {
     private params?;
     private fetchCallback?;
     private getItemsCallback?;
+    itemsPerPage: number;
     readonly marginSize: number;
     state: SelecticStoreState;
     labels: Messages;

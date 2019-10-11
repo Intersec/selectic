@@ -141,6 +141,8 @@ export default class ExtendedList extends Vue<Props> {
 
     protected render() {
         const h = this.renderWrapper();
+        const store = this.store;
+        const state = store.state;
 
         return (
             <div
@@ -151,12 +153,12 @@ export default class ExtendedList extends Vue<Props> {
                 `}
                 class="selectic__extended-list"
             >
-              {!this.store.state.hideFilter && (
+              {!state.hideFilter && (
                 <Filter
                     store={this.store}
                 />
               )}
-              {this.store.state.groups.size > 0 && (
+              {state.groups.size > 0 && state.totalFilteredOptions > store.itemsPerPage && (
                 <span
                     class="selectic-item selectic-item--header selectic-item__is-group"
                 >
@@ -164,7 +166,7 @@ export default class ExtendedList extends Vue<Props> {
                 </span>
               )}
                 <List
-                    store={this.store}
+                    store={store}
                     class="selectic__extended-list__list-items"
                     on={{
                         groupId: this.getGroup,
@@ -184,7 +186,7 @@ export default class ExtendedList extends Vue<Props> {
               {this.errorMessage && (
                 <div
                     class="selectic__message alert-danger"
-                    on={{ click: () => this.store.resetErrorMessage() }}
+                    on={{ click: () => store.resetErrorMessage() }}
                 >
                     {this.errorMessage}
                 </div>

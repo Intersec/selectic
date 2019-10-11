@@ -33,7 +33,6 @@ export default class List extends Vue<Props> {
     /* {{{ data */
 
     private itemHeight = 27;
-    private nbItems = 10;
     private groupId: OptionId = null;
     private doNotScroll = false;
 
@@ -92,7 +91,7 @@ export default class List extends Vue<Props> {
 
     get startIndex() {
         const endIndex = this.endIndex;
-        const idx = endIndex - this.nbItems - 3 * this.itemsMargin;
+        const idx = endIndex - this.store.itemsPerPage - 3 * this.itemsMargin;
 
         return Math.max(0, idx);
     }
@@ -151,7 +150,7 @@ export default class List extends Vue<Props> {
         const scrollTop = this.$refs.elList.scrollTop;
         const topIndex = Math.floor(scrollTop / this.itemHeight);
         const total = this.totalItems;
-        const bottomIndex = Math.min(topIndex + this.nbItems, total);
+        const bottomIndex = Math.min(topIndex + this.store.itemsPerPage, total);
 
         this.debounce(() => this.store.commit('offsetItem', bottomIndex));
         this.computeGroupId(topIndex);

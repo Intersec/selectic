@@ -58,6 +58,10 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         super(...arguments);
         /* }}} */
         /* {{{ data */
+        /* Number of items displayed in a page (before scrolling) */
+        this.itemsPerPage = 10;
+        /* }}} */
+        /* {{{ data */
         this.state = {
             multiple: false,
             disabled: false,
@@ -647,7 +651,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             state.hideFilter = false;
         }
         else {
-            state.hideFilter = state.totalAllOptions <= 10;
+            state.hideFilter = state.totalAllOptions <= this.itemsPerPage;
         }
     }
     /* }}} */
@@ -1070,7 +1074,6 @@ let List = class List extends vtyx.Vue {
         /* }}} */
         /* {{{ data */
         this.itemHeight = 27;
-        this.nbItems = 10;
         this.groupId = null;
         this.doNotScroll = false;
     }
@@ -1115,7 +1118,7 @@ let List = class List extends vtyx.Vue {
     }
     get startIndex() {
         const endIndex = this.endIndex;
-        const idx = endIndex - this.nbItems - 3 * this.itemsMargin;
+        const idx = endIndex - this.store.itemsPerPage - 3 * this.itemsMargin;
         return Math.max(0, idx);
     }
     get leftItems() {
@@ -1159,7 +1162,7 @@ let List = class List extends vtyx.Vue {
         const scrollTop = this.$refs.elList.scrollTop;
         const topIndex = Math.floor(scrollTop / this.itemHeight);
         const total = this.totalItems;
-        const bottomIndex = Math.min(topIndex + this.nbItems, total);
+        const bottomIndex = Math.min(topIndex + this.store.itemsPerPage, total);
         this.debounce(() => this.store.commit('offsetItem', bottomIndex));
         this.computeGroupId(topIndex);
     }
@@ -1369,21 +1372,23 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
     /* }}} */
     render() {
         const h = this.renderWrapper();
+        const store = this.store;
+        const state = store.state;
         return (h("div", { style: `
                     top: ${this.offsetTop}px;
                     left: ${this.offsetLeft}px;
                     width: ${this.width}px;
                 `, class: "selectic__extended-list" },
-            !this.store.state.hideFilter && (h(Filter, { store: this.store })),
-            this.store.state.groups.size > 0 && (h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
-            h(List$1, { store: this.store, class: "selectic__extended-list__list-items", on: {
+            !state.hideFilter && (h(Filter, { store: this.store })),
+            state.groups.size > 0 && state.totalFilteredOptions > store.itemsPerPage && (h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
+            h(List$1, { store: store, class: "selectic__extended-list__list-items", on: {
                     groupId: this.getGroup,
                 } }),
             this.infoMessage && (h("div", { class: "selectic__message alert-info" }, this.infoMessage)),
             this.searching && (h("div", { class: "selectic__message" },
                 h("span", { class: "fa fa-spinner fa-spin" }),
                 this.searchingLabel)),
-            this.errorMessage && (h("div", { class: "selectic__message alert-danger", on: { click: () => this.store.resetErrorMessage() } }, this.errorMessage))));
+            this.errorMessage && (h("div", { class: "selectic__message alert-danger", on: { click: () => store.resetErrorMessage() } }, this.errorMessage))));
     }
 };
 __decorate$4([

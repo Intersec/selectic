@@ -310,6 +310,12 @@ export default class SelecticStore extends Vue<Props> {
     private getItemsCallback?: GetCallback;
 
     /* }}} */
+    /* {{{ data */
+
+    /* Number of items displayed in a page (before scrolling) */
+    public itemsPerPage = 10;
+
+    /* }}} */
     /* {{{ computed */
 
     /* Number of item to pre-display */
@@ -1029,7 +1035,7 @@ export default class SelecticStore extends Vue<Props> {
         if (state.multiple || this.isPartial) {
             state.hideFilter = false;
         } else {
-            state.hideFilter = state.totalAllOptions <= 10;
+            state.hideFilter = state.totalAllOptions <= this.itemsPerPage;
         }
     }
 
