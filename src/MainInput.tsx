@@ -55,6 +55,21 @@ export default class Selectic extends Vue<Props> {
         return allowClearSelection && !isDisabled && hasValue;
     }
 
+    get showClearAll(): boolean {
+        if (!this.canBeCleared) {
+            return false;
+        }
+
+        const state = this.store.state;
+        const isMultiple = state.multiple;
+        const value = state.internalValue;
+        const hasOnlyOneValue = Array.isArray(value) && value.length === 1;
+
+        /* Should not display the clear action if there is only one selected
+         * item in multiple (as this item has already its remove icon) */
+        return !isMultiple || !hasOnlyOneValue;
+    }
+
     get clearedLabel() {
         const isMultiple = this.store.state.multiple;
         const labelKey = isMultiple ? 'clearSelections' : 'clearSelection';
@@ -205,7 +220,7 @@ export default class Selectic extends Vue<Props> {
                         )
                     )}
                 </div>
-                {this.canBeCleared && (
+                {this.showClearAll && (
                     <span
                         class="fa fa-times selectic-input__clear-icon"
                         title={this.clearedLabel}

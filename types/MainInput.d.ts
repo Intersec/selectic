@@ -11,6 +11,7 @@ export default class Selectic extends Vue<Props> {
     readonly hasValue: boolean;
     readonly displayPlaceholder: boolean;
     readonly canBeCleared: boolean;
+    readonly showClearAll: boolean;
     readonly clearedLabel: string;
     readonly singleSelectedItem: string | false;
     readonly singleStyle: string | undefined;
