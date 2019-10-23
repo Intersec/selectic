@@ -1531,11 +1531,11 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
     /* }}} */
     /* {{{ private methods */
     computeWidth() {
-        const el = this.$el;
+        const el = this.$refs.mainInput.$el;
         this.width = el.offsetWidth;
     }
     computeOffset(doNotAddListener = false) {
-        let el = this.$el;
+        let el = this.$refs.mainInput.$el;
         let offsetLeft = el.offsetLeft;
         let offsetTop = el.offsetTop + el.offsetHeight;
         const elRootElement = document.body.parentElement;
@@ -1710,7 +1710,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                 } }),
             h(MainInput, { store: this.store, id: this.id, on: {
                     'item:click': (id) => this.$emit('item:click', id),
-                } }),
+                }, ref: "mainInput" }),
             this.isFocused && (h(ExtendedList$1, { store: this.store, offsetTop: this.offsetTop, offsetLeft: this.offsetLeft, width: this.width, ref: "extendedList" }))));
     }
 };

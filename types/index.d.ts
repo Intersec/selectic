@@ -1,5 +1,6 @@
 import { Vue } from 'vtyx';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback } from './Store';
+import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export declare type OptionValue = OptionValue;
 export declare type OptionItem = OptionItem;
@@ -41,6 +42,7 @@ export interface Props {
 export declare function changeTexts(texts: PartialMessages): void;
 export default class Selectic extends Vue<Props> {
     $refs: {
+        mainInput: MainInput;
         extendedList: ExtendedList;
     };
     value?: SelectedValue;

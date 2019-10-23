@@ -141,6 +141,7 @@ export function changeTexts(texts: PartialMessages) {
 @Component
 export default class Selectic extends Vue<Props> {
     public $refs: {
+        mainInput: MainInput;
         extendedList: ExtendedList;
     };
 
@@ -304,13 +305,13 @@ export default class Selectic extends Vue<Props> {
     /* {{{ private methods */
 
     private computeWidth() {
-        const el = this.$el as HTMLElement;
+        const el = this.$refs.mainInput.$el as HTMLElement;
 
         this.width = el.offsetWidth;
     }
 
     private computeOffset(doNotAddListener = false) {
-        let el = this.$el as HTMLElement;
+        let el = this.$refs.mainInput.$el as HTMLElement;
         let offsetLeft = el.offsetLeft;
         let offsetTop = el.offsetTop + el.offsetHeight;
         const elRootElement = document.body.parentElement as HTMLElement;
@@ -554,6 +555,7 @@ export default class Selectic extends Vue<Props> {
                     on={{
                         'item:click': (id: OptionId) => this.$emit('item:click', id),
                     }}
+                    ref="mainInput"
                 />
               {this.isFocused && (
                 <ExtendedList
