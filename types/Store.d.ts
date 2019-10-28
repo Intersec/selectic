@@ -30,6 +30,7 @@ export declare type FetchCallback = (_search: string, _offsetItem: number, _page
 }>;
 export declare type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
 export declare type FormatCallback = (_option: OptionItem) => OptionItem;
+export declare type SelectionOverflow = 'collapsed' | 'multiline';
 export interface SelecticStoreStateParams {
     multiple?: boolean;
     placeholder?: string;
@@ -40,6 +41,7 @@ export interface SelecticStoreStateParams {
     autoSelect?: boolean;
     autoDisabled?: boolean;
     strictValue?: boolean;
+    selectionOverflow?: SelectionOverflow;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
 }
@@ -65,7 +67,8 @@ export interface SelecticStoreState {
     allowClearSelection: boolean;
     autoSelect: boolean;
     autoDisabled: boolean;
-    strictValue?: boolean;
+    strictValue: boolean;
+    selectionOverflow: SelectionOverflow;
     isOpen: boolean;
     searchText: string;
     allOptions: OptionValue[];
@@ -99,6 +102,8 @@ interface Messages {
     clearSelection: string;
     clearSelections: string;
     wrongFormattedData: string;
+    moreSelectedItem: string;
+    moreSelectedItems: string;
 }
 export declare type PartialMessages = {
     [K in keyof Messages]?: Messages[K];

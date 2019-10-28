@@ -3,7 +3,7 @@
  * displayed) and handles all interaction with it.
  */
 
-import {Vue, Component, Prop} from 'vtyx';
+import {Vue, Component, Prop, Watch} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
 
 export interface Props {
@@ -15,6 +15,10 @@ export interface Props {
 
 @Component
 export default class Selectic extends Vue<Props> {
+    public $refs: {
+        selectedItems: HTMLDivElement;
+    };
+
     /* {{{ props */
 
     @Prop()
@@ -22,6 +26,11 @@ export default class Selectic extends Vue<Props> {
 
     @Prop({default: ''})
     private id: string;
+
+    /* }}} */
+    /* {{{ data */
+
+    private nbHiddenItems = 0;
 
     /* }}} */
     /* {{{ computed */
@@ -138,6 +147,45 @@ export default class Selectic extends Vue<Props> {
         return formatItem(selection);
     }
 
+    get showSelectedOptions(): OptionItem[] {
+        if (!this.store.state.multiple) {
+            return [];
+        }
+        const selectedOptions = this.selectedOptions as OptionItem[];
+        const nbHiddenItems = this.nbHiddenItems;
+
+        if (nbHiddenItems) {
+            return selectedOptions.slice(0, -nbHiddenItems);
+        }
+
+        return selectedOptions;
+    }
+
+    get moreSelectedNb() {
+        const store = this.store;
+        const nbHiddenItems = this.nbHiddenItems;
+
+        if (!store.state.multiple || nbHiddenItems === 0) {
+            return '';
+        }
+        const text = nbHiddenItems === 1 ? store.labels.moreSelectedItem
+                                         : store.labels.moreSelectedItems;
+
+        return text.replace(/%d/, nbHiddenItems.toString());
+    }
+
+    get moreSelectedTitle() {
+        const nbHiddenItems = this.nbHiddenItems;
+
+        if (!this.store.state.multiple) {
+            return '';
+        }
+
+        const list = this.selectedOptions as OptionItem[];
+
+        return list.slice(-nbHiddenItems).map((item) => item.text).join('\n');
+    }
+
     /* }}} */
     /* {{{ methods */
 
@@ -155,6 +203,70 @@ export default class Selectic extends Vue<Props> {
 
     private clearSelection() {
         this.store.selectItem(null);
+    }
+
+    private computeSize() {
+        const state = this.store.state;
+        const selectedOptions = this.selectedOptions as OptionItem[];
+
+        if (!state.multiple || state.selectionOverflow !== 'collapsed'
+        ||  !selectedOptions.length)
+        {
+            this.nbHiddenItems = 0;
+            return;
+        }
+
+        /* Check if there is enough space to display items like there are
+         * currently shown */
+        const el = this.$refs.selectedItems;
+        const parentEl = el.parentElement as HTMLDivElement;
+        const parentPadding = parseInt(getComputedStyle(parentEl).getPropertyValue('padding-right'), 10);
+        const clearEl = parentEl.querySelector('.selectic-input__clear-icon')  as HTMLSpanElement;
+        const clearWidth = clearEl ? clearEl.offsetWidth : 0;
+        const itemsWidth = parentEl.clientWidth - parentPadding - clearWidth;
+
+        if (itemsWidth - el.offsetWidth > 0) {
+            return;
+        }
+
+        /* Look for the first element which start outside bounds */
+        const moreEl = el.querySelector('.more-items') as HTMLDivElement;
+        const moreSize = moreEl && moreEl.offsetWidth || 0;
+        const itemsSpace = itemsWidth - moreSize;
+        const childrenEl = el.children;
+        const childrenLength = childrenEl.length;
+
+        if (moreEl && childrenLength === 1) {
+            /* The only child element is the "more" element */
+            return;
+        }
+
+        let idx = 0;
+        while(idx < childrenLength
+        &&    (childrenEl[idx] as HTMLDivElement).offsetLeft < itemsSpace)
+        {
+            idx++;
+        }
+
+        /* Hide the previous element */
+        idx--;
+
+        this.nbHiddenItems = selectedOptions.length - idx;
+    }
+
+    /* }}} */
+    /* {{{ watch */
+
+    @Watch('store.state.internalValue')
+    protected onInternalChange() {
+        this.nbHiddenItems = 0;
+    }
+
+    /* }}} */
+    /* {{{ life cycles methods */
+
+    protected updated() {
+        this.computeSize();
     }
 
     /* }}} */
@@ -180,6 +292,7 @@ export default class Selectic extends Vue<Props> {
                 <div
                     class="selectic-input__selected-items"
                     style={this.singleStyle}
+                    ref="selectedItems"
                 >
                     {this.isSelectionReversed && (
                         <span
@@ -193,7 +306,7 @@ export default class Selectic extends Vue<Props> {
                         </span>
                     )}
                     {this.singleSelectedItem}
-                    {this.store.state.multiple && (this.selectedOptions as OptionItem[]).map(
+                    {this.showSelectedOptions.map(
                         (item) => (
                             <div
                                 class="single-value"
@@ -218,6 +331,14 @@ export default class Selectic extends Vue<Props> {
                                 )}
                             </div>
                         )
+                    )}
+                    {this.moreSelectedNb && (
+                        <div
+                            class="single-value more-items"
+                            title={this.moreSelectedTitle}
+                        >
+                            {this.moreSelectedNb}
+                        </div>
                     )}
                 </div>
                 {this.showClearAll && (

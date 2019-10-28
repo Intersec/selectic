@@ -31,6 +31,7 @@ import Store, {
     OptionValue,
     OptionItem,
     FormatCallback,
+    SelectionOverflow,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -45,6 +46,7 @@ export type PartialMessages = PartialMessages;
 export type GetCallback = GetCallback;
 export type FetchCallback = FetchCallback;
 export type FormatCallback = FormatCallback;
+export type SelectionOverflow = SelectionOverflow;
 
 export interface ParamProps {
     /* Method to call to fetch extra data */
@@ -81,6 +83,14 @@ export interface ParamProps {
 
     /* If true, value can be only in existing options. */
     strictValue?: boolean;
+
+    /* Define how to behave when selected items are too large for container.
+     *     collapsed (default): Items are reduced in width and an ellipsis
+     *                          is displayed in their name.
+     *     multiline: The container extends in height in order to display all
+     *                items.
+     */
+    selectionOverflow?: SelectionOverflow;
 
     /* In single mode, if no selection, this value is returned (default=null). */
     emptyValue?: SelectedValue;
@@ -183,6 +193,7 @@ export default class Selectic extends Vue<Props> {
     @Prop({default: () => ({
         allowClearSelection: false,
         strictValue: false,
+        selectionOverflow: 'collapsed',
     })})
     public params: ParamProps;
 
@@ -251,6 +262,16 @@ export default class Selectic extends Vue<Props> {
         } else {
             return value as StrictOptionId;
         }
+    }
+
+    get selecticClass() {
+        const state = this.store.state;
+
+        return ['selectic', this.className, {
+            disabled: state.disabled,
+            'selectic--overflow-multiline': state.selectionOverflow === 'multiline',
+            'selectic--overflow-collapsed': state.selectionOverflow === 'collapsed',
+        }];
     }
 
     /* }}} */
@@ -505,6 +526,7 @@ export default class Selectic extends Vue<Props> {
                 autoDisabled: typeof this.params.autoDisabled === 'boolean'
                             ? this.params.autoDisabled : true,
                 strictValue: this.params.strictValue || false,
+                selectionOverflow: this.params.selectionOverflow || 'collapsed',
                 placeholder: this.placeholder,
                 formatOption: this.params.formatOption,
                 formatSelection: this.params.formatSelection,
@@ -529,9 +551,7 @@ export default class Selectic extends Vue<Props> {
 
         return (
             <div
-                class={['selectic', this.className, {
-                    disabled: this.store.state.disabled,
-                }]}
+                class={this.selecticClass}
                 title={this.title}
                 data-selectic="true"
                 on={{

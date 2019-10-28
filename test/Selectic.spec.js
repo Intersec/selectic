@@ -38,6 +38,7 @@ define(function(require) {
             autoSelect: true,
             autoDisabled: true,
             strictValue: false,
+            selectionOverflow: 'collapsed',
 
             internalValue: null,
             isOpen: false,

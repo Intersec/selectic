@@ -1,5 +1,5 @@
 import { Vue } from 'vtyx';
-import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback } from './Store';
+import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export declare type OptionValue = OptionValue;
@@ -11,6 +11,7 @@ export declare type PartialMessages = PartialMessages;
 export declare type GetCallback = GetCallback;
 export declare type FetchCallback = FetchCallback;
 export declare type FormatCallback = FormatCallback;
+export declare type SelectionOverflow = SelectionOverflow;
 export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
@@ -21,6 +22,7 @@ export interface ParamProps {
     autoSelect?: boolean;
     autoDisabled?: boolean;
     strictValue?: boolean;
+    selectionOverflow?: SelectionOverflow;
     emptyValue?: SelectedValue;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
@@ -68,6 +70,11 @@ export default class Selectic extends Vue<Props> {
     readonly outsideListener: (evt: MouseEvent) => void;
     readonly windowResize: (_evt: any) => void;
     readonly inputValue: string | number;
+    readonly selecticClass: (string | {
+        disabled: boolean;
+        'selectic--overflow-multiline': boolean;
+        'selectic--overflow-collapsed': boolean;
+    })[];
     clearCache(forceReset?: boolean): void;
     changeTexts(texts: PartialMessages): void;
     getValue(): SelectedValue;

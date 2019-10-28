@@ -45,6 +45,8 @@ let messages = {
     clearSelection: 'Clear current selection',
     clearSelections: 'Clear all selections',
     wrongFormattedData: 'The data fetched is not correctly formatted.',
+    moreSelectedItem: '+1 other',
+    moreSelectedItems: '+%d others',
 };
 let closePreviousSelectic;
 /* {{{ Static */
@@ -72,6 +74,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             autoSelect: true,
             autoDisabled: true,
             strictValue: false,
+            selectionOverflow: 'collapsed',
             internalValue: null,
             isOpen: false,
             searchText: '',
@@ -780,6 +783,12 @@ var __decorate$1 = (this && this.__decorate) || function (decorators, target, ke
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 let Selectic = class Selectic extends vtyx.Vue {
+    constructor() {
+        super(...arguments);
+        /* }}} */
+        /* {{{ data */
+        this.nbHiddenItems = 0;
+    }
     /* }}} */
     /* {{{ computed */
     get isDisabled() {
@@ -865,6 +874,35 @@ let Selectic = class Selectic extends vtyx.Vue {
         }
         return formatItem(selection);
     }
+    get showSelectedOptions() {
+        if (!this.store.state.multiple) {
+            return [];
+        }
+        const selectedOptions = this.selectedOptions;
+        const nbHiddenItems = this.nbHiddenItems;
+        if (nbHiddenItems) {
+            return selectedOptions.slice(0, -nbHiddenItems);
+        }
+        return selectedOptions;
+    }
+    get moreSelectedNb() {
+        const store = this.store;
+        const nbHiddenItems = this.nbHiddenItems;
+        if (!store.state.multiple || nbHiddenItems === 0) {
+            return '';
+        }
+        const text = nbHiddenItems === 1 ? store.labels.moreSelectedItem
+            : store.labels.moreSelectedItems;
+        return text.replace(/%d/, nbHiddenItems.toString());
+    }
+    get moreSelectedTitle() {
+        const nbHiddenItems = this.nbHiddenItems;
+        if (!this.store.state.multiple) {
+            return '';
+        }
+        const list = this.selectedOptions;
+        return list.slice(-nbHiddenItems).map((item) => item.text).join('\n');
+    }
     /* }}} */
     /* {{{ methods */
     toggleFocus(focused) {
@@ -881,6 +919,54 @@ let Selectic = class Selectic extends vtyx.Vue {
     clearSelection() {
         this.store.selectItem(null);
     }
+    computeSize() {
+        const state = this.store.state;
+        const selectedOptions = this.selectedOptions;
+        if (!state.multiple || state.selectionOverflow !== 'collapsed'
+            || !selectedOptions.length) {
+            this.nbHiddenItems = 0;
+            return;
+        }
+        /* Check if there is enough space to display items like there are
+         * currently shown */
+        const el = this.$refs.selectedItems;
+        const parentEl = el.parentElement;
+        const parentPadding = parseInt(getComputedStyle(parentEl).getPropertyValue('padding-right'), 10);
+        const clearEl = parentEl.querySelector('.selectic-input__clear-icon');
+        const clearWidth = clearEl ? clearEl.offsetWidth : 0;
+        const itemsWidth = parentEl.clientWidth - parentPadding - clearWidth;
+        if (itemsWidth - el.offsetWidth > 0) {
+            return;
+        }
+        /* Look for the first element which start outside bounds */
+        const moreEl = el.querySelector('.more-items');
+        const moreSize = moreEl && moreEl.offsetWidth || 0;
+        const itemsSpace = itemsWidth - moreSize;
+        const childrenEl = el.children;
+        const childrenLength = childrenEl.length;
+        if (moreEl && childrenLength === 1) {
+            /* The only child element is the "more" element */
+            return;
+        }
+        let idx = 0;
+        while (idx < childrenLength
+            && childrenEl[idx].offsetLeft < itemsSpace) {
+            idx++;
+        }
+        /* Hide the previous element */
+        idx--;
+        this.nbHiddenItems = selectedOptions.length - idx;
+    }
+    /* }}} */
+    /* {{{ watch */
+    onInternalChange() {
+        this.nbHiddenItems = 0;
+    }
+    /* }}} */
+    /* {{{ life cycles methods */
+    updated() {
+        this.computeSize();
+    }
     /* }}} */
     render() {
         const h = this.renderWrapper();
@@ -892,17 +978,18 @@ let Selectic = class Selectic extends vtyx.Vue {
                         focused: this.store.state.isOpen,
                         disabled: this.store.state.disabled,
                     }] },
-                h("div", { class: "selectic-input__selected-items", style: this.singleStyle },
+                h("div", { class: "selectic-input__selected-items", style: this.singleStyle, ref: "selectedItems" },
                     this.isSelectionReversed && (h("span", { class: "fa fa-strikethrough selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
                     this.displayPlaceholder && (h("span", { class: "selectic-input__selected-items__placeholder" }, this.store.state.placeholder)),
                     this.singleSelectedItem,
-                    this.store.state.multiple && this.selectedOptions.map((item) => (h("div", { class: "single-value", style: item.style, title: item.text, on: {
+                    this.showSelectedOptions.map((item) => (h("div", { class: "single-value", style: item.style, title: item.text, on: {
                             click: () => this.$emit('item:click', item.id),
                         } },
                         h("span", { class: "selectic-input__selected-items__value" }, item.text),
                         !this.isDisabled && (h("span", { class: "fa fa-times selectic-input__selected-items__icon", on: {
                                 'click.prevent.stop': () => this.selectItem(item.id),
-                            } })))))),
+                            } }))))),
+                    this.moreSelectedNb && (h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb))),
                 this.showClearAll && (h("span", { class: "fa fa-times selectic-input__clear-icon", title: this.clearedLabel, on: { 'click.prevent.stop': this.clearSelection } }))),
             h("div", { class: [
                     'selectic__icon-container',
@@ -920,6 +1007,9 @@ __decorate$1([
 __decorate$1([
     vtyx.Prop({ default: '' })
 ], Selectic.prototype, "id", void 0);
+__decorate$1([
+    vtyx.Watch('store.state.internalValue')
+], Selectic.prototype, "onInternalChange", null);
 Selectic = __decorate$1([
     vtyx.Component
 ], Selectic);
@@ -1490,6 +1580,14 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
             return value;
         }
     }
+    get selecticClass() {
+        const state = this.store.state;
+        return ['selectic', this.className, {
+                disabled: state.disabled,
+                'selectic--overflow-multiline': state.selectionOverflow === 'multiline',
+                'selectic--overflow-collapsed': state.selectionOverflow === 'collapsed',
+            }];
+    }
     /* }}} */
     /* {{{ methods */
     /* {{{ public methods */
@@ -1682,6 +1780,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                     autoDisabled: typeof this.params.autoDisabled === 'boolean'
                         ? this.params.autoDisabled : true,
                     strictValue: this.params.strictValue || false,
+                    selectionOverflow: this.params.selectionOverflow || 'collapsed',
                     placeholder: this.placeholder,
                     formatOption: this.params.formatOption,
                     formatSelection: this.params.formatSelection,
@@ -1699,9 +1798,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
     /* }}} */
     render() {
         const h = this.renderWrapper();
-        return (h("div", { class: ['selectic', this.className, {
-                    disabled: this.store.state.disabled,
-                }], title: this.title, "data-selectic": "true", on: {
+        return (h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
                 'click.prevent.stop': () => this.store.commit('isOpen', true),
             } },
             h("input", { type: "text", id: this.id, value: this.inputValue, class: "selectic__input-value", on: {
@@ -1751,6 +1848,7 @@ __decorate$5([
     vtyx.Prop({ default: () => ({
             allowClearSelection: false,
             strictValue: false,
+            selectionOverflow: 'collapsed',
         }) })
 ], Selectic$1.prototype, "params", void 0);
 __decorate$5([

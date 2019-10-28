@@ -51,6 +51,12 @@ export type GetCallback = (_ids: OptionId[])
 
 export type FormatCallback = (_option: OptionItem) => OptionItem;
 
+export type SelectionOverflow =
+    /* Items are reduced in width and an ellipsis is displayed in their name. */
+    'collapsed'
+    /* The container extends in height in order to display all items. */
+  | 'multiline';
+
 export interface SelecticStoreStateParams {
     /* Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -84,6 +90,15 @@ export interface SelecticStoreStateParams {
 
     /* Accept only values which are in options */
     strictValue?: boolean;
+
+    /* Define how the component should behave when selected items are too
+     * large for the container.
+     *     collapsed (default): Items are reduced in width and an ellipsis
+     *                          is displayed in their name.
+     *     multiline: The container extends in height in order to display all
+     *                items.
+     */
+    selectionOverflow?: SelectionOverflow;
 
     /* Called when item is displayed in the list. */
     formatOption?: FormatCallback;
@@ -159,7 +174,10 @@ export interface SelecticStoreState {
     autoDisabled: boolean;
 
     /* If true, only values which are in options are accepted. */
-    strictValue?: boolean;
+    strictValue: boolean;
+
+    /* Define how to behave when selected items are too large for container. */
+    selectionOverflow: SelectionOverflow;
 
     /* If true, the list is displayed */
     isOpen: boolean;
@@ -229,6 +247,8 @@ interface Messages {
     clearSelection: string;
     clearSelections: string;
     wrongFormattedData: string;
+    moreSelectedItem: string;
+    moreSelectedItems: string;
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
@@ -266,6 +286,8 @@ let messages: Messages = {
     clearSelection: 'Clear current selection',
     clearSelections: 'Clear all selections',
     wrongFormattedData: 'The data fetched is not correctly formatted.',
+    moreSelectedItem: '+1 other',
+    moreSelectedItems: '+%d others',
 };
 
 let closePreviousSelectic: undefined | voidCaller;
@@ -336,6 +358,7 @@ export default class SelecticStore extends Vue<Props> {
         autoSelect: true,
         autoDisabled: true,
         strictValue: false,
+        selectionOverflow: 'collapsed',
 
         internalValue: null,
         isOpen: false,
