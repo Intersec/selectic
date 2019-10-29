@@ -1633,7 +1633,12 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
         this.width = el.offsetWidth;
     }
     computeOffset(doNotAddListener = false) {
-        let el = this.$refs.mainInput.$el;
+        const mainInput = this.$refs.mainInput;
+        if (!mainInput || mainInput.$el) {
+            /* This method has been called too soon (before render function) */
+            return;
+        }
+        let el = mainInput.$el;
         let offsetLeft = el.offsetLeft;
         let offsetTop = el.offsetTop + el.offsetHeight;
         const elRootElement = document.body.parentElement;

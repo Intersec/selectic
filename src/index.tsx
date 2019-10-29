@@ -332,7 +332,14 @@ export default class Selectic extends Vue<Props> {
     }
 
     private computeOffset(doNotAddListener = false) {
-        let el = this.$refs.mainInput.$el as HTMLElement;
+        const mainInput = this.$refs.mainInput;
+
+        if (!mainInput || mainInput.$el) {
+            /* This method has been called too soon (before render function) */
+            return;
+        }
+
+        let el = mainInput.$el as HTMLElement;
         let offsetLeft = el.offsetLeft;
         let offsetTop = el.offsetTop + el.offsetHeight;
         const elRootElement = document.body.parentElement as HTMLElement;
