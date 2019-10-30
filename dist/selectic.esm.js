@@ -1630,7 +1630,7 @@ let Selectic$1 = class Selectic extends Vue {
     }
     computeOffset(doNotAddListener = false) {
         const mainInput = this.$refs.mainInput;
-        if (!mainInput || mainInput.$el) {
+        if (!mainInput || !mainInput.$el) {
             /* This method has been called too soon (before render function) */
             return;
         }

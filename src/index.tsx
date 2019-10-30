@@ -334,7 +334,7 @@ export default class Selectic extends Vue<Props> {
     private computeOffset(doNotAddListener = false) {
         const mainInput = this.$refs.mainInput;
 
-        if (!mainInput || mainInput.$el) {
+        if (!mainInput || !mainInput.$el) {
             /* This method has been called too soon (before render function) */
             return;
         }
