@@ -3,7 +3,7 @@
 > VueJS 2.X + Typescript + JSX + Select
 
 
-### Introduction
+## Introduction
 
 A customizable component allowing you to list and select items which embeds
 the most common features like searching, remote data sets, infinite scrolling,
@@ -13,7 +13,7 @@ It integrates well with VueJS and is reactive to option changes.
 
 It uses VTYX for strong typing.
 
-### Example
+## Example
 
 ```jsx
 <Selectic
@@ -33,7 +33,7 @@ It uses VTYX for strong typing.
 />
 ```
 
-### Features
+## Features
 
 * Build select from list of item (either string array or object array).
 * Can load dynamically list from a server and the list can be paginate (with a
@@ -54,3 +54,7 @@ It uses VTYX for strong typing.
 * Options to auto-disable the component when there is no options or only one
   mandatory option.
 * Handle selection overflow either by displaying a tag "+x more" either by adding several lines and show all selected options.
+
+## Documentation
+
+[Read the documentation](./doc/main.md) to know how to configure Selectic and all its possibilities.
