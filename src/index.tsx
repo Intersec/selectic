@@ -555,6 +555,7 @@ export default class Selectic extends Vue<Props> {
 
     protected render() {
         const h = this.renderWrapper();
+        const id = this.id || undefined;
 
         return (
             <div
@@ -568,7 +569,7 @@ export default class Selectic extends Vue<Props> {
                 {/* This input is for DOM submission */}
                 <input
                     type="text"
-                    id={this.id}
+                    id={id}
                     value={this.inputValue}
                     class="selectic__input-value"
                     on={{
@@ -578,7 +579,7 @@ export default class Selectic extends Vue<Props> {
                 />
                 <MainInput
                     store={this.store}
-                    id={this.id}
+                    id={id}
                     on={{
                         'item:click': (id: OptionId) => this.$emit('item:click', id),
                     }}
