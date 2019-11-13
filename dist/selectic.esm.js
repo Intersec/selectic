@@ -940,6 +940,11 @@ let Selectic = class Selectic extends Vue {
         const itemsSpace = itemsWidth - moreSize;
         const childrenEl = el.children;
         const childrenLength = childrenEl.length;
+        if (itemsSpace <= 0) {
+            /* Element is not visible in DOM */
+            this.nbHiddenItems = selectedOptions.length;
+            return;
+        }
         if (moreEl && childrenLength === 1) {
             /* The only child element is the "more" element */
             return;
