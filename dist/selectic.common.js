@@ -1646,7 +1646,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
         el = el.offsetParent;
         while (el) {
             if (!doNotAddListener) {
-                el.addEventListener('scroll', this.scrollListener);
+                el.addEventListener('scroll', this.scrollListener, { passive: true });
                 this._elementsListeners.push(el);
             }
             offsetLeft += el.offsetLeft - el.scrollLeft;
@@ -1664,7 +1664,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
     }
     removeListeners() {
         this._elementsListeners.forEach((el) => {
-            el.removeEventListener('scroll', this.scrollListener);
+            el.removeEventListener('scroll', this.scrollListener, { passive: true });
         });
         this._elementsListeners = [];
         document.body.removeEventListener('click', this.outsideListener, true);
@@ -1803,14 +1803,15 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
     /* }}} */
     render() {
         const h = this.renderWrapper();
+        const id = this.id || undefined;
         return (h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
                 'click.prevent.stop': () => this.store.commit('isOpen', true),
             } },
-            h("input", { type: "text", id: this.id, value: this.inputValue, class: "selectic__input-value", on: {
+            h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", on: {
                     focus: () => this.store.commit('isOpen', true),
                     blur: this.checkFocus,
                 } }),
-            h(MainInput, { store: this.store, id: this.id, on: {
+            h(MainInput, { store: this.store, id: id, on: {
                     'item:click': (id) => this.$emit('item:click', id),
                 }, ref: "mainInput" }),
             this.isFocused && (h(ExtendedList$1, { store: this.store, offsetTop: this.offsetTop, offsetLeft: this.offsetLeft, width: this.width, ref: "extendedList" }))));

@@ -349,7 +349,7 @@ export default class Selectic extends Vue<Props> {
 
         while (el) {
             if (!doNotAddListener) {
-                el.addEventListener('scroll', this.scrollListener);
+                el.addEventListener('scroll', this.scrollListener, { passive: true });
                 this._elementsListeners.push(el);
             }
 
@@ -372,7 +372,7 @@ export default class Selectic extends Vue<Props> {
 
     private removeListeners() {
         this._elementsListeners.forEach((el) => {
-            el.removeEventListener('scroll', this.scrollListener);
+            el.removeEventListener('scroll', this.scrollListener, { passive: true } as  any);
         });
 
         this._elementsListeners = [];
