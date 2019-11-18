@@ -755,6 +755,61 @@ define(function(require) {
                     expect(store.state.internalValue).toEqual([2, 'hello', 1, true]);
                     done();
                 });
+
+                describe('with dynamic fetch of items', function() {
+                    beforeEach(function() {
+                        this.getItemsCallback = function(ids) {
+                            var getItemPromise = new Promise(function(resolve) {
+                                var resolveGetItem = function(hasFound) {
+                                    var rslt = ids.map(function(id) {
+                                        if (hasFound) {
+                                            return {
+                                                id: id,
+                                                text: 'some text ' + id,
+                                                data: 'data' + id,
+                                            };
+                                        }
+                                        return;
+                                    });
+
+                                    resolve(rslt);
+                                };
+                            });
+
+                            return getItemPromise;
+                        };
+                    });
+                    it('should set the internal value to null with invalid selection on single mode', async function(done) {
+                        var store = new Store({propsData: {
+                            params: {
+                                fetchCallback: buildFetchCb({total: 3}),
+                                getItemsCallback: this.getItemsCallback([]),
+                                strictValue: true,
+                            },
+                            value: 0,
+                        }});
+
+                        await sleep(0);
+                        expect(store.state.internalValue).toEqual(null);
+                        done();
+                    });
+
+                    it('shoud remove the invalid options from internal value on multiple mode', async function(done) {
+                        var store = new Store({propsData: {
+                            params: {
+                                multiple: true,
+                                fetchCallback: buildFetchCb({total: 3}),
+                                getItemsCallback: this.getItemsCallback([2]),
+                                strictValue: true,
+                            },
+                            value: [2, 3, 4],
+                        }});
+
+                        await sleep(0);
+                        expect(store.state.internalValue).toEqual([2]);
+                        done();
+                    });
+                });
             });
 
             describe('with hideFilter attribute', function() {

@@ -522,9 +522,23 @@ let SelecticStore = class SelecticStore extends Vue {
         if (this.state.multiple) {
             /* display partial information about selected items */
             this.state.selectedOptions = this.buildSelectedItems(internalValue);
-            const items = await this.getItems(internalValue);
+            const items = await this.getItems(internalValue).catch(() => []);
             if (internalValue !== this.state.internalValue) {
                 /* Values have been deprecated */
+                return;
+            }
+            if (items.length !== internalValue.length) {
+                if (!this.state.strictValue) {
+                    const updatedItems = this.state.selectedOptions.map((option) => {
+                        const foundItem = items.find((item) => item.id === option.id);
+                        return foundItem || option;
+                    });
+                    this.state.selectedOptions = updatedItems;
+                }
+                else {
+                    const itemIds = items.map((item) => item.id);
+                    this.commit('internalValue', itemIds);
+                }
                 return;
             }
             /* display full information about selected items */
@@ -536,9 +550,15 @@ let SelecticStore = class SelecticStore extends Vue {
         else {
             /* display partial information about selected items */
             this.state.selectedOptions = this.buildSelectedItems([internalValue])[0];
-            const items = await this.getItems([internalValue]);
+            const items = await this.getItems([internalValue]).catch(() => []);
             if (internalValue !== this.state.internalValue) {
                 /* Values have been deprecated */
+                return;
+            }
+            if (!items.length) {
+                if (this.state.strictValue) {
+                    this.commit('internalValue', null);
+                }
                 return;
             }
             /* display full information about selected items */

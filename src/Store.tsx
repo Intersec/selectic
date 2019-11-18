@@ -901,9 +901,26 @@ export default class SelecticStore extends Vue<Props> {
             /* display partial information about selected items */
             this.state.selectedOptions = this.buildSelectedItems(internalValue as StrictOptionId[]);
 
-            const items = await this.getItems(internalValue as StrictOptionId[]);
+            const items: OptionItem[] = await this.getItems(internalValue as StrictOptionId[]).catch(() => []);
             if (internalValue !== this.state.internalValue) {
                 /* Values have been deprecated */
+                return;
+            }
+
+            if (items.length !== (internalValue as StrictOptionId[]).length) {
+                if (!this.state.strictValue) {
+                    const updatedItems = this.state.selectedOptions.map((option) => {
+                        const foundItem = items.find((item) => item.id === option.id);
+
+                        return foundItem || option;
+                    });
+
+                    this.state.selectedOptions = updatedItems;
+                } else {
+                    const itemIds = items.map((item) => item.id as StrictOptionId) ;
+
+                    this.commit('internalValue', itemIds);
+                }
                 return;
             }
 
@@ -916,9 +933,16 @@ export default class SelecticStore extends Vue<Props> {
             /* display partial information about selected items */
             this.state.selectedOptions = this.buildSelectedItems([internalValue as OptionId])[0];
 
-            const items = await this.getItems([internalValue as OptionId]);
+            const items = await this.getItems([internalValue as OptionId]).catch(() => []);
             if (internalValue !== this.state.internalValue) {
                 /* Values have been deprecated */
+                return;
+            }
+
+            if (!items.length) {
+                if (this.state.strictValue) {
+                    this.commit('internalValue', null);
+                }
                 return;
             }
 
