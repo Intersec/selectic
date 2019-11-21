@@ -1,6 +1,6 @@
 {
   "name": "selectic",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Smart Select for VueJS 2.x",
   "main": "dist/selectic.common.js",
   "module": "dist/selectic.esm.js",
@@ -34,7 +34,7 @@
     "vtyx": "^2.2.0"
   },
   "devDependencies": {
-    "rollup": "1.26.0",
+    "rollup": "1.27.3",
     "typescript": "~3.7"
   }
 }
