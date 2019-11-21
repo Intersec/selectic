@@ -37,16 +37,18 @@ import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 
 /* Export */
-export type OptionValue = OptionValue;
-export type OptionItem = OptionItem;
-export type OptionId = OptionId;
-export type StrictOptionId = StrictOptionId;
-export type SelectedValue = SelectedValue;
-export type PartialMessages = PartialMessages;
-export type GetCallback = GetCallback;
-export type FetchCallback = FetchCallback;
-export type FormatCallback = FormatCallback;
-export type SelectionOverflow = SelectionOverflow;
+export {
+    OptionValue,
+    OptionItem,
+    OptionId,
+    StrictOptionId,
+    SelectedValue,
+    PartialMessages,
+    GetCallback,
+    FetchCallback,
+    FormatCallback,
+    SelectionOverflow,
+};
 
 export interface ParamProps {
     /* Method to call to fetch extra data */

@@ -2,16 +2,7 @@ import { Vue } from 'vtyx';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
-export declare type OptionValue = OptionValue;
-export declare type OptionItem = OptionItem;
-export declare type OptionId = OptionId;
-export declare type StrictOptionId = StrictOptionId;
-export declare type SelectedValue = SelectedValue;
-export declare type PartialMessages = PartialMessages;
-export declare type GetCallback = GetCallback;
-export declare type FetchCallback = FetchCallback;
-export declare type FormatCallback = FormatCallback;
-export declare type SelectionOverflow = SelectionOverflow;
+export { OptionValue, OptionItem, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, };
 export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
@@ -65,12 +56,12 @@ export default class Selectic extends Vue<Props> {
     private store;
     private _elementsListeners;
     private _oldValue;
-    readonly isFocused: boolean;
-    readonly scrollListener: () => void;
-    readonly outsideListener: (evt: MouseEvent) => void;
-    readonly windowResize: (_evt: any) => void;
-    readonly inputValue: string | number;
-    readonly selecticClass: (string | {
+    get isFocused(): boolean;
+    get scrollListener(): () => void;
+    get outsideListener(): (evt: MouseEvent) => void;
+    get windowResize(): (_evt: any) => void;
+    get inputValue(): string | number;
+    get selecticClass(): (string | {
         disabled: boolean;
         'selectic--overflow-multiline': boolean;
         'selectic--overflow-collapsed': boolean;
