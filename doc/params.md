@@ -262,7 +262,9 @@ If `allowRevert` is set to `false`, the action to invert the selection will alwa
 
 If `allowRevert` is set to `true`, the action to invert the selection will always be enabled. The parent of selectic component should support `selectionIsExcluded` property (which can be applied in _dynamic_ mode).
 
-If `allowRevert` is set to `undefined` (is not set), the action to invert the selection will be enabled if it is not needed to use the `selectionIsExcluded` property.
+If `allowRevert` is set to `undefined` (is not set), the action to invert the selection will be enabled only if the `selectionIsExcluded` property is not needed (always in _static_ mode, and in _dynamic_ mode when all options are already fetched).
+
+Read [the extended properties documentation](extendedProperties.md) for more information about `selectionIsExcluded`.
 
 ```html
 <selectic
