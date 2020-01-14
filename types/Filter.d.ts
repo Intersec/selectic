@@ -9,12 +9,12 @@ export default class FilterPanel extends Vue<Props> {
     };
     private store;
     private closed;
-    get searchPlaceholder(): string;
-    get selectionIsExcluded(): boolean;
-    get disableSelectAll(): boolean;
-    get disableRevert(): boolean;
-    get enableRevert(): boolean;
-    get onKeyPressed(): (evt: KeyboardEvent) => void;
+    readonly searchPlaceholder: string;
+    readonly selectionIsExcluded: boolean;
+    readonly disableSelectAll: boolean;
+    readonly disableRevert: boolean;
+    readonly enableRevert: boolean;
+    readonly onKeyPressed: (evt: KeyboardEvent) => void;
     private keypressed;
     private onInput;
     private onSelectAll;

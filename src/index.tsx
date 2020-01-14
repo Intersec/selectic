@@ -112,7 +112,7 @@ export interface Props {
     selectionIsExcluded?: boolean;
 
     /* List of options to display */
-    options: OptionProp[];
+    options?: OptionProp[];
 
     /* Define groups of items (similar to optGroup) */
     groups?: GroupValue[];
