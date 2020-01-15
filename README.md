@@ -11,7 +11,7 @@ reverse selection, and many other possibilities.
 
 It integrates well with VueJS and is reactive to option changes.
 
-It uses VTYX for strong typing.
+It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 
 ## Example
 
