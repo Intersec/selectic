@@ -2,7 +2,7 @@ import { Vue } from 'vtyx';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
-export { OptionValue, OptionItem, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, };
+export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, };
 export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;

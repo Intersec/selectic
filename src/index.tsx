@@ -38,8 +38,10 @@ import ExtendedList from './ExtendedList';
 
 /* Export */
 export {
+    GroupValue,
     OptionValue,
     OptionItem,
+    OptionProp,
     OptionId,
     StrictOptionId,
     SelectedValue,
