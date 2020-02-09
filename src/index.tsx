@@ -381,7 +381,7 @@ export default class Selectic extends Vue<Props> {
 
         this._elementsListeners = [];
 
-        document.body.removeEventListener('click', this.outsideListener, true);
+        document.removeEventListener('click', this.outsideListener, true);
         window.removeEventListener('resize', this.windowResize, false);
     }
 
@@ -391,7 +391,7 @@ export default class Selectic extends Vue<Props> {
         if (this.isFocused) {
             this.computeWidth();
             window.addEventListener('resize', this.windowResize, false);
-            document.body.addEventListener('click', this.outsideListener, true);
+            document.addEventListener('click', this.outsideListener, true);
             this.computeOffset();
         } else {
             this.removeListeners();
