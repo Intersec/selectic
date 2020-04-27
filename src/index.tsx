@@ -343,35 +343,27 @@ export default class Selectic extends Vue<Props> {
             return;
         }
 
-        let el = mainInput.$el as HTMLElement;
-        let offsetLeft = el.offsetLeft;
-        let offsetTop = el.offsetTop + el.offsetHeight;
-        const elRootElement = document.body.parentElement as HTMLElement;
+        const mainEl = mainInput.$el as HTMLElement;
+        const _elementsListeners = this._elementsListeners;
 
-        let isFixed = getComputedStyle(el).getPropertyValue('position') === 'fixed';
-        el = el.offsetParent as HTMLElement;
-
-        while (el) {
-            if (!doNotAddListener) {
+        /* add listeners */
+        if (!doNotAddListener) {
+            let el = mainInput.$el as HTMLElement;
+            while (el) {
                 el.addEventListener('scroll', this.scrollListener, { passive: true });
-                this._elementsListeners.push(el);
+                _elementsListeners.push(el);
+
+                el = el.parentElement as HTMLElement;
             }
-
-            offsetLeft += el.offsetLeft - el.scrollLeft;
-            offsetTop += el.offsetTop - el.scrollTop;
-
-            isFixed = isFixed || getComputedStyle(el).getPropertyValue('position') === 'fixed';
-            el = el.offsetParent as HTMLElement;
         }
 
-        /* Adjust offset for element inside fixed elements */
-        if (isFixed) {
-            offsetLeft += elRootElement.scrollLeft;
-            offsetTop += elRootElement.scrollTop;
-        }
+        const box = mainEl.getBoundingClientRect();
+        /* put the list at bottom of the input */
+        const offsetTop = box.bottom;
+        const offsetLeft = box.left;
 
         this.offsetLeft = offsetLeft;
-        this.offsetTop = offsetTop + 1;
+        this.offsetTop = offsetTop;
     }
 
     private removeListeners() {

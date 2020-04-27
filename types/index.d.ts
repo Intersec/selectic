@@ -56,12 +56,12 @@ export default class Selectic extends Vue<Props> {
     private store;
     private _elementsListeners;
     private _oldValue;
-    readonly isFocused: boolean;
-    readonly scrollListener: () => void;
-    readonly outsideListener: (evt: MouseEvent) => void;
-    readonly windowResize: (_evt: any) => void;
-    readonly inputValue: string | number;
-    readonly selecticClass: (string | {
+    get isFocused(): boolean;
+    get scrollListener(): () => void;
+    get outsideListener(): (evt: MouseEvent) => void;
+    get windowResize(): (_evt: any) => void;
+    get inputValue(): string | number;
+    get selecticClass(): (string | {
         disabled: boolean;
         'selectic--overflow-multiline': boolean;
         'selectic--overflow-collapsed': boolean;

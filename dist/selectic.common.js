@@ -1663,29 +1663,23 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
             /* This method has been called too soon (before render function) */
             return;
         }
-        let el = mainInput.$el;
-        let offsetLeft = el.offsetLeft;
-        let offsetTop = el.offsetTop + el.offsetHeight;
-        const elRootElement = document.body.parentElement;
-        let isFixed = getComputedStyle(el).getPropertyValue('position') === 'fixed';
-        el = el.offsetParent;
-        while (el) {
-            if (!doNotAddListener) {
+        const mainEl = mainInput.$el;
+        const _elementsListeners = this._elementsListeners;
+        /* add listeners */
+        if (!doNotAddListener) {
+            let el = mainInput.$el;
+            while (el) {
                 el.addEventListener('scroll', this.scrollListener, { passive: true });
-                this._elementsListeners.push(el);
+                _elementsListeners.push(el);
+                el = el.parentElement;
             }
-            offsetLeft += el.offsetLeft - el.scrollLeft;
-            offsetTop += el.offsetTop - el.scrollTop;
-            isFixed = isFixed || getComputedStyle(el).getPropertyValue('position') === 'fixed';
-            el = el.offsetParent;
         }
-        /* Adjust offset for element inside fixed elements */
-        if (isFixed) {
-            offsetLeft += elRootElement.scrollLeft;
-            offsetTop += elRootElement.scrollTop;
-        }
+        const box = mainEl.getBoundingClientRect();
+        /* put the list at bottom of the input */
+        const offsetTop = box.bottom;
+        const offsetLeft = box.left;
         this.offsetLeft = offsetLeft;
-        this.offsetTop = offsetTop + 1;
+        this.offsetTop = offsetTop;
     }
     removeListeners() {
         this._elementsListeners.forEach((el) => {
