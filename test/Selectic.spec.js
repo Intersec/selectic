@@ -52,6 +52,7 @@ define(function(require) {
             offsetItem: 0,
             activeItemIdx: -1,
             pageSize: 100,
+            listPosition: 'auto',
             groups: new Map(),
             status: {
                 searching: false,

@@ -1,8 +1,8 @@
 import { Vue } from 'vtyx';
-import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow } from './Store';
+import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
-export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, };
+export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, };
 export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
@@ -17,6 +17,7 @@ export interface ParamProps {
     emptyValue?: SelectedValue;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
+    listPosition?: ListPosition;
 }
 export interface Props {
     value?: SelectedValue;
@@ -51,6 +52,7 @@ export default class Selectic extends Vue<Props> {
     texts?: PartialMessages;
     params: ParamProps;
     offsetTop: number;
+    offsetBottom: number;
     offsetLeft: number;
     width: number;
     private store;

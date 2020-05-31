@@ -274,3 +274,22 @@ Read [the extended properties documentation](extendedProperties.md) for more inf
     options={optionList}
 />
 ```
+
+## listPosition
+
+Type: `'auto' | 'bottom' | 'top`
+
+Default value: `'auto'`
+
+`listPosition` defines where the list should be displayed (at top or at bottom of the select button).
+
+With the `'auto'` value it displays the list at bottom, but if there is not enought space (the select is at bottom of the page). It displays the list at top instead.
+
+```html
+<selectic
+    params={{
+        listPosition: 'top',
+    }}
+    options={optionList}
+/>
+```

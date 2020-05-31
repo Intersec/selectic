@@ -3,7 +3,7 @@
  * Content of inner elements are related to dedicated files.
  */
 
-import {Vue, Component, Prop} from 'vtyx';
+import {Vue, Component, Prop, Watch} from 'vtyx';
 
 import Store, { OptionId } from './Store';
 import Filter from './Filter';
@@ -12,6 +12,7 @@ import List from './List';
 export interface Props {
     store: Store;
     offsetTop: number;
+    offsetBottom: number;
     offsetLeft: number;
     width: number;
 }
@@ -29,6 +30,9 @@ export default class ExtendedList extends Vue<Props> {
     @Prop({default: 0})
     private offsetTop: number;
 
+    @Prop({default: 0})
+    private offsetBottom: number;
+
     @Prop({default: 300})
     private width: number;
 
@@ -36,6 +40,7 @@ export default class ExtendedList extends Vue<Props> {
     /* {{{ data */
 
     private topGroup = ' ';
+    private listHeight = 120;
 
     /* }}} */
     /* {{{ computed */
@@ -110,6 +115,60 @@ export default class ExtendedList extends Vue<Props> {
         };
     }
 
+    get bestPosition(): 'top' | 'bottom' {
+        const windowHeight = window.innerHeight;
+        const listHeight = this.listHeight;
+        const inputTop = this.offsetBottom;
+        const inputBottom = this.offsetTop;
+
+        if (inputBottom + listHeight <= windowHeight) {
+            return 'bottom';
+        }
+
+        if (listHeight < inputTop) {
+            return 'top';
+        }
+
+        /* There are not enough space neither at bottom nor at top */
+        return (windowHeight - inputBottom) < inputTop ? 'top' : 'bottom';
+    }
+
+    get positionStyle() {
+        let listPosition = this.store.state.listPosition;
+
+        if (listPosition === 'auto') {
+            listPosition = this.bestPosition;
+        }
+
+        if (listPosition === 'top') {
+            return `
+                top: ${this.offsetBottom}px;
+                left: ${this.offsetLeft}px;
+                width: ${this.width}px;
+                transform: translateY(-100%);
+            `;
+        }
+
+        return `
+            top: ${this.offsetTop}px;
+            left: ${this.offsetLeft}px;
+            width: ${this.width}px;
+        `;
+    }
+
+    /* }}} */
+    /* {{{ watch */
+
+    @Watch('store.state.filteredOptions')
+    protected onFilteredOptionsChange() {
+        Vue.nextTick(this.computeListHeight, this);
+    }
+
+    @Watch('store.state.hideFilter')
+    protected onHideFilterChange() {
+        Vue.nextTick(this.computeListHeight, this);
+    }
+
     /* }}} */
     /* {{{ methods */
 
@@ -120,12 +179,19 @@ export default class ExtendedList extends Vue<Props> {
         this.topGroup = groupName;
     }
 
+    private computeListHeight() {
+        const box = this.$el.getBoundingClientRect();
+
+        this.listHeight = box.height;
+    }
+
     /* }}} */
     /* {{{ Life cycles */
 
     protected mounted() {
         document.body.appendChild(this.$el);
         document.body.addEventListener('keydown', this.onKeyDown);
+        this.computeListHeight();
     }
 
     protected destroyed() {
@@ -146,11 +212,7 @@ export default class ExtendedList extends Vue<Props> {
 
         return (
             <div
-                style={`
-                    top: ${this.offsetTop}px;
-                    left: ${this.offsetLeft}px;
-                    width: ${this.width}px;
-                `}
+                style={this.positionStyle}
                 class="selectic__extended-list"
             >
               {!state.hideFilter && (

@@ -32,6 +32,7 @@ import Store, {
     OptionItem,
     FormatCallback,
     SelectionOverflow,
+    ListPosition,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -50,6 +51,7 @@ export {
     FetchCallback,
     FormatCallback,
     SelectionOverflow,
+    ListPosition,
 };
 
 export interface ParamProps {
@@ -104,6 +106,11 @@ export interface ParamProps {
 
     /* Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
+
+    /* Define where the list should be displayed.
+     * With 'auto' it is displayed by default at bottom, but it can be at
+     * top if there is not enough space below. */
+    listPosition?: ListPosition;
 }
 
 export interface Props {
@@ -205,13 +212,14 @@ export default class Selectic extends Vue<Props> {
     /* {{{ data */
 
     public offsetTop = 0;
+    public offsetBottom = 0;
     public offsetLeft = 0;
     public width = 0;
 
     private store: Store = {} as Store;
 
     /* No observer */
-    private _elementsListeners: Element[];
+    private _elementsListeners: Array<Element | Window>;
     private _oldValue: SelectedValue; /* old values in watcher are buggy :'( */
 
     /* }}} */
@@ -355,15 +363,23 @@ export default class Selectic extends Vue<Props> {
 
                 el = el.parentElement as HTMLElement;
             }
+
+            /* Listening to window allows to listen to html/body scroll events for some browser (like Chrome) */
+            window.addEventListener('scroll', this.scrollListener, { passive: true });
+            _elementsListeners.push(window);
         }
 
         const box = mainEl.getBoundingClientRect();
-        /* put the list at bottom of the input */
+        /* To put the list at bottom of the input */
         const offsetTop = box.bottom;
         const offsetLeft = box.left;
 
+        /* To put the list at top of the input */
+        const offsetBottom = box.top;
+
         this.offsetLeft = offsetLeft;
         this.offsetTop = offsetTop;
+        this.offsetBottom = offsetBottom;
     }
 
     private removeListeners() {
@@ -533,6 +549,7 @@ export default class Selectic extends Vue<Props> {
                 placeholder: this.placeholder,
                 formatOption: this.params.formatOption,
                 formatSelection: this.params.formatSelection,
+                listPosition: this.params.listPosition || 'auto',
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
@@ -585,6 +602,7 @@ export default class Selectic extends Vue<Props> {
                 <ExtendedList
                     store={this.store}
                     offsetTop={this.offsetTop}
+                    offsetBottom={this.offsetBottom}
                     offsetLeft={this.offsetLeft}
                     width={this.width}
                     ref="extendedList"

@@ -31,6 +31,7 @@ export declare type FetchCallback = (_search: string, _offsetItem: number, _page
 export declare type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
 export declare type FormatCallback = (_option: OptionItem) => OptionItem;
 export declare type SelectionOverflow = 'collapsed' | 'multiline';
+export declare type ListPosition = 'bottom' | 'top' | 'auto';
 export interface SelecticStoreStateParams {
     multiple?: boolean;
     placeholder?: string;
@@ -82,6 +83,7 @@ export interface SelecticStoreState {
     pageSize: number;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
+    listPosition: ListPosition;
     status: {
         searching: boolean;
         errorMessage: string;

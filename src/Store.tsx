@@ -57,6 +57,14 @@ export type SelectionOverflow =
     /* The container extends in height in order to display all items. */
   | 'multiline';
 
+export type ListPosition =
+    /* Display the list at bottom */
+    'bottom'
+    /* Display the list at bottom */
+  | 'top'
+    /* Display the list at bootom but if there is not enough space, display it at top */
+  | 'auto';
+
 export interface SelecticStoreStateParams {
     /* Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -218,6 +226,9 @@ export interface SelecticStoreState {
     /* Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
 
+    /* Indicate where the list should be deployed */
+    listPosition: ListPosition;
+
     /* Inner status which should be modified only by store */
     status: {
         /* If true, a search is currently done */
@@ -373,6 +384,7 @@ export default class SelecticStore extends Vue<Props> {
         offsetItem: 0,
         activeItemIdx: -1,
         pageSize: 100,
+        listPosition: 'auto',
         status: {
             searching: false,
             errorMessage: '',

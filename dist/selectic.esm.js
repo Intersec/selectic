@@ -84,6 +84,7 @@ let SelecticStore = class SelecticStore extends Vue {
             offsetItem: 0,
             activeItemIdx: -1,
             pageSize: 100,
+            listPosition: 'auto',
             status: {
                 searching: false,
                 errorMessage: '',
@@ -1411,6 +1412,7 @@ let ExtendedList = class ExtendedList extends Vue {
         /* }}} */
         /* {{{ data */
         this.topGroup = ' ';
+        this.listHeight = 120;
     }
     /* }}} */
     /* {{{ computed */
@@ -1472,6 +1474,47 @@ let ExtendedList = class ExtendedList extends Vue {
             }
         };
     }
+    get bestPosition() {
+        const windowHeight = window.innerHeight;
+        const listHeight = this.listHeight;
+        const inputTop = this.offsetBottom;
+        const inputBottom = this.offsetTop;
+        if (inputBottom + listHeight <= windowHeight) {
+            return 'bottom';
+        }
+        if (listHeight < inputTop) {
+            return 'top';
+        }
+        /* There are not enough space neither at bottom nor at top */
+        return (windowHeight - inputBottom) < inputTop ? 'top' : 'bottom';
+    }
+    get positionStyle() {
+        let listPosition = this.store.state.listPosition;
+        if (listPosition === 'auto') {
+            listPosition = this.bestPosition;
+        }
+        if (listPosition === 'top') {
+            return `
+                top: ${this.offsetBottom}px;
+                left: ${this.offsetLeft}px;
+                width: ${this.width}px;
+                transform: translateY(-100%);
+            `;
+        }
+        return `
+            top: ${this.offsetTop}px;
+            left: ${this.offsetLeft}px;
+            width: ${this.width}px;
+        `;
+    }
+    /* }}} */
+    /* {{{ watch */
+    onFilteredOptionsChange() {
+        Vue.nextTick(this.computeListHeight, this);
+    }
+    onHideFilterChange() {
+        Vue.nextTick(this.computeListHeight, this);
+    }
     /* }}} */
     /* {{{ methods */
     getGroup(id) {
@@ -1479,11 +1522,16 @@ let ExtendedList = class ExtendedList extends Vue {
         const groupName = group || ' ';
         this.topGroup = groupName;
     }
+    computeListHeight() {
+        const box = this.$el.getBoundingClientRect();
+        this.listHeight = box.height;
+    }
     /* }}} */
     /* {{{ Life cycles */
     mounted() {
         document.body.appendChild(this.$el);
         document.body.addEventListener('keydown', this.onKeyDown);
+        this.computeListHeight();
     }
     destroyed() {
         document.body.removeEventListener('keydown', this.onKeyDown);
@@ -1497,11 +1545,7 @@ let ExtendedList = class ExtendedList extends Vue {
         const h = this.renderWrapper();
         const store = this.store;
         const state = store.state;
-        return (h("div", { style: `
-                    top: ${this.offsetTop}px;
-                    left: ${this.offsetLeft}px;
-                    width: ${this.width}px;
-                `, class: "selectic__extended-list" },
+        return (h("div", { style: this.positionStyle, class: "selectic__extended-list" },
             !state.hideFilter && (h(Filter, { store: this.store })),
             state.groups.size > 0 && state.totalFilteredOptions > store.itemsPerPage && (h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
             h(List$1, { store: store, class: "selectic__extended-list__list-items", on: {
@@ -1524,8 +1568,17 @@ __decorate$4([
     Prop({ default: 0 })
 ], ExtendedList.prototype, "offsetTop", void 0);
 __decorate$4([
+    Prop({ default: 0 })
+], ExtendedList.prototype, "offsetBottom", void 0);
+__decorate$4([
     Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
+__decorate$4([
+    Watch('store.state.filteredOptions')
+], ExtendedList.prototype, "onFilteredOptionsChange", null);
+__decorate$4([
+    Watch('store.state.hideFilter')
+], ExtendedList.prototype, "onHideFilterChange", null);
 ExtendedList = __decorate$4([
     Component
 ], ExtendedList);
@@ -1552,6 +1605,7 @@ let Selectic$1 = class Selectic extends Vue {
         /* }}} */
         /* {{{ data */
         this.offsetTop = 0;
+        this.offsetBottom = 0;
         this.offsetLeft = 0;
         this.width = 0;
         this.store = {};
@@ -1669,13 +1723,19 @@ let Selectic$1 = class Selectic extends Vue {
                 _elementsListeners.push(el);
                 el = el.parentElement;
             }
+            /* Listening to window allows to listen to html/body scroll events for some browser (like Chrome) */
+            window.addEventListener('scroll', this.scrollListener, { passive: true });
+            _elementsListeners.push(window);
         }
         const box = mainEl.getBoundingClientRect();
-        /* put the list at bottom of the input */
+        /* To put the list at bottom of the input */
         const offsetTop = box.bottom;
         const offsetLeft = box.left;
+        /* To put the list at top of the input */
+        const offsetBottom = box.top;
         this.offsetLeft = offsetLeft;
         this.offsetTop = offsetTop;
+        this.offsetBottom = offsetBottom;
     }
     removeListeners() {
         this._elementsListeners.forEach((el) => {
@@ -1804,6 +1864,7 @@ let Selectic$1 = class Selectic extends Vue {
                     placeholder: this.placeholder,
                     formatOption: this.params.formatOption,
                     formatSelection: this.params.formatSelection,
+                    listPosition: this.params.listPosition || 'auto',
                 },
                 fetchCallback: this.params.fetchCallback,
                 getItemsCallback: this.params.getItemsCallback,
@@ -1829,7 +1890,7 @@ let Selectic$1 = class Selectic extends Vue {
             h(MainInput, { store: this.store, id: id, on: {
                     'item:click': (id) => this.$emit('item:click', id),
                 }, ref: "mainInput" }),
-            this.isFocused && (h(ExtendedList$1, { store: this.store, offsetTop: this.offsetTop, offsetLeft: this.offsetLeft, width: this.width, ref: "extendedList" }))));
+            this.isFocused && (h(ExtendedList$1, { store: this.store, offsetTop: this.offsetTop, offsetBottom: this.offsetBottom, offsetLeft: this.offsetLeft, width: this.width, ref: "extendedList" }))));
     }
 };
 __decorate$5([
