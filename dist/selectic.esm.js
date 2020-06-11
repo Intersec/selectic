@@ -1413,6 +1413,7 @@ let ExtendedList = class ExtendedList extends Vue {
         /* {{{ data */
         this.topGroup = ' ';
         this.listHeight = 120;
+        this.listWidth = 200;
     }
     /* }}} */
     /* {{{ computed */
@@ -1477,8 +1478,8 @@ let ExtendedList = class ExtendedList extends Vue {
     get bestPosition() {
         const windowHeight = window.innerHeight;
         const listHeight = this.listHeight;
-        const inputTop = this.offsetBottom;
-        const inputBottom = this.offsetTop;
+        const inputTop = this.elementTop;
+        const inputBottom = this.elementBottom;
         if (inputBottom + listHeight <= windowHeight) {
             return 'bottom';
         }
@@ -1488,32 +1489,53 @@ let ExtendedList = class ExtendedList extends Vue {
         /* There are not enough space neither at bottom nor at top */
         return (windowHeight - inputBottom) < inputTop ? 'top' : 'bottom';
     }
+    get horizontalStyle() {
+        const windowWidth = window.innerWidth;
+        const listWidth = this.listWidth;
+        const inputLeft = this.elementLeft;
+        const inputRight = this.elementRight;
+        /* Check if list can extend on right */
+        if (inputLeft + listWidth <= windowWidth) {
+            return `left: ${inputLeft}px;`;
+        }
+        /* Check if list can extend on left */
+        if (listWidth < inputRight) {
+            return `left: ${inputRight}px; transform: translateX(-100%);`;
+        }
+        /* There are not enough space neither at left nor at right.
+         * So do not extend the list. */
+        return `left: ${inputLeft}px; min-width: unset;`;
+    }
     get positionStyle() {
         let listPosition = this.store.state.listPosition;
+        const horizontalStyle = this.horizontalStyle;
         if (listPosition === 'auto') {
             listPosition = this.bestPosition;
         }
         if (listPosition === 'top') {
+            const transform = horizontalStyle.includes('transform')
+                ? 'transform: translateX(-100%) translateY(-100%);'
+                : 'transform: translateY(-100%);';
             return `
-                top: ${this.offsetBottom}px;
-                left: ${this.offsetLeft}px;
+                top: ${this.elementTop}px;
+                ${horizontalStyle}
                 width: ${this.width}px;
-                transform: translateY(-100%);
+                ${transform}
             `;
         }
         return `
-            top: ${this.offsetTop}px;
-            left: ${this.offsetLeft}px;
+            top: ${this.elementBottom}px;
+            ${horizontalStyle}
             width: ${this.width}px;
         `;
     }
     /* }}} */
     /* {{{ watch */
     onFilteredOptionsChange() {
-        Vue.nextTick(this.computeListHeight, this);
+        Vue.nextTick(this.computeListSize, this);
     }
     onHideFilterChange() {
-        Vue.nextTick(this.computeListHeight, this);
+        Vue.nextTick(this.computeListSize, this);
     }
     /* }}} */
     /* {{{ methods */
@@ -1522,16 +1544,17 @@ let ExtendedList = class ExtendedList extends Vue {
         const groupName = group || ' ';
         this.topGroup = groupName;
     }
-    computeListHeight() {
+    computeListSize() {
         const box = this.$el.getBoundingClientRect();
         this.listHeight = box.height;
+        this.listWidth = box.width;
     }
     /* }}} */
     /* {{{ Life cycles */
     mounted() {
         document.body.appendChild(this.$el);
         document.body.addEventListener('keydown', this.onKeyDown);
-        this.computeListHeight();
+        this.computeListSize();
     }
     destroyed() {
         document.body.removeEventListener('keydown', this.onKeyDown);
@@ -1563,13 +1586,16 @@ __decorate$4([
 ], ExtendedList.prototype, "store", void 0);
 __decorate$4([
     Prop({ default: 0 })
-], ExtendedList.prototype, "offsetLeft", void 0);
+], ExtendedList.prototype, "elementLeft", void 0);
 __decorate$4([
     Prop({ default: 0 })
-], ExtendedList.prototype, "offsetTop", void 0);
+], ExtendedList.prototype, "elementRight", void 0);
 __decorate$4([
     Prop({ default: 0 })
-], ExtendedList.prototype, "offsetBottom", void 0);
+], ExtendedList.prototype, "elementTop", void 0);
+__decorate$4([
+    Prop({ default: 0 })
+], ExtendedList.prototype, "elementBottom", void 0);
 __decorate$4([
     Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
@@ -1604,9 +1630,10 @@ let Selectic$1 = class Selectic extends Vue {
         super(...arguments);
         /* }}} */
         /* {{{ data */
-        this.offsetTop = 0;
-        this.offsetBottom = 0;
-        this.offsetLeft = 0;
+        this.elementBottom = 0;
+        this.elementTop = 0;
+        this.elementLeft = 0;
+        this.elementRight = 0;
         this.width = 0;
         this.store = {};
     }
@@ -1728,14 +1755,14 @@ let Selectic$1 = class Selectic extends Vue {
             _elementsListeners.push(window);
         }
         const box = mainEl.getBoundingClientRect();
-        /* To put the list at bottom of the input */
-        const offsetTop = box.bottom;
-        const offsetLeft = box.left;
-        /* To put the list at top of the input */
-        const offsetBottom = box.top;
-        this.offsetLeft = offsetLeft;
-        this.offsetTop = offsetTop;
-        this.offsetBottom = offsetBottom;
+        const elementBottom = box.bottom;
+        const elementTop = box.top;
+        const elementLeft = box.left;
+        const elementRight = box.right;
+        this.elementLeft = elementLeft;
+        this.elementRight = elementRight;
+        this.elementBottom = elementBottom;
+        this.elementTop = elementTop;
     }
     removeListeners() {
         this._elementsListeners.forEach((el) => {
@@ -1890,7 +1917,7 @@ let Selectic$1 = class Selectic extends Vue {
             h(MainInput, { store: this.store, id: id, on: {
                     'item:click': (id) => this.$emit('item:click', id),
                 }, ref: "mainInput" }),
-            this.isFocused && (h(ExtendedList$1, { store: this.store, offsetTop: this.offsetTop, offsetBottom: this.offsetBottom, offsetLeft: this.offsetLeft, width: this.width, ref: "extendedList" }))));
+            this.isFocused && (h(ExtendedList$1, { store: this.store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
     }
 };
 __decorate$5([

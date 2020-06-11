@@ -51,9 +51,10 @@ export default class Selectic extends Vue<Props> {
     title?: string;
     texts?: PartialMessages;
     params: ParamProps;
-    offsetTop: number;
-    offsetBottom: number;
-    offsetLeft: number;
+    elementBottom: number;
+    elementTop: number;
+    elementLeft: number;
+    elementRight: number;
     width: number;
     private store;
     private _elementsListeners;
