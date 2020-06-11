@@ -214,6 +214,7 @@ export default class Selectic extends Vue<Props> {
     public elementBottom = 0;
     public elementTop = 0;
     public elementLeft = 0;
+    public elementRight = 0;
     public width = 0;
 
     private store: Store = {} as Store;
@@ -374,8 +375,10 @@ export default class Selectic extends Vue<Props> {
         const elementBottom = box.bottom;
         const elementTop = box.top;
         const elementLeft = box.left;
+        const elementRight = box.right;
 
         this.elementLeft = elementLeft;
+        this.elementRight = elementRight;
         this.elementBottom = elementBottom;
         this.elementTop = elementTop;
     }
@@ -602,6 +605,7 @@ export default class Selectic extends Vue<Props> {
                     elementBottom={this.elementBottom}
                     elementTop={this.elementTop}
                     elementLeft={this.elementLeft}
+                    elementRight={this.elementRight}
                     width={this.width}
                     ref="extendedList"
                 />

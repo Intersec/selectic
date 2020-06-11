@@ -17,6 +17,7 @@ export interface Props {
     elementTop: number;
     elementBottom: number;
     elementLeft: number;
+    elementRight: number;
 }
 
 @Component
@@ -28,6 +29,9 @@ export default class ExtendedList extends Vue<Props> {
 
     @Prop({default: 0})
     private elementLeft: number;
+
+    @Prop({default: 0})
+    private elementRight: number;
 
     @Prop({default: 0})
     private elementTop: number;
@@ -43,6 +47,7 @@ export default class ExtendedList extends Vue<Props> {
 
     private topGroup = ' ';
     private listHeight = 120;
+    private listWidth = 200;
 
     /* }}} */
     /* {{{ computed */
@@ -135,25 +140,51 @@ export default class ExtendedList extends Vue<Props> {
         return (windowHeight - inputBottom) < inputTop ? 'top' : 'bottom';
     }
 
+    get horizontalStyle(): string {
+        const windowWidth = window.innerWidth;
+        const listWidth = this.listWidth;
+        const inputLeft = this.elementLeft;
+        const inputRight = this.elementRight;
+
+        /* Check if list can extend on right */
+        if (inputLeft + listWidth <= windowWidth) {
+            return `left: ${inputLeft}px;`;
+        }
+
+        /* Check if list can extend on left */
+        if (listWidth < inputRight) {
+            return `left: ${inputRight}px; transform: translateX(-100%);`;
+        }
+
+        /* There are not enough space neither at left nor at right.
+         * So do not extend the list. */
+        return `left: ${inputLeft}px; min-width: unset;`;
+    }
+
     get positionStyle() {
         let listPosition = this.store.state.listPosition;
+        const horizontalStyle = this.horizontalStyle;
 
         if (listPosition === 'auto') {
             listPosition = this.bestPosition;
         }
 
         if (listPosition === 'top') {
+            const transform = horizontalStyle.includes('transform')
+                ? 'transform: translateX(-100%) translateY(-100%);'
+                : 'transform: translateY(-100%);';
+
             return `
                 top: ${this.elementTop}px;
-                left: ${this.elementLeft}px;
+                ${horizontalStyle}
                 width: ${this.width}px;
-                transform: translateY(-100%);
+                ${transform}
             `;
         }
 
         return `
             top: ${this.elementBottom}px;
-            left: ${this.elementLeft}px;
+            ${horizontalStyle}
             width: ${this.width}px;
         `;
     }
@@ -163,12 +194,12 @@ export default class ExtendedList extends Vue<Props> {
 
     @Watch('store.state.filteredOptions')
     protected onFilteredOptionsChange() {
-        Vue.nextTick(this.computeListHeight, this);
+        Vue.nextTick(this.computeListSize, this);
     }
 
     @Watch('store.state.hideFilter')
     protected onHideFilterChange() {
-        Vue.nextTick(this.computeListHeight, this);
+        Vue.nextTick(this.computeListSize, this);
     }
 
     /* }}} */
@@ -181,10 +212,11 @@ export default class ExtendedList extends Vue<Props> {
         this.topGroup = groupName;
     }
 
-    private computeListHeight() {
+    private computeListSize() {
         const box = this.$el.getBoundingClientRect();
 
         this.listHeight = box.height;
+        this.listWidth = box.width;
     }
 
     /* }}} */
@@ -193,7 +225,7 @@ export default class ExtendedList extends Vue<Props> {
     protected mounted() {
         document.body.appendChild(this.$el);
         document.body.addEventListener('keydown', this.onKeyDown);
-        this.computeListHeight();
+        this.computeListSize();
     }
 
     protected destroyed() {
