@@ -11,10 +11,12 @@ import List from './List';
 
 export interface Props {
     store: Store;
-    offsetTop: number;
-    offsetBottom: number;
-    offsetLeft: number;
     width: number;
+
+    /* positions of the main element related to current window */
+    elementTop: number;
+    elementBottom: number;
+    elementLeft: number;
 }
 
 @Component
@@ -25,13 +27,13 @@ export default class ExtendedList extends Vue<Props> {
     private store: Store;
 
     @Prop({default: 0})
-    private offsetLeft: number;
+    private elementLeft: number;
 
     @Prop({default: 0})
-    private offsetTop: number;
+    private elementTop: number;
 
     @Prop({default: 0})
-    private offsetBottom: number;
+    private elementBottom: number;
 
     @Prop({default: 300})
     private width: number;
@@ -118,8 +120,8 @@ export default class ExtendedList extends Vue<Props> {
     get bestPosition(): 'top' | 'bottom' {
         const windowHeight = window.innerHeight;
         const listHeight = this.listHeight;
-        const inputTop = this.offsetBottom;
-        const inputBottom = this.offsetTop;
+        const inputTop = this.elementTop;
+        const inputBottom = this.elementBottom;
 
         if (inputBottom + listHeight <= windowHeight) {
             return 'bottom';
@@ -142,16 +144,16 @@ export default class ExtendedList extends Vue<Props> {
 
         if (listPosition === 'top') {
             return `
-                top: ${this.offsetBottom}px;
-                left: ${this.offsetLeft}px;
+                top: ${this.elementTop}px;
+                left: ${this.elementLeft}px;
                 width: ${this.width}px;
                 transform: translateY(-100%);
             `;
         }
 
         return `
-            top: ${this.offsetTop}px;
-            left: ${this.offsetLeft}px;
+            top: ${this.elementBottom}px;
+            left: ${this.elementLeft}px;
             width: ${this.width}px;
         `;
     }

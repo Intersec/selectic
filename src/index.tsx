@@ -211,9 +211,9 @@ export default class Selectic extends Vue<Props> {
     /* }}} */
     /* {{{ data */
 
-    public offsetTop = 0;
-    public offsetBottom = 0;
-    public offsetLeft = 0;
+    public elementBottom = 0;
+    public elementTop = 0;
+    public elementLeft = 0;
     public width = 0;
 
     private store: Store = {} as Store;
@@ -370,16 +370,14 @@ export default class Selectic extends Vue<Props> {
         }
 
         const box = mainEl.getBoundingClientRect();
-        /* To put the list at bottom of the input */
-        const offsetTop = box.bottom;
-        const offsetLeft = box.left;
 
-        /* To put the list at top of the input */
-        const offsetBottom = box.top;
+        const elementBottom = box.bottom;
+        const elementTop = box.top;
+        const elementLeft = box.left;
 
-        this.offsetLeft = offsetLeft;
-        this.offsetTop = offsetTop;
-        this.offsetBottom = offsetBottom;
+        this.elementLeft = elementLeft;
+        this.elementBottom = elementBottom;
+        this.elementTop = elementTop;
     }
 
     private removeListeners() {
@@ -601,9 +599,9 @@ export default class Selectic extends Vue<Props> {
               {this.isFocused && (
                 <ExtendedList
                     store={this.store}
-                    offsetTop={this.offsetTop}
-                    offsetBottom={this.offsetBottom}
-                    offsetLeft={this.offsetLeft}
+                    elementBottom={this.elementBottom}
+                    elementTop={this.elementTop}
+                    elementLeft={this.elementLeft}
                     width={this.width}
                     ref="extendedList"
                 />
