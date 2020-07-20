@@ -250,6 +250,7 @@ interface Messages {
     searchPlaceholder: string;
     searching: string;
     cannotSelectAllSearchedItems: string;
+    cannotSelectAllRevertItems: string;
     selectAll: string;
     excludeResult: string;
     reverseSelection: string;
@@ -289,6 +290,7 @@ let messages: Messages = {
     searchPlaceholder: 'Search',
     searching: 'Searching',
     cannotSelectAllSearchedItems: 'Cannot select all items: too much items in the search result.',
+    cannotSelectAllRevertItems: 'Cannot select all items: some items are not fetched yet.',
     selectAll: 'Select all',
     excludeResult: 'Invert selection',
     reverseSelection: 'The displayed elements are those not selected.',
@@ -399,6 +401,7 @@ export default class SelecticStore extends Vue<Props> {
 
     /* Do not need reactivity */
     private requestId: number;
+    private cacheRequest: Map<string, Promise<OptionValue[]>>;
 
     /* }}} */
     /* {{{ computed */
@@ -508,7 +511,21 @@ export default class SelecticStore extends Vue<Props> {
         const itemsToFetch: OptionId[] = ids.filter((id) => !this.hasItemInStore(id));
 
         if (itemsToFetch.length && typeof this.getItemsCallback === 'function') {
-            const items = await this.getItemsCallback(itemsToFetch);
+            const cacheRequest = this.cacheRequest;
+            const requestId = itemsToFetch.toString();
+            let promise: Promise<OptionValue[]>;
+
+            if (cacheRequest.has(requestId)) {
+                promise = cacheRequest.get(requestId)!;
+            } else {
+                promise = this.getItemsCallback(itemsToFetch);
+                cacheRequest.set(requestId, promise);
+                promise.then(() => {
+                    cacheRequest.delete(requestId);
+                });
+            }
+
+            const items = await promise;
 
             for (const item of items) {
                 if (item) {
@@ -604,6 +621,11 @@ export default class SelecticStore extends Vue<Props> {
                 return;
             }
 
+            if (!this.state.allowRevert) {
+                this.state.status.errorMessage = this.labels.cannotSelectAllRevertItems;
+                return;
+            }
+
             const value = this.state.internalValue as StrictOptionId[];
             const selectionIsExcluded = !!value.length || !this.state.selectionIsExcluded;
             this.state.selectionIsExcluded = selectionIsExcluded;
@@ -677,13 +699,14 @@ export default class SelecticStore extends Vue<Props> {
         return id === null || allOptions.some((option) => option.id === id);
     }
 
-    private assertCorrectValue() {
+    private assertCorrectValue(forceStrict = false) {
         const state = this.state;
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
-        const checkStrict = state.strictValue && this.hasFetchedAllItems;
+        const checkStrict = state.strictValue;
         let newValue = internalValue;
+        const isPartial = this.isPartial;
 
         if (isMultiple) {
             if (!Array.isArray(internalValue)) {
@@ -712,12 +735,31 @@ export default class SelecticStore extends Vue<Props> {
         }
 
         if (checkStrict) {
+            let isDifferent = false;
+            let filteredValue: SelectedValue;
+
             if (isMultiple) {
-                newValue = (newValue  as StrictOptionId[])
-                    .filter((value) => this.hasValue(value));
+                filteredValue = (newValue as StrictOptionId[])
+                .filter((value) => this.hasItemInStore(value));
+                isDifferent = filteredValue.length !== (newValue as StrictOptionId[]).length;
+
+                if (isDifferent && isPartial && !forceStrict) {
+                    this.getItems(newValue as StrictOptionId[]).then(() => this.assertCorrectValue(true));
+                    return;
+                }
             } else
-            if (!this.hasValue(newValue as OptionId)) {
-                newValue = null;
+            if (!this.hasItemInStore(newValue as OptionId)) {
+                filteredValue = null;
+                isDifferent = true;
+
+                if (isPartial && !forceStrict) {
+                    this.getItems([newValue as OptionId]).then(() => this.assertCorrectValue(true));
+                    return;
+                }
+            }
+
+            if (isDifferent) {
+                newValue = filteredValue!;
             }
         }
 
@@ -1163,6 +1205,7 @@ export default class SelecticStore extends Vue<Props> {
 
         /* set initial value for non reactive attribute */
         this.requestId = 0;
+        this.cacheRequest = new Map();
 
         this.state = Object.assign(this.state, this.params, {
             internalValue: value,

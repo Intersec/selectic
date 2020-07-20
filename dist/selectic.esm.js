@@ -33,6 +33,7 @@ let messages = {
     searchPlaceholder: 'Search',
     searching: 'Searching',
     cannotSelectAllSearchedItems: 'Cannot select all items: too much items in the search result.',
+    cannotSelectAllRevertItems: 'Cannot select all items: some items are not fetched yet.',
     selectAll: 'Select all',
     excludeResult: 'Invert selection',
     reverseSelection: 'The displayed elements are those not selected.',
@@ -192,7 +193,20 @@ let SelecticStore = class SelecticStore extends Vue {
     async getItems(ids) {
         const itemsToFetch = ids.filter((id) => !this.hasItemInStore(id));
         if (itemsToFetch.length && typeof this.getItemsCallback === 'function') {
-            const items = await this.getItemsCallback(itemsToFetch);
+            const cacheRequest = this.cacheRequest;
+            const requestId = itemsToFetch.toString();
+            let promise;
+            if (cacheRequest.has(requestId)) {
+                promise = cacheRequest.get(requestId);
+            }
+            else {
+                promise = this.getItemsCallback(itemsToFetch);
+                cacheRequest.set(requestId, promise);
+                promise.then(() => {
+                    cacheRequest.delete(requestId);
+                });
+            }
+            const items = await promise;
             for (const item of items) {
                 if (item) {
                     this.cacheItem.set(item.id, item);
@@ -272,6 +286,10 @@ let SelecticStore = class SelecticStore extends Vue {
                 this.state.status.errorMessage = this.labels.cannotSelectAllSearchedItems;
                 return;
             }
+            if (!this.state.allowRevert) {
+                this.state.status.errorMessage = this.labels.cannotSelectAllRevertItems;
+                return;
+            }
             const value = this.state.internalValue;
             const selectionIsExcluded = !!value.length || !this.state.selectionIsExcluded;
             this.state.selectionIsExcluded = selectionIsExcluded;
@@ -329,13 +347,14 @@ let SelecticStore = class SelecticStore extends Vue {
         const allOptions = this.state.allOptions;
         return id === null || allOptions.some((option) => option.id === id);
     }
-    assertCorrectValue() {
+    assertCorrectValue(forceStrict = false) {
         const state = this.state;
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
-        const checkStrict = state.strictValue && this.hasFetchedAllItems;
+        const checkStrict = state.strictValue;
         let newValue = internalValue;
+        const isPartial = this.isPartial;
         if (isMultiple) {
             if (!Array.isArray(internalValue)) {
                 newValue = internalValue === null ? [] : [internalValue];
@@ -359,12 +378,27 @@ let SelecticStore = class SelecticStore extends Vue {
             state.selectionIsExcluded = false;
         }
         if (checkStrict) {
+            let isDifferent = false;
+            let filteredValue;
             if (isMultiple) {
-                newValue = newValue
-                    .filter((value) => this.hasValue(value));
+                filteredValue = newValue
+                    .filter((value) => this.hasItemInStore(value));
+                isDifferent = filteredValue.length !== newValue.length;
+                if (isDifferent && isPartial && !forceStrict) {
+                    this.getItems(newValue).then(() => this.assertCorrectValue(true));
+                    return;
+                }
             }
-            else if (!this.hasValue(newValue)) {
-                newValue = null;
+            else if (!this.hasItemInStore(newValue)) {
+                filteredValue = null;
+                isDifferent = true;
+                if (isPartial && !forceStrict) {
+                    this.getItems([newValue]).then(() => this.assertCorrectValue(true));
+                    return;
+                }
+            }
+            if (isDifferent) {
+                newValue = filteredValue;
             }
         }
         state.internalValue = newValue;
@@ -718,6 +752,7 @@ let SelecticStore = class SelecticStore extends Vue {
         const value = typeof this.value === 'undefined' ? null : this.value;
         /* set initial value for non reactive attribute */
         this.requestId = 0;
+        this.cacheRequest = new Map();
         this.state = Object.assign(this.state, this.params, {
             internalValue: value,
             selectionIsExcluded: this.selectionIsExcluded,

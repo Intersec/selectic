@@ -96,6 +96,7 @@ interface Messages {
     searchPlaceholder: string;
     searching: string;
     cannotSelectAllSearchedItems: string;
+    cannotSelectAllRevertItems: string;
     selectAll: string;
     excludeResult: string;
     reverseSelection: string;
@@ -128,6 +129,7 @@ export default class SelecticStore extends Vue<Props> {
     private doNotUpdate;
     private cacheItem;
     private requestId;
+    private cacheRequest;
     get isPartial(): boolean;
     get hasAllItems(): boolean;
     get hasFetchedAllItems(): boolean;
