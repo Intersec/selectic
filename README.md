@@ -58,3 +58,16 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 ## Documentation
 
 [Read the documentation](./doc/main.md) to know how to configure Selectic and all its possibilities.
+
+## Tests
+
+First build all files:
+```console
+$ npm run build
+```
+
+Run unitary tests:
+```console
+$ npm run test
+```
+

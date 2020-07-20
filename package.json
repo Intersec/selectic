@@ -28,13 +28,15 @@
     "build": "npm run build:ts && npm run build:bundle",
     "build:ts": "tsc -p .",
     "build:bundle": "rollup -c",
-    "pack": "npm run build && npm pack"
+    "pack": "npm run build && npm pack",
+    "test": "tape test/**/*.spec.js"
   },
   "dependencies": {
     "vtyx": "^2.3.0"
   },
   "devDependencies": {
     "rollup": "^2.21.0",
-    "typescript": "~3.9"
+    "typescript": "~3.9",
+    "tape": "^4.11.0"
   }
 }
