@@ -97,7 +97,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
                 hasChanged: false,
             },
         };
-        this.labels = messages;
+        this.labels = Object.assign({}, messages);
         /* used to avoid checking and updating table while doing batch stuff */
         this.doNotUpdate = false;
         this.cacheItem = new Map();

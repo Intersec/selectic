@@ -394,7 +394,7 @@ export default class SelecticStore extends Vue<Props> {
             hasChanged: false,
         },
     };
-    public labels = messages;
+    public labels = Object.assign({}, messages);
     /* used to avoid checking and updating table while doing batch stuff */
     private doNotUpdate = false;
     private cacheItem: Map<OptionId, OptionValue> = new Map();
