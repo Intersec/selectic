@@ -92,8 +92,12 @@ export default class Selectic extends Vue<Props> {
     protected onFocusChanged(): void;
     protected onInternalValueChange(): void;
     private checkFocus;
+    private extractFromNode;
+    private extractOptionFromNode;
+    private extractOptgroupFromNode;
     protected created(): void;
     protected mounted(): void;
+    protected beforeUpdate(): void;
     protected beforeDestroy(): void;
     protected render(): JSX.Element;
 }

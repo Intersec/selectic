@@ -541,6 +541,92 @@ export default class Selectic extends Vue<Props> {
         }, 0);
     }
 
+    private extractFromNode(node: Vue.VNode, text = ''): OptionValue {
+        function styleToString(staticStyle?: {[key: string]: string}): string | undefined {
+            if (!staticStyle) {
+                return;
+            }
+            let styles = [];
+            for (const [key, value] of Object.entries(staticStyle)) {
+                styles.push(`${key}: ${value}`);
+            }
+            return styles.join(';');
+        }
+
+        const domProps = node.data?.domProps;
+        const attrs = node.data?.attrs;
+        const id = domProps?.value ?? attrs?.value ?? attrs?.id ?? text;
+        const className = node.data?.staticClass;
+        const style = styleToString(node.data?.staticStyle);
+
+        const optVal: OptionValue = {
+            id,
+            text,
+            className,
+            style,
+        };
+
+        if (attrs) {
+            for (const [key, val] of Object.entries(attrs)) {
+                switch(key) {
+                    case 'title':
+                        optVal.title = val;
+                        break;
+                    case 'disabled':
+                        if (val === false) {
+                            optVal.disabled = false;
+                        } else {
+                            optVal.disabled = true;
+                        }
+                        break;
+                    case 'group':
+                        optVal.group = val;
+                        break;
+                    case 'icon':
+                        optVal.icon = val;
+                        break;
+                    case 'data':
+                        optVal.data = val;
+                        break;
+                    default:
+                        if (key.startsWith('data')) {
+                            if (typeof optVal.data !== 'object') {
+                                optVal.data = {};
+                            }
+                            optVal.data[key.slice(5)] = val;
+                        }
+                }
+            }
+        }
+
+        return optVal;
+    }
+
+    private extractOptionFromNode(node: Vue.VNode): OptionValue {
+        const children = node.children;
+        const text = (children && children[0].text || '').trim();
+
+        return this.extractFromNode(node, text);
+    }
+
+    private extractOptgroupFromNode(node: Vue.VNode): OptionValue {
+        const attrs = node.data?.attrs;
+        const children = node.children || [];
+        const text = attrs?.label || '';
+        const options: OptionValue[] = [];
+
+        for (const child of children) {
+            if (child.tag === 'option') {
+                options.push(this.extractOptionFromNode(child));
+            }
+        }
+
+        const opt = this.extractFromNode(node, text);
+        opt.options = options;
+
+        return opt;
+    }
+
     /* }}} */
     /* {{{ Life cycle */
 
@@ -581,6 +667,28 @@ export default class Selectic extends Vue<Props> {
 
     protected mounted() {
         setTimeout(() => this.computeOffset(), 0);
+    }
+
+    protected beforeUpdate() {
+        const elements = this.$slots.default;
+        if (!elements) {
+            this.store.childOptions = [];
+            return;
+        }
+        const options = [];
+
+        for (const node of elements) {
+            if (node.tag === 'option') {
+                const prop = this.extractOptionFromNode(node);
+                options.push(prop);
+            } else
+            if (node.tag === 'optgroup') {
+                const prop = this.extractOptgroupFromNode(node);
+                options.push(prop);
+            }
+        }
+
+        this.store.childOptions = options;
     }
 
     protected beforeDestroy() {

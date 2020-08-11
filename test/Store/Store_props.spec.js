@@ -221,6 +221,227 @@ tape.test('change props', (subT) => {
         });
     });
 
+    subT.test('"childOptions"', (sTest) => {
+        sTest.test('should change childOptions', async (t) => {
+            const propOptions = getOptions(15, 'alpha');
+            const store = new Store({ propsData: { childOptions: propOptions } });
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+
+            await _.nextVueTick(store);
+
+            t.is(store.state.allOptions.length, 15);
+
+            store.childOptions = getOptions(5, 'beta');
+
+            await _.nextVueTick(store);
+            const firstOption = store.state.filteredOptions[0];
+
+            t.is(store.state.allOptions.length, 5);
+            t.is(store.state.totalAllOptions, 5);
+            t.is(store.state.filteredOptions.length, 5);
+            t.is(store.state.totalFilteredOptions, 5);
+            t.is(store.state.internalValue, 0);
+            t.deepEqual(firstOption, {
+                id: 0,
+                text: 'beta0',
+                disabled: false,
+                selected: true,
+                isGroup: false,
+            });
+            t.is(store.state.status.errorMessage, '');
+            t.end();
+        });
+
+        sTest.test('should update selection', async (t) => {
+            const propOptions = getOptions(15, 'alpha');
+            const store = new Store({
+                propsData: {
+                    childOptions: propOptions,
+                    value: 7,
+                    params: {
+                        autoSelect: false,
+                        strictValue: false,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+
+            await _.nextVueTick(store);
+            t.is(store.state.selectedOptions.text, 'alpha7');
+
+            store.childOptions = getOptions(10, 'beta');
+            await _.deferPromise(_.nextVueTick(store));
+
+            t.is(store.state.selectedOptions.text, 'beta7');
+            t.end();
+        });
+
+        sTest.test('should disable the select when only one option is given', async (t) => {
+            const store = new Store({
+                propsData: {
+                    childOptions: getOptions(5, 'alpha'),
+                    params: {
+                        autoDisabled: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, false);
+            t.is(store.state.isOpen, true);
+
+            store.childOptions = getOptions(1, 'beta');
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+            t.end();
+        });
+
+        sTest.test('should enable the select when more options are given', async (t) => {
+            const store = new Store({
+                propsData: {
+                    childOptions: getOptions(1, 'alpha'),
+                    params: {
+                        autoDisabled: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.childOptions = getOptions(5, 'beta');
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, false);
+            t.is(store.state.isOpen, false);
+            t.end();
+        });
+
+        sTest.test('should disable the select when only one option is available for all sources', async (t) => {
+            const alphaOptions = getOptions(1, 'alpha');
+            const bravoOptions = getOptions(1, 'bravo');
+            const store = new Store({
+                propsData: {
+                    options: alphaOptions,
+                    childOptions: bravoOptions,
+                    params: {
+                        autoDisabled: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            /* options 1
+             * child 1
+             */
+            t.is(store.state.disabled, false);
+            t.is(store.state.isOpen, true);
+
+            /* options 1 disabled
+             * child 1
+             */
+            const charlyOptions = getOptions(1, 'charly');
+            charlyOptions[0].disabled = true;
+            store.options = charlyOptions;
+            await _.nextVueTick(store);
+
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.options = alphaOptions;
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            /* options 0
+             * child 1
+             */
+            store.options = getOptions(0, 'delta');
+            await _.nextVueTick(store);
+
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.options = alphaOptions;
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            /* options 1
+             * child 1 disabled
+             */
+            const echoOptions = getOptions(1, 'echo');
+            echoOptions[0].disabled = true;
+            store.childOptions = echoOptions;
+            await _.nextVueTick(store);
+
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.childOptions = bravoOptions;
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            /* options 1
+             * child 0
+             */
+            store.childOptions = getOptions(0, 'fox');
+            await _.nextVueTick(store);
+
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            t.end();
+        });
+
+        sTest.test('should not re-enable the select if disable is set', async (t) => {
+            const store = new Store({
+                propsData: {
+                    childOptions: getOptions(1, 'alpha'),
+                    disabled: true,
+                    params: {
+                        autoDisabled: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.childOptions = getOptions(5, 'beta');
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+            t.end();
+        });
+    });
+
     subT.test('should change "selectionIsExcluded"', async (t) => {
         const store = new Store({
             propsData: {

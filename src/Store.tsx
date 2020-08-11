@@ -138,11 +138,17 @@ export interface Props {
     /* List of options to display */
     options?: OptionProp[];
 
+    /* List of options to display from child elements */
+    childOptions?: OptionProp[];
+
     /* Define groups which will be used by items */
     groups?: GroupValue[];
 
     /* Overwrite default texts */
     texts?: PartialMessages;
+
+    /* Keep this component open if another Selectic component opens */
+    keepOpenWithOtherSelectic?: boolean;
 
     /* Selectic configuration */
     params?: SelecticStoreStateParams;
@@ -353,6 +359,9 @@ export default class SelecticStore extends Vue<Props> {
     @Prop()
     public options?: OptionProp[];
 
+    @Prop()
+    public childOptions?: OptionValue[];
+
     @Prop({default: () => []})
     public groups: GroupValue[];
 
@@ -367,6 +376,9 @@ export default class SelecticStore extends Vue<Props> {
 
     @Prop()
     private getItemsCallback?: GetCallback;
+
+    @Prop({ default: false })
+    private keepOpenWithOtherSelectic: boolean;
 
     /* }}} */
     /* {{{ data */
@@ -493,6 +505,9 @@ export default class SelecticStore extends Vue<Props> {
             }
             break;
           case 'isOpen':
+            if (closePreviousSelectic === this.closeSelectic) {
+                closePreviousSelectic = undefined;
+            }
             if (value) {
                 if (this.state.disabled) {
                     this.commit('isOpen', false);
@@ -506,10 +521,9 @@ export default class SelecticStore extends Vue<Props> {
                 if (typeof closePreviousSelectic === 'function') {
                     closePreviousSelectic();
                 }
-                closePreviousSelectic = this.closeSelectic;
-            } else
-            if (closePreviousSelectic === this.closeSelectic) {
-                closePreviousSelectic = undefined;
+                if (!this.keepOpenWithOtherSelectic) {
+                    closePreviousSelectic = this.closeSelectic;
+                }
             }
             break;
           case 'offsetItem':
@@ -738,7 +752,22 @@ export default class SelecticStore extends Vue<Props> {
     private hasValue(id: OptionId): boolean {
         const allOptions = this.state.allOptions;
 
-        return id === null || allOptions.some((option) => option.id === id);
+        if (id === null) {
+            return true;
+        }
+
+        return !!this.getValue(id);
+    }
+
+    private getValue(id: OptionId): OptionValue | undefined {
+        function findId(option: OptionValue): boolean {
+            return option.id === id;
+        }
+
+        return this.state.filteredOptions.find(findId) ||
+            this.state.dynOptions.find(findId) ||
+            this.getListOptions().find(findId) ||
+            this.getElementOptions().find(findId);
     }
 
     private assertCorrectValue(forceStrict = false) {
@@ -821,18 +850,18 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     /* XXX: This is not a computed property to avoid consuming more memory */
-    private getStaticOptions(): OptionValue[] {
+    private getListOptions(): OptionValue[] {
         const options = this.options;
-        const staticOptions: OptionValue[] = [];
+        const listOptions: OptionValue[] = [];
 
         if (!Array.isArray(options)) {
-            return staticOptions;
+            return listOptions;
         }
 
         options.forEach((option) => {
             /* manage simple string */
             if (typeof option === 'string') {
-                staticOptions.push({
+                listOptions.push({
                     id: option,
                     text: option,
                 });
@@ -840,7 +869,7 @@ export default class SelecticStore extends Vue<Props> {
             }
 
             const group = option.group;
-            const options = option.options;
+            const subOptions = option.options;
 
             /* check for groups */
             if (group && !this.state.groups.has(group)) {
@@ -848,41 +877,80 @@ export default class SelecticStore extends Vue<Props> {
             }
 
             /* check for sub options */
-            if (options) {
+            if (subOptions) {
                 const groupId = option.id as StrictOptionId;
                 this.state.groups.set(groupId, option.text);
 
-                options.forEach((subOpt) => {
+                subOptions.forEach((subOpt) => {
                     subOpt.group = groupId;
                 });
-                staticOptions.push(...options);
+                listOptions.push(...subOptions);
                 return;
             }
 
-            staticOptions.push(option);
+            listOptions.push(option);
         });
 
-        return staticOptions;
+        return listOptions;
+    }
+
+    /* XXX: This is not a computed property to avoid consuming more memory */
+    private getElementOptions(): OptionValue[] {
+        const options = this.childOptions;
+        const childOptions: OptionValue[] = [];
+
+        if (!Array.isArray(options)) {
+            return childOptions;
+        }
+
+        options.forEach((option) => {
+            const group = option.group;
+            const subOptions = option.options;
+
+            /* check for groups */
+            if (group && !this.state.groups.has(group)) {
+                this.state.groups.set(group, String(group));
+            }
+
+            /* check for sub options */
+            if (subOptions) {
+                const groupId = option.id as StrictOptionId;
+                this.state.groups.set(groupId, option.text);
+
+                subOptions.forEach((subOpt) => {
+                    subOpt.group = groupId;
+                });
+                childOptions.push(...subOptions);
+                return;
+            }
+
+            childOptions.push(option);
+        });
+
+        return childOptions;
     }
 
     private buildAllOptions(keepFetched = false) {
         const allOptions: OptionValue[] = [];
-        let staticOptions: OptionValue[] = [];
+        let listOptions: OptionValue[] = [];
+        let elementOptions: OptionValue[] = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length: number = Infinity;
 
         const arrayFromOrder = (orderValue: OptionBehaviorOrder): OptionValue[] => {
             switch(orderValue) {
-                case 'O': return staticOptions;
+                case 'O': return listOptions;
                 case 'D': return this.state.dynOptions;
+                case 'E': return elementOptions;
             }
             return [];
         };
 
         const lengthFromOrder = (orderValue: OptionBehaviorOrder): number => {
             switch(orderValue) {
-                case 'O': return staticOptions.length;
+                case 'O': return listOptions.length;
                 case 'D': return this.state.totalDynOptions;
+                case 'E': return elementOptions.length;
             }
             return 0;
         };
@@ -896,7 +964,8 @@ export default class SelecticStore extends Vue<Props> {
             }
         }
 
-        staticOptions = this.getStaticOptions();
+        listOptions = this.getListOptions();
+        elementOptions = this.getElementOptions();
 
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0)!;
@@ -1185,10 +1254,10 @@ export default class SelecticStore extends Vue<Props> {
 
             switch (order) {
                 case 'O':
-                    options = this.filterOptions(this.getStaticOptions(), search);
+                    options = this.filterOptions(this.getListOptions(), search);
                     break;
                 case 'E':
-                    /* TODO */
+                    options = this.filterOptions(this.getElementOptions(), search);
                     break;
             }
             this.state.filteredOptions.push(...options);
@@ -1211,10 +1280,7 @@ export default class SelecticStore extends Vue<Props> {
         let item: OptionValue | undefined = this.cacheItem.get(id);
 
         if (!item) {
-            item = this.state.filteredOptions.find((option) => option.id === id);
-            if (!item) {
-                item = this.state.allOptions.find((option) => option.id === id);
-            }
+            item = this.getValue(id);
 
             if (item) {
                 this.cacheItem.set(item.id, item);
@@ -1323,11 +1389,12 @@ export default class SelecticStore extends Vue<Props> {
         const state = this.state;
         const doNotCheck = this.disabled || this.isPartial || !state.autoDisabled;
 
-        if (doNotCheck) {
+        if (doNotCheck || !this.hasFetchedAllItems) {
             return;
         }
 
-        const nb = state.totalAllOptions;
+        const enabledOptions = state.allOptions.filter((opt) => !opt.disabled);
+        const nb = enabledOptions.length;
         const value = state.internalValue;
         const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
         const isEmpty = nb === 0;
@@ -1361,6 +1428,14 @@ export default class SelecticStore extends Vue<Props> {
 
     @Watch('options')
     protected onOptionsChange() {
+        this.cacheItem.clear();
+        this.buildAllOptions();
+        this.assertCorrectValue();
+        this.buildSelectedOptions();
+    }
+
+    @Watch('childOptions')
+    protected onChildOptionsChange() {
         this.cacheItem.clear();
         this.buildAllOptions();
         this.assertCorrectValue();

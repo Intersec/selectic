@@ -38,6 +38,7 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 * Build select from list of item (either string array or object array).
 * Can load dynamically list from a server and the list can be paginate (with a
   cache system to avoid reloading previous requests).
+* Can add options from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way.
 * Supports basic Select properties like `multiple`, `disabled`, `title`
 * Supports group element (equivalent of optGroup), even for dynamic list.
 * Supports `placeholder` to display a default text when there is no selection.

@@ -54,8 +54,10 @@ export interface Props {
     selectionIsExcluded?: boolean;
     disabled?: boolean;
     options?: OptionProp[];
+    childOptions?: OptionProp[];
     groups?: GroupValue[];
     texts?: PartialMessages;
+    keepOpenWithOtherSelectic?: boolean;
     params?: SelecticStoreStateParams;
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
@@ -125,11 +127,13 @@ export default class SelecticStore extends Vue<Props> {
     selectionIsExcluded: boolean;
     disabled: boolean;
     options?: OptionProp[];
+    childOptions?: OptionValue[];
     groups: GroupValue[];
     texts?: PartialMessages;
     private params?;
     private fetchCallback?;
     private getItemsCallback?;
+    private keepOpenWithOtherSelectic;
     itemsPerPage: number;
     state: SelecticStoreState;
     labels: Messages;
@@ -155,10 +159,12 @@ export default class SelecticStore extends Vue<Props> {
     changeGroups(groups: GroupValue[]): void;
     changeTexts(texts: PartialMessages): void;
     private hasValue;
+    private getValue;
     private assertCorrectValue;
     private updateFilteredOptions;
     private addGroups;
-    private getStaticOptions;
+    private getListOptions;
+    private getElementOptions;
     private buildAllOptions;
     private buildFilteredOptions;
     private buildSelectedOptions;
@@ -175,6 +181,7 @@ export default class SelecticStore extends Vue<Props> {
     private checkAutoDisabled;
     private checkHideFilter;
     protected onOptionsChange(): void;
+    protected onChildOptionsChange(): void;
     protected onValueChange(): void;
     protected onSelectionExcludedChange(): void;
     protected onDisabledChange(): void;

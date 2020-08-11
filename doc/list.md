@@ -67,3 +67,52 @@ const items = [{
     options={items}
 />
 ```
+
+# Inner elements
+
+Another way to create a list is to write elements as child of Selectic.
+
+The child elements should be `<option>` or `<optgroup>` elements;
+
+These elements will be converted into objects described above.
+
+Element properties:
+
+* **id** or **value**: will set the **id** attribute. Be careful the type will be only string. If both _value_ and _id_ are set, _value_ is the one which will be used.
+* **title**: will set the **title** attribute.
+* **disabled**: will set the **disabled** attribute.
+* **class**: will set the **className** attribute.
+* **style**: will set the **style** attribute.
+* any **data-**: will set the **data** atribute.
+* Inner text will set the **text** attribute.
+* **label** _(only for optgroup)_: will set the **text** attribute.
+
+```html
+<selectic>
+    <option value="1">
+        item1
+    </option>
+    <option value="2" disabled>
+        not available yet
+    </option>
+    <option value="3" style="background-color: red">
+        the red option
+    </option>
+    <optgroup id="group1" label="some amount">
+        <option value="amount1">
+            1
+        </option>
+        <option value="amount2">
+            10
+        </option>
+        <option value="amount3">
+            100
+        </option>
+    </optgroup>
+</selectic>
+```
+If options are set both by options attribute and by inner elements,
+the inner elements are added first and then the one described in
+options attribute.
+
+To change this behavior wath the **optionBehavior** property of the [params](params.md) attribute.
