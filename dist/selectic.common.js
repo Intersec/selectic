@@ -48,6 +48,7 @@ let messages = {
     wrongFormattedData: 'The data fetched is not correctly formatted.',
     moreSelectedItem: '+1 other',
     moreSelectedItems: '+%d others',
+    unknownPropertyValue: 'property "%s" has incorrect values.',
 };
 let closePreviousSelectic;
 /* {{{ Static */
@@ -63,8 +64,6 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         /* {{{ data */
         /* Number of items displayed in a page (before scrolling) */
         this.itemsPerPage = 10;
-        /* }}} */
-        /* {{{ data */
         this.state = {
             multiple: false,
             disabled: false,
@@ -81,15 +80,19 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             searchText: '',
             selectionIsExcluded: false,
             allOptions: [],
+            dynOptions: [],
             filteredOptions: [],
             selectedOptions: null,
             totalAllOptions: Infinity,
+            totalDynOptions: Infinity,
             totalFilteredOptions: Infinity,
             groups: new Map(),
             offsetItem: 0,
             activeItemIdx: -1,
             pageSize: 100,
             listPosition: 'auto',
+            optionBehaviorOperation: 'sort',
+            optionBehaviorOrder: ['O', 'D', 'E'],
             status: {
                 searching: false,
                 errorMessage: '',
@@ -101,6 +104,8 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         /* used to avoid checking and updating table while doing batch stuff */
         this.doNotUpdate = false;
         this.cacheItem = new Map();
+        this.activeOrder = 'D';
+        this.dynOffset = 0;
         /* }}} */
     }
     /* }}} */
@@ -109,10 +114,13 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
     get marginSize() {
         return this.state.pageSize / 2;
     }
-    /* }}} */
-    /* {{{ computed */
     get isPartial() {
-        return typeof this.fetchCallback === 'function';
+        const state = this.state;
+        let isPartial = typeof this.fetchCallback === 'function';
+        if (isPartial && state.optionBehaviorOperation === 'force' && this.activeOrder !== 'D') {
+            isPartial = false;
+        }
+        return isPartial;
     }
     get hasAllItems() {
         const nbItems = this.state.totalFilteredOptions + this.state.groups.size;
@@ -120,7 +128,10 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
     }
     get hasFetchedAllItems() {
         const state = this.state;
-        return state.allOptions.length === state.totalAllOptions;
+        if (!this.isPartial) {
+            return true;
+        }
+        return state.dynOptions.length === state.totalDynOptions;
     }
     get closeSelectic() {
         return () => this.commit('isOpen', false);
@@ -140,7 +151,12 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
                 this.state.activeItemIdx = -1;
                 this.state.filteredOptions = [];
                 this.state.totalFilteredOptions = Infinity;
-                this.buildFilteredOptions();
+                if (value) {
+                    this.buildFilteredOptions();
+                }
+                else {
+                    this.buildAllOptions(true);
+                }
                 break;
             case 'isOpen':
                 if (value) {
@@ -320,6 +336,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         this.cacheItem.clear();
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
+        this.state.totalDynOptions = total;
         this.state.filteredOptions = [];
         this.state.totalFilteredOptions = Infinity;
         this.state.status.errorMessage = '';
@@ -417,43 +434,108 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             this.state.groups.set(group.id, group.text);
         });
     }
-    buildAllOptions() {
-        const allOptions = [];
-        if (Array.isArray(this.options)) {
-            this.options.forEach((option) => {
-                /* manage simple string */
-                if (typeof option === 'string') {
-                    allOptions.push({
-                        id: option,
-                        text: option,
-                    });
-                    return;
-                }
-                const group = option.group;
-                const options = option.options;
-                /* check for groups */
-                if (group && !this.state.groups.has(group)) {
-                    this.state.groups.set(group, String(group));
-                }
-                /* check for sub options */
-                if (options) {
-                    const groupId = option.id;
-                    this.state.groups.set(groupId, option.text);
-                    options.forEach((subOpt) => {
-                        subOpt.group = groupId;
-                    });
-                    allOptions.push(...options);
-                    return;
-                }
-                allOptions.push(option);
-            });
+    /* XXX: This is not a computed property to avoid consuming more memory */
+    getStaticOptions() {
+        const options = this.options;
+        const staticOptions = [];
+        if (!Array.isArray(options)) {
+            return staticOptions;
         }
-        this.state.allOptions = allOptions;
-        if (this.isPartial) {
-            this.state.totalAllOptions = Infinity;
+        options.forEach((option) => {
+            /* manage simple string */
+            if (typeof option === 'string') {
+                staticOptions.push({
+                    id: option,
+                    text: option,
+                });
+                return;
+            }
+            const group = option.group;
+            const options = option.options;
+            /* check for groups */
+            if (group && !this.state.groups.has(group)) {
+                this.state.groups.set(group, String(group));
+            }
+            /* check for sub options */
+            if (options) {
+                const groupId = option.id;
+                this.state.groups.set(groupId, option.text);
+                options.forEach((subOpt) => {
+                    subOpt.group = groupId;
+                });
+                staticOptions.push(...options);
+                return;
+            }
+            staticOptions.push(option);
+        });
+        return staticOptions;
+    }
+    buildAllOptions(keepFetched = false) {
+        const allOptions = [];
+        let staticOptions = [];
+        const optionBehaviorOrder = this.state.optionBehaviorOrder;
+        let length = Infinity;
+        const arrayFromOrder = (orderValue) => {
+            switch (orderValue) {
+                case 'O': return staticOptions;
+                case 'D': return this.state.dynOptions;
+            }
+            return [];
+        };
+        const lengthFromOrder = (orderValue) => {
+            switch (orderValue) {
+                case 'O': return staticOptions.length;
+                case 'D': return this.state.totalDynOptions;
+            }
+            return 0;
+        };
+        if (!keepFetched) {
+            if (this.isPartial) {
+                this.state.totalAllOptions = Infinity;
+                this.state.totalDynOptions = Infinity;
+            }
+            else {
+                // this.state.totalAllOptions = allOptions.length;
+                this.state.totalDynOptions = 0;
+            }
+        }
+        staticOptions = this.getStaticOptions();
+        if (this.state.optionBehaviorOperation === 'force') {
+            const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0);
+            allOptions.push(...arrayFromOrder(orderValue));
+            length = lengthFromOrder(orderValue);
+            this.activeOrder = orderValue;
+            this.dynOffset = 0;
         }
         else {
-            this.state.totalAllOptions = allOptions.length;
+            /* sort */
+            let offset = 0;
+            for (const orderValue of optionBehaviorOrder) {
+                const list = arrayFromOrder(orderValue);
+                const lngth = lengthFromOrder(orderValue);
+                if (orderValue === 'D') {
+                    this.dynOffset = offset;
+                }
+                else {
+                    offset += lngth;
+                }
+                allOptions.push(...list);
+                if (list.length < lngth) {
+                    /* All dynamic options are not fetched yet */
+                    break;
+                }
+            }
+            this.activeOrder = 'D';
+            length = optionBehaviorOrder.reduce((total, orderValue) => total + lengthFromOrder(orderValue), 0);
+        }
+        this.state.allOptions = allOptions;
+        if (keepFetched) {
+            this.state.totalAllOptions = length;
+        }
+        else {
+            if (!this.isPartial) {
+                this.state.totalAllOptions = allOptions.length;
+            }
         }
         this.state.filteredOptions = [];
         this.state.totalFilteredOptions = Infinity;
@@ -468,9 +550,9 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         const search = this.state.searchText;
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
-        const filteredOptionsLength = this.state.filteredOptions.length;
+        let filteredOptionsLength = this.state.filteredOptions.length;
         if (this.hasAllItems) {
-            /* Everything has already been fetched */
+            /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
         /* Check if all options have been fetched */
@@ -480,9 +562,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
                 this.state.totalFilteredOptions = this.state.filteredOptions.length;
                 return;
             }
-            /* Filter options on what is search for */
-            const rgx = convertToRegExp(search, 'i');
-            const options = this.buildGroupItems(allOptions.filter((option) => rgx.test(option.text)));
+            const options = this.filterOptions(allOptions, search);
             this.state.filteredOptions = options;
             this.state.totalFilteredOptions = this.state.filteredOptions.length;
             return;
@@ -500,6 +580,16 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
             return;
         }
+        if (search) {
+            if (filteredOptionsLength === 0 && this.state.optionBehaviorOperation === 'sort') {
+                this.addStaticFilteredOptions();
+                filteredOptionsLength = this.state.filteredOptions.length;
+                this.dynOffset = filteredOptionsLength;
+                if (endIndex <= filteredOptionsLength) {
+                    return;
+                }
+            }
+        }
         if (!this.fetchCallback) {
             this.state.status.errorMessage = this.labels.noFetchMethod;
             return;
@@ -507,7 +597,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         /* Run the query */
         this.state.status.searching = true;
         /* Manage cases where offsetItem is not equal to the last item received */
-        const offset = filteredOptionsLength - this.nbGroups(this.state.filteredOptions);
+        const offset = filteredOptionsLength - this.nbGroups(this.state.filteredOptions) - this.dynOffset;
         const nbItems = endIndex - offset;
         const limit = Math.ceil(nbItems / pageSize) * pageSize;
         try {
@@ -521,15 +611,16 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             /* Handle case where total is not returned */
             if (typeof total !== 'number') {
                 total = search ? this.state.totalFilteredOptions
-                    : this.state.totalAllOptions;
+                    : this.state.totalDynOptions;
                 if (!isFinite(total)) {
                     total = result.length;
                 }
             }
             if (!search) {
                 /* update cache */
-                this.state.totalAllOptions = total;
-                this.state.allOptions.splice(offset, limit, ...result);
+                this.state.totalDynOptions = total;
+                this.state.dynOptions.splice(offset, limit, ...result);
+                this.$nextTick(() => this.buildAllOptions(true));
             }
             /* Check request is not obsolete */
             if (requestId !== this.requestId) {
@@ -542,17 +633,24 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
                 const previousItem = this.state.filteredOptions[filteredOptionsLength - 1];
                 const options = this.buildGroupItems(result, previousItem);
                 const nbGroups1 = this.nbGroups(options);
-                this.state.filteredOptions.splice(offset, limit + nbGroups1, ...options);
+                this.state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
             }
             let nbGroups = this.state.groups.size;
             if (offset + limit >= total) {
                 nbGroups = this.nbGroups(this.state.filteredOptions);
             }
-            this.state.totalFilteredOptions = total + nbGroups;
+            this.state.totalFilteredOptions = total + nbGroups + this.dynOffset;
+            if (search && this.state.totalFilteredOptions <= this.state.filteredOptions.length) {
+                this.addStaticFilteredOptions(true);
+            }
             this.state.status.errorMessage = '';
         }
         catch (e) {
             this.state.status.errorMessage = e.message;
+            if (!search) {
+                this.state.totalDynOptions = 0;
+                this.buildAllOptions(true);
+            }
         }
         this.state.status.searching = false;
     }
@@ -602,6 +700,38 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             }
             /* display full information about selected items */
             this.state.selectedOptions = items[0];
+        }
+    }
+    filterOptions(options, search) {
+        /* Filter options on what is search for */
+        const rgx = convertToRegExp(search, 'i');
+        return this.buildGroupItems(options.filter((option) => rgx.test(option.text)));
+    }
+    addStaticFilteredOptions(fromDynamic = false) {
+        const search = this.state.searchText;
+        let continueLoop = fromDynamic;
+        if (this.state.optionBehaviorOperation !== 'sort') {
+            return;
+        }
+        for (const order of this.state.optionBehaviorOrder) {
+            let options = [];
+            if (order === 'D') {
+                if (!continueLoop) {
+                    return;
+                }
+                continueLoop = false;
+                continue;
+            }
+            else if (continueLoop) {
+                continue;
+            }
+            switch (order) {
+                case 'O':
+                    options = this.filterOptions(this.getStaticOptions(), search);
+                    break;
+            }
+            this.state.filteredOptions.push(...options);
+            this.state.totalFilteredOptions += options.length;
         }
     }
     buildSelectedItems(ids) {
@@ -662,6 +792,26 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
             return items;
         }, []);
         return list;
+    }
+    buildOptionBehavior(optionBehavior, state) {
+        let [operation, order] = optionBehavior.split('-');
+        let isValid = true;
+        let orderArray;
+        isValid = isValid && ['sort', 'force'].includes(operation);
+        isValid = isValid && /^[ODE]+$/.test(order);
+        if (!isValid) {
+            this.state.status.errorMessage = this.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
+            operation = 'sort';
+            orderArray = ['O', 'D', 'E'];
+        }
+        else {
+            order += 'ODE';
+            orderArray = order.split('');
+            /* Keep only one letter for each of them */
+            orderArray = Array.from(new Set(orderArray));
+        }
+        state.optionBehaviorOperation = operation;
+        state.optionBehaviorOrder = orderArray;
     }
     nbGroups(items) {
         return items.reduce((nb, item) => +item.isGroup + nb, 0);
@@ -757,7 +907,12 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         /* set initial value for non reactive attribute */
         this.requestId = 0;
         this.cacheRequest = new Map();
-        this.state = Object.assign(this.state, this.params, {
+        const stateParam = Object.assign({}, this.params);
+        if (stateParam.optionBehavior) {
+            this.buildOptionBehavior(stateParam.optionBehavior, stateParam);
+            delete stateParam.optionBehavior;
+        }
+        this.state = Object.assign(this.state, stateParam, {
             internalValue: value,
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
@@ -1931,6 +2086,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                     formatOption: this.params.formatOption,
                     formatSelection: this.params.formatSelection,
                     listPosition: this.params.listPosition || 'auto',
+                    optionBehavior: this.params.optionBehavior,
                 },
                 fetchCallback: this.params.fetchCallback,
                 getItemsCallback: this.params.getItemsCallback,

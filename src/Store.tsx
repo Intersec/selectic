@@ -30,6 +30,9 @@ export interface OptionValue {
     data?: any;
 }
 
+type OptionBehaviorOperation = 'sort' | 'force';
+type OptionBehaviorOrder = 'O' | 'D' | 'E';
+
 export interface OptionItem extends OptionValue {
     selected: boolean;
     disabled: boolean;
@@ -113,6 +116,13 @@ export interface SelecticStoreStateParams {
 
     /* Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
+
+    /* Described behavior when options from several sources are set (static, dynamic, slots)
+     * It describe what to do (sort or force)
+     * and the order (O → static options, D → dynamic options, E → slot elements)
+     * Example: "sort-ODE"
+     */
+    optionBehavior?: string;
 }
 
 export interface Props {
@@ -196,14 +206,20 @@ export interface SelecticStoreState {
     /* Contains all known options */
     allOptions: OptionValue[];
 
+    /* Contains all fetched dynamic options */
+    dynOptions: OptionValue[];
+
     /* Contains options which should be displayed */
     filteredOptions: OptionItem[];
 
     /* Contains options which are selected */
     selectedOptions: OptionItem | OptionItem[] | null;
 
-    /* The total number of options which can be fetched (without any filter) */
+    /* The total number of all options (static + dynamic + elements) without any filter */
     totalAllOptions: number;
+
+    /* The total number of options which can be fetched (without any filter) */
+    totalDynOptions: number;
 
     /* The total number of options which should be displayed (filter is applied) */
     totalFilteredOptions: number;
@@ -225,6 +241,12 @@ export interface SelecticStoreState {
 
     /* Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
+
+    /* Operation to apply when there are several sources */
+    optionBehaviorOperation: OptionBehaviorOperation;
+
+    /* Order of sources options */
+    optionBehaviorOrder: OptionBehaviorOrder[];
 
     /* Indicate where the list should be deployed */
     listPosition: ListPosition;
@@ -261,6 +283,7 @@ interface Messages {
     wrongFormattedData: string;
     moreSelectedItem: string;
     moreSelectedItems: string;
+    unknownPropertyValue: string;
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
@@ -301,6 +324,7 @@ let messages: Messages = {
     wrongFormattedData: 'The data fetched is not correctly formatted.',
     moreSelectedItem: '+1 other',
     moreSelectedItems: '+%d others',
+    unknownPropertyValue: 'property "%s" has incorrect values.',
 };
 
 let closePreviousSelectic: undefined | voidCaller;
@@ -350,17 +374,6 @@ export default class SelecticStore extends Vue<Props> {
     /* Number of items displayed in a page (before scrolling) */
     public itemsPerPage = 10;
 
-    /* }}} */
-    /* {{{ computed */
-
-    /* Number of item to pre-display */
-    get marginSize() {
-        return this.state.pageSize / 2;
-    }
-
-    /* }}} */
-    /* {{{ data */
-
     public state: SelecticStoreState = {
         multiple: false,
         disabled: false,
@@ -378,15 +391,21 @@ export default class SelecticStore extends Vue<Props> {
         searchText: '',
         selectionIsExcluded: false,
         allOptions: [],
+        dynOptions: [],
         filteredOptions: [],
         selectedOptions: null,
         totalAllOptions: Infinity,
+        totalDynOptions: Infinity,
         totalFilteredOptions: Infinity,
         groups: new Map(),
         offsetItem: 0,
         activeItemIdx: -1,
         pageSize: 100,
         listPosition: 'auto',
+
+        optionBehaviorOperation: 'sort',
+        optionBehaviorOrder: ['O', 'D', 'E'],
+
         status: {
             searching: false,
             errorMessage: '',
@@ -398,6 +417,8 @@ export default class SelecticStore extends Vue<Props> {
     /* used to avoid checking and updating table while doing batch stuff */
     private doNotUpdate = false;
     private cacheItem: Map<OptionId, OptionValue> = new Map();
+    private activeOrder: OptionBehaviorOrder = 'D';
+    private dynOffset: number = 0;
 
     /* Do not need reactivity */
     private requestId: number;
@@ -406,8 +427,20 @@ export default class SelecticStore extends Vue<Props> {
     /* }}} */
     /* {{{ computed */
 
-    get isPartial() {
-        return typeof this.fetchCallback === 'function';
+    /* Number of item to pre-display */
+    get marginSize() {
+        return this.state.pageSize / 2;
+    }
+
+    get isPartial(): boolean {
+        const state = this.state;
+        let isPartial =  typeof this.fetchCallback === 'function';
+
+        if (isPartial && state.optionBehaviorOperation === 'force' && this.activeOrder !== 'D') {
+            isPartial = false;
+        }
+
+        return isPartial;
     }
 
     get hasAllItems() {
@@ -419,7 +452,11 @@ export default class SelecticStore extends Vue<Props> {
     get hasFetchedAllItems() {
         const state = this.state;
 
-        return state.allOptions.length === state.totalAllOptions;
+        if (!this.isPartial) {
+            return true;
+        }
+
+        return state.dynOptions.length === state.totalDynOptions;
     }
 
     get closeSelectic() {
@@ -449,7 +486,11 @@ export default class SelecticStore extends Vue<Props> {
             this.state.activeItemIdx = -1;
             this.state.filteredOptions = [];
             this.state.totalFilteredOptions = Infinity;
-            this.buildFilteredOptions();
+            if (value) {
+                this.buildFilteredOptions();
+            } else {
+                this.buildAllOptions(true);
+            }
             break;
           case 'isOpen':
             if (value) {
@@ -658,6 +699,7 @@ export default class SelecticStore extends Vue<Props> {
 
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
+        this.state.totalDynOptions = total;
 
         this.state.filteredOptions = [];
         this.state.totalFilteredOptions = Infinity;
@@ -778,49 +820,122 @@ export default class SelecticStore extends Vue<Props> {
         });
     }
 
-    private buildAllOptions() {
-        const allOptions: OptionValue[] = [];
+    /* XXX: This is not a computed property to avoid consuming more memory */
+    private getStaticOptions(): OptionValue[] {
+        const options = this.options;
+        const staticOptions: OptionValue[] = [];
 
-        if (Array.isArray(this.options)) {
-            this.options.forEach((option) => {
-                /* manage simple string */
-                if (typeof option === 'string') {
-                    allOptions.push({
-                        id: option,
-                        text: option,
-                    });
-                    return;
-                }
-
-                const group = option.group;
-                const options = option.options;
-
-                /* check for groups */
-                if (group && !this.state.groups.has(group)) {
-                    this.state.groups.set(group, String(group));
-                }
-
-                /* check for sub options */
-                if (options) {
-                    const groupId = option.id as StrictOptionId;
-                    this.state.groups.set(groupId, option.text);
-
-                    options.forEach((subOpt) => {
-                        subOpt.group = groupId;
-                    });
-                    allOptions.push(...options);
-                    return;
-                }
-
-                allOptions.push(option);
-            });
+        if (!Array.isArray(options)) {
+            return staticOptions;
         }
+
+        options.forEach((option) => {
+            /* manage simple string */
+            if (typeof option === 'string') {
+                staticOptions.push({
+                    id: option,
+                    text: option,
+                });
+                return;
+            }
+
+            const group = option.group;
+            const options = option.options;
+
+            /* check for groups */
+            if (group && !this.state.groups.has(group)) {
+                this.state.groups.set(group, String(group));
+            }
+
+            /* check for sub options */
+            if (options) {
+                const groupId = option.id as StrictOptionId;
+                this.state.groups.set(groupId, option.text);
+
+                options.forEach((subOpt) => {
+                    subOpt.group = groupId;
+                });
+                staticOptions.push(...options);
+                return;
+            }
+
+            staticOptions.push(option);
+        });
+
+        return staticOptions;
+    }
+
+    private buildAllOptions(keepFetched = false) {
+        const allOptions: OptionValue[] = [];
+        let staticOptions: OptionValue[] = [];
+        const optionBehaviorOrder = this.state.optionBehaviorOrder;
+        let length: number = Infinity;
+
+        const arrayFromOrder = (orderValue: OptionBehaviorOrder): OptionValue[] => {
+            switch(orderValue) {
+                case 'O': return staticOptions;
+                case 'D': return this.state.dynOptions;
+            }
+            return [];
+        };
+
+        const lengthFromOrder = (orderValue: OptionBehaviorOrder): number => {
+            switch(orderValue) {
+                case 'O': return staticOptions.length;
+                case 'D': return this.state.totalDynOptions;
+            }
+            return 0;
+        };
+
+        if (!keepFetched) {
+            if (this.isPartial) {
+                this.state.totalAllOptions = Infinity;
+                this.state.totalDynOptions = Infinity;
+            } else {
+                // this.state.totalAllOptions = allOptions.length;
+                this.state.totalDynOptions = 0;
+            }
+        }
+
+        staticOptions = this.getStaticOptions();
+
+        if (this.state.optionBehaviorOperation === 'force') {
+            const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0)!;
+            allOptions.push(...arrayFromOrder(orderValue));
+            length = lengthFromOrder(orderValue);
+            this.activeOrder = orderValue;
+            this.dynOffset = 0;
+        } else {
+            /* sort */
+            let offset = 0;
+            for (const orderValue of optionBehaviorOrder) {
+                const list = arrayFromOrder(orderValue);
+                const lngth = lengthFromOrder(orderValue);
+
+                if (orderValue === 'D') {
+                    this.dynOffset = offset;
+                } else {
+                    offset += lngth;
+                }
+
+                allOptions.push(...list);
+                if (list.length < lngth) {
+                    /* All dynamic options are not fetched yet */
+                    break;
+                }
+            }
+            this.activeOrder = 'D';
+            length = optionBehaviorOrder.reduce((total, orderValue) => total + lengthFromOrder(orderValue), 0);
+        }
+
         this.state.allOptions = allOptions;
 
-        if (this.isPartial) {
-            this.state.totalAllOptions = Infinity;
+        if (keepFetched) {
+            this.state.totalAllOptions = length;
         } else {
-            this.state.totalAllOptions = allOptions.length;
+            if (!this.isPartial) {
+                this.state.totalAllOptions = allOptions.length;
+            }
         }
 
         this.state.filteredOptions = [];
@@ -839,10 +954,10 @@ export default class SelecticStore extends Vue<Props> {
         const search = this.state.searchText;
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
-        const filteredOptionsLength = this.state.filteredOptions.length;
+        let filteredOptionsLength = this.state.filteredOptions.length;
 
         if (this.hasAllItems) {
-            /* Everything has already been fetched */
+            /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
 
@@ -854,11 +969,7 @@ export default class SelecticStore extends Vue<Props> {
                 return;
             }
 
-            /* Filter options on what is search for */
-            const rgx = convertToRegExp(search, 'i');
-            const options = this.buildGroupItems(
-                allOptions.filter((option) => rgx.test(option.text))
-            );
+            const options = this.filterOptions(allOptions, search);
             this.state.filteredOptions = options;
             this.state.totalFilteredOptions = this.state.filteredOptions.length;
             return;
@@ -881,6 +992,18 @@ export default class SelecticStore extends Vue<Props> {
             return;
         }
 
+        if (search) {
+            if (filteredOptionsLength === 0 && this.state.optionBehaviorOperation === 'sort') {
+                this.addStaticFilteredOptions();
+
+                filteredOptionsLength = this.state.filteredOptions.length;
+                this.dynOffset = filteredOptionsLength;
+                if (endIndex <= filteredOptionsLength) {
+                    return;
+                }
+            }
+        }
+
         if (!this.fetchCallback) {
             this.state.status.errorMessage = this.labels.noFetchMethod;
             return;
@@ -890,7 +1013,7 @@ export default class SelecticStore extends Vue<Props> {
         this.state.status.searching = true;
 
         /* Manage cases where offsetItem is not equal to the last item received */
-        const offset = filteredOptionsLength - this.nbGroups(this.state.filteredOptions);
+        const offset = filteredOptionsLength - this.nbGroups(this.state.filteredOptions) - this.dynOffset;
         const nbItems = endIndex - offset;
         const limit = Math.ceil(nbItems / pageSize) * pageSize;
 
@@ -907,7 +1030,7 @@ export default class SelecticStore extends Vue<Props> {
             /* Handle case where total is not returned */
             if (typeof total !== 'number') {
                 total = search ? this.state.totalFilteredOptions
-                               : this.state.totalAllOptions;
+                               : this.state.totalDynOptions;
 
                 if (!isFinite(total)) {
                     total = result.length;
@@ -916,8 +1039,9 @@ export default class SelecticStore extends Vue<Props> {
 
             if (!search) {
                 /* update cache */
-                this.state.totalAllOptions = total;
-                this.state.allOptions.splice(offset, limit, ...result);
+                this.state.totalDynOptions = total;
+                this.state.dynOptions.splice(offset, limit, ...result);
+                this.$nextTick(() => this.buildAllOptions(true));
             }
 
             /* Check request is not obsolete */
@@ -932,7 +1056,7 @@ export default class SelecticStore extends Vue<Props> {
                 const options = this.buildGroupItems(result, previousItem);
                 const nbGroups1 = this.nbGroups(options);
 
-                this.state.filteredOptions.splice(offset, limit + nbGroups1, ...options);
+                this.state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
             }
 
             let nbGroups = this.state.groups.size;
@@ -940,10 +1064,19 @@ export default class SelecticStore extends Vue<Props> {
                 nbGroups = this.nbGroups(this.state.filteredOptions);
             }
 
-            this.state.totalFilteredOptions = total + nbGroups;
+            this.state.totalFilteredOptions = total + nbGroups + this.dynOffset;
+
+            if (search && this.state.totalFilteredOptions <= this.state.filteredOptions.length) {
+                this.addStaticFilteredOptions(true);
+            }
+
             this.state.status.errorMessage = '';
         } catch (e) {
             this.state.status.errorMessage = e.message;
+            if (!search) {
+                this.state.totalDynOptions = 0;
+                this.buildAllOptions(true);
+            }
         }
         this.state.status.searching = false;
     }
@@ -1002,6 +1135,47 @@ export default class SelecticStore extends Vue<Props> {
 
             /* display full information about selected items */
             this.state.selectedOptions = items[0];
+        }
+    }
+
+    private filterOptions(options: OptionValue[], search: string): OptionItem[] {
+        /* Filter options on what is search for */
+        const rgx = convertToRegExp(search, 'i');
+        return this.buildGroupItems(
+            options.filter((option) => rgx.test(option.text))
+        );
+    }
+
+    private addStaticFilteredOptions(fromDynamic = false) {
+        const search = this.state.searchText;
+        let continueLoop = fromDynamic;
+
+        if (this.state.optionBehaviorOperation !== 'sort') {
+            return;
+        }
+
+        for (const order of this.state.optionBehaviorOrder) {
+            let options: OptionItem[] = [];
+            if (order === 'D') {
+                if (!continueLoop) {
+                    return;
+                }
+                continueLoop = false;
+                continue;
+            } else if (continueLoop) {
+                continue;
+            }
+
+            switch (order) {
+                case 'O':
+                    options = this.filterOptions(this.getStaticOptions(), search);
+                    break;
+                case 'E':
+                    /* TODO */
+                    break;
+            }
+            this.state.filteredOptions.push(...options);
+            this.state.totalFilteredOptions += options.length;
         }
     }
 
@@ -1080,6 +1254,30 @@ export default class SelecticStore extends Vue<Props> {
         }, []);
 
         return list;
+    }
+
+    private buildOptionBehavior(optionBehavior: string, state: SelecticStoreState) {
+        let [operation, order] = optionBehavior.split('-');
+        let isValid = true;
+        let orderArray: OptionBehaviorOrder[];
+
+        isValid = isValid && ['sort', 'force'].includes(operation);
+        isValid = isValid && /^[ODE]+$/.test(order);
+
+        if (!isValid) {
+            this.state.status.errorMessage = this.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
+            operation = 'sort';
+            orderArray = ['O', 'D', 'E'];
+        } else {
+            order += 'ODE';
+
+            orderArray = order.split('') as OptionBehaviorOrder[];
+            /* Keep only one letter for each of them */
+            orderArray = Array.from(new Set(orderArray));
+        }
+
+        state.optionBehaviorOperation = operation as OptionBehaviorOperation;
+        state.optionBehaviorOrder = orderArray;
     }
 
     private nbGroups(items: OptionItem[]) {
@@ -1207,7 +1405,14 @@ export default class SelecticStore extends Vue<Props> {
         this.requestId = 0;
         this.cacheRequest = new Map();
 
-        this.state = Object.assign(this.state, this.params, {
+        const stateParam = Object.assign({}, this.params);
+
+        if (stateParam.optionBehavior) {
+            this.buildOptionBehavior(stateParam.optionBehavior, stateParam as SelecticStoreState);
+            delete stateParam.optionBehavior;
+        }
+
+        this.state = Object.assign(this.state, stateParam, {
             internalValue: value,
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,

@@ -14,6 +14,8 @@ export interface OptionValue {
     options?: OptionValue[];
     data?: any;
 }
+declare type OptionBehaviorOperation = 'sort' | 'force';
+declare type OptionBehaviorOrder = 'O' | 'D' | 'E';
 export interface OptionItem extends OptionValue {
     selected: boolean;
     disabled: boolean;
@@ -45,6 +47,7 @@ export interface SelecticStoreStateParams {
     selectionOverflow?: SelectionOverflow;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
+    optionBehavior?: string;
 }
 export interface Props {
     value?: SelectedValue;
@@ -73,9 +76,11 @@ export interface SelecticStoreState {
     isOpen: boolean;
     searchText: string;
     allOptions: OptionValue[];
+    dynOptions: OptionValue[];
     filteredOptions: OptionItem[];
     selectedOptions: OptionItem | OptionItem[] | null;
     totalAllOptions: number;
+    totalDynOptions: number;
     totalFilteredOptions: number;
     groups: Map<OptionId, string>;
     offsetItem: number;
@@ -83,6 +88,8 @@ export interface SelecticStoreState {
     pageSize: number;
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
+    optionBehaviorOperation: OptionBehaviorOperation;
+    optionBehaviorOrder: OptionBehaviorOrder[];
     listPosition: ListPosition;
     status: {
         searching: boolean;
@@ -107,6 +114,7 @@ interface Messages {
     wrongFormattedData: string;
     moreSelectedItem: string;
     moreSelectedItems: string;
+    unknownPropertyValue: string;
 }
 export declare type PartialMessages = {
     [K in keyof Messages]?: Messages[K];
@@ -123,13 +131,15 @@ export default class SelecticStore extends Vue<Props> {
     private fetchCallback?;
     private getItemsCallback?;
     itemsPerPage: number;
-    get marginSize(): number;
     state: SelecticStoreState;
     labels: Messages;
     private doNotUpdate;
     private cacheItem;
+    private activeOrder;
+    private dynOffset;
     private requestId;
     private cacheRequest;
+    get marginSize(): number;
     get isPartial(): boolean;
     get hasAllItems(): boolean;
     get hasFetchedAllItems(): boolean;
@@ -148,13 +158,17 @@ export default class SelecticStore extends Vue<Props> {
     private assertCorrectValue;
     private updateFilteredOptions;
     private addGroups;
+    private getStaticOptions;
     private buildAllOptions;
     private buildFilteredOptions;
     private buildSelectedOptions;
+    private filterOptions;
+    private addStaticFilteredOptions;
     private buildSelectedItems;
     private hasItemInStore;
     private buildItems;
     private buildGroupItems;
+    private buildOptionBehavior;
     private nbGroups;
     private checkAutoSelect;
     private checkAutoDisabled;

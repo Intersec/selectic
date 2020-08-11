@@ -56,8 +56,11 @@ async function deferPromise(promise, waitAtStart = false) {
     return result;
 }
 
-function nextVueTick(vueComponent) {
-    const promise = new Promise((resolve) => {
+function nextVueTick(vueComponent, afterPromise) {
+    const promise = new Promise(async (resolve) => {
+        if (afterPromise) {
+            await afterPromise;
+        }
         vueComponent.$nextTick(resolve);
     });
 

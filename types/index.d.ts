@@ -18,6 +18,7 @@ export interface ParamProps {
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
     listPosition?: ListPosition;
+    optionBehavior?: string;
 }
 export interface Props {
     value?: SelectedValue;

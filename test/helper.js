@@ -20,15 +20,21 @@ function getInitialState(replacedAttributes) {
         searchText: '',
         selectionIsExcluded: false,
         allOptions: [],
+        dynOptions: [],
         filteredOptions: [],
         selectedOptions: null,
         totalAllOptions: 0,
+        totalDynOptions: 0,
         totalFilteredOptions: Infinity,
         offsetItem: 0,
         activeItemIdx: -1,
         pageSize: 100,
         listPosition: 'auto',
         groups: new Map(),
+
+        optionBehaviorOperation: 'sort',
+        optionBehaviorOrder: ['O', 'D', 'E'],
+
         status: {
             searching: false,
             errorMessage: '',
@@ -189,8 +195,12 @@ function toHaveBeenCalled(spy) {
     return spy.nbCall > 0;
 }
 
-function toHaveBeenCalledWith(spy, argumentsValue) {
+function toHaveBeenCalledWith(spy, argumentsValue, debug = false) {
     const argtValues = JSON.stringify(argumentsValue);
+
+    if (debug) {
+        console.log('toHaveBeenCalledWith', argtValues, '→', JSON.stringify(spy.calls));
+    }
 
     return Array.isArray(spy.calls) && spy.calls.some((call) => {
         return JSON.stringify(call) === argtValues;

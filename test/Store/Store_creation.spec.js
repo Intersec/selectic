@@ -19,9 +19,11 @@ const {
     buildFetchCb,
     buildGetItemsCb,
     sleep,
+    toHaveBeenCalledWith,
 } = require('../helper.js');
 const tape = require('tape');
 const StoreFile = require('../dist/Store.js');
+const { toHaveBeenCalled } = require('../helper.js');
 const Store = StoreFile.default;
 
 tape.test('Store creation', (subT) => {
@@ -773,7 +775,7 @@ tape.test('Store creation', (subT) => {
                 t.end();
             });
 
-            sTest.skip('should keep the internal value with valid selection on single mode', async (t) => {
+            sTest.test('should keep the internal value with valid selection on single mode', async (t) => {
                 const spyGetItems = {};
                 const store = new Store({
                     propsData: {
@@ -988,6 +990,358 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, true);
+                t.end();
+            });
+        });
+    });
+
+    subT.test('"optionBehavior" property', (st) => {
+        st.test('changing "operation"', (sTest) => {
+            sTest.test('should update the state to sort', async (t) => {
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-ODE',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.is(store.state.optionBehaviorOperation, 'sort');
+                t.is(store.state.status.errorMessage, '');
+                t.end();
+            });
+
+            sTest.test('should update the state to force', async (t) => {
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'force-ODE',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.is(store.state.optionBehaviorOperation, 'force');
+                t.is(store.state.status.errorMessage, '');
+                t.end();
+            });
+
+            sTest.test('should not update the state with unknown property', async (t) => {
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'unknown-ODE',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.is(store.state.optionBehaviorOperation, 'sort');
+                t.is(store.state.status.errorMessage, store.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+                t.end();
+            });
+        });
+
+        st.test('changing "order"', (sTest) => {
+            sTest.test('should update the state', async (t) => {
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-ODE',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store1.state.optionBehaviorOrder, ['O', 'D', 'E']);
+                t.is(store1.state.status.errorMessage, '');
+
+                const store2 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-EDO',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store2.state.optionBehaviorOrder, ['E', 'D', 'O']);
+                t.is(store2.state.status.errorMessage, '');
+
+                const store3 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-DEO',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store3.state.optionBehaviorOrder, ['D', 'E', 'O']);
+                t.is(store3.state.status.errorMessage, '');
+                t.end();
+            });
+
+            sTest.test('should update the state with shorter list', async (t) => {
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-DE',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store1.state.optionBehaviorOrder, ['D', 'E', 'O']);
+                t.is(store1.state.status.errorMessage, '');
+
+                const store2 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-D',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store2.state.optionBehaviorOrder, ['D', 'O', 'E']);
+                t.is(store2.state.status.errorMessage, '');
+                t.end();
+            });
+
+            sTest.test('should not update state with unknown values', async (t) => {
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-DEOA',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store1.state.optionBehaviorOrder, ['O', 'D', 'E']);
+                t.is(store1.state.status.errorMessage, store1.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+
+                const store2 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-EOS',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store2.state.optionBehaviorOrder, ['O', 'D', 'E']);
+                t.is(store2.state.status.errorMessage, store2.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+                t.end();
+            });
+
+            sTest.test('should keep the first value with repeated values', async (t) => {
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        params: {
+                            optionBehavior: 'sort-EDEED',
+                        },
+                    },
+                });
+
+                await sleep(0);
+
+                t.deepEqual(store.state.optionBehaviorOrder, ['E', 'D', 'O']);
+                t.is(store.state.status.errorMessage, '');
+                t.end();
+            });
+        });
+
+        st.test('manage filteredOptions', (sTest) => {
+            sTest.test('should display only the first group', async (t) => {
+                const command1 = {};
+                const spy1 = {};
+
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                        params: {
+                            optionBehavior: 'force-DOE',
+                        },
+                    },
+                });
+
+                store1.commit('isOpen', true);
+                await sleep(0);
+                t.is(store1.state.filteredOptions.length, 0);
+                command1.fetch();
+                await _.nextVueTick(store1, spy1.promise);
+
+                t.is(store1.state.filteredOptions.length, 4);
+
+                const command2 = {};
+                const spy2 = {};
+
+                const store2 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                        params: {
+                            optionBehavior: 'force-ODE',
+                        },
+                    },
+                });
+
+                store2.commit('isOpen', true);
+                await sleep(0);
+
+                t.is(store2.state.filteredOptions.length, 3);
+                t.false(toHaveBeenCalled(spy2));
+
+                t.end();
+            });
+
+            sTest.test('should display only the second group', async (t) => {
+                const command1 = {};
+                const spy1 = {};
+
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
+                        params: {
+                            optionBehavior: 'force-DOE',
+                        },
+                    },
+                });
+
+                store1.commit('isOpen', true);
+                await sleep(0);
+                command1.fetch();
+                await _.nextVueTick(store1, spy1.promise);
+
+                t.is(store1.state.filteredOptions.length, 3);
+
+                const command2 = {};
+                const spy2 = {};
+
+                const store2 = new Store({
+                    propsData: {
+                        options: getOptions(0),
+                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                        params: {
+                            optionBehavior: 'force-ODE',
+                        },
+                    },
+                });
+
+                store2.commit('isOpen', true);
+                await sleep(0);
+                command2.fetch();
+                await _.nextVueTick(store2, spy2.promise);
+
+                t.is(store2.state.filteredOptions.length, 4);
+                t.end();
+            });
+
+            //third
+
+            sTest.test('should fallback to the next group', async (t) => {
+                const command1 = {};
+                const spy1 = {};
+
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
+                        params: {
+                            optionBehavior: 'force-DOE',
+                        },
+                    },
+                });
+
+                store1.commit('isOpen', true);
+                await sleep(0);
+
+                t.is(store1.state.filteredOptions.length, 0);
+                command1.reject('An error');
+                await _.nextVueTick(store1, sleep(0));
+
+                t.is(store1.state.filteredOptions.length, 3);
+
+                t.end();
+            });
+
+            sTest.test('should display all group sorted', async (t) => {
+                const command1 = {};
+                const spy1 = {};
+
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                        params: {
+                            optionBehavior: 'sort-DOE',
+                        },
+                    },
+                });
+
+                store1.commit('isOpen', true);
+                await sleep(0);
+                t.is(store1.state.filteredOptions.length, 0);
+                command1.fetch();
+                await _.nextVueTick(store1, spy1.promise);
+
+                t.is(store1.state.filteredOptions.length, 7);
+                t.end();
+            });
+
+            sTest.test('should fetch list only when its needed', async (t) => {
+                const command1 = {};
+                const spy1 = {};
+
+                const store1 = new Store({
+                    propsData: {
+                        options: getOptions(100),
+                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                        params: {
+                            optionBehavior: 'sort-OED',
+                        },
+                    },
+                });
+
+                store1.commit('isOpen', true);
+                await sleep(0);
+                t.is(store1.state.filteredOptions.length, 100);
+                t.false(toHaveBeenCalled(spy1));
+
+                store1.commit('offsetItem', 95);
+                await _.nextVueTick(store1);
+                t.true(toHaveBeenCalledWith(spy1, ['', 0, 200]));
+                command1.fetch();
+                await _.nextVueTick(store1, spy1.promise);
+
+                t.is(store1.state.allOptions.length, 104);
+                t.is(store1.state.filteredOptions.length, 104);
                 t.end();
             });
         });

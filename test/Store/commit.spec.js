@@ -73,8 +73,7 @@ tape.test('commit()', (st) => {
             resetCall(spy);
             command.fetch();
 
-            await command.promise;
-            await _.nextVueTick(store);
+            await _.nextVueTick(store, command.promise);
 
             // after initial fetch
             t.deepEqual(store.state.status.searching, false);
@@ -92,7 +91,7 @@ tape.test('commit()', (st) => {
             resetCall(spy);
 
             command.fetch();
-            await _.deferPromise(command.promise);
+            await _.nextVueTick(store, command.promise);
 
             // receive reponse
             t.deepEqual(store.state.status.searching, false);
@@ -136,7 +135,7 @@ tape.test('commit()', (st) => {
             resetCall(spy);
 
             command.fetch();
-            await _.deferPromise(command.promise);
+            await _.nextVueTick(store, command.promise);
 
             // after initial fetch
             t.deepEqual(store.state.status.searching, false);
@@ -253,8 +252,10 @@ tape.test('commit()', (st) => {
                 t.deepEqual(store.state.status.searching, true);
                 t.deepEqual(store.state.filteredOptions.length, 0);
                 resetCall(spy);
+
+                await sleep(0);
                 command.fetch();
-                await _.deferPromise(command.promise);
+                await _.nextVueTick(store, command.promise);
 
                 // after initial fetch
                 t.deepEqual(store.state.status.searching, false);
@@ -271,7 +272,7 @@ tape.test('commit()', (st) => {
                 t.deepEqual(store.state.status.searching, true);
                 resetCall(spy);
                 command.fetch();
-                await _.deferPromise(command.promise);
+                await _.nextVueTick(store, command.promise);
 
                 // receive response
                 t.deepEqual(store.state.status.searching, false);
@@ -310,14 +311,14 @@ tape.test('commit()', (st) => {
                 store.commit('searchText', search);
 
                 command.fetch();
-                await _.deferPromise(command.promise);
+                await _.nextVueTick(store, command.promise);
 
                 // after initial fetch
                 store.commit('offsetItem', 100);
 
                 resetCall(spy);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 // after initial search
                 t.deepEqual(store.state.status.searching, false);
@@ -334,7 +335,7 @@ tape.test('commit()', (st) => {
                 t.deepEqual(store.state.status.searching, true);
                 resetCall(spy);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 // receive response
                 t.deepEqual(store.state.status.searching, false);
@@ -378,16 +379,16 @@ tape.test('commit()', (st) => {
 
                 store.commit('pageSize', 500);
                 store.commit('searchText', search);
-
+                await _.nextVueTick(store, sleep(0));
 
                 t.true(toHaveBeenCalledWith(spy, [search, 0, 500]));
-                t.deepEqual(store.state.status.searching, true);
+                t.is(store.state.status.searching, true);
                 resetCall(spy);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 // after initial fetch
-                t.deepEqual(store.state.status.searching, false);
+                t.is(store.state.status.searching, false);
                 t.deepEqual(store.state.allOptions.length, 100);
                 t.deepEqual(store.state.totalAllOptions, 300);
                 t.deepEqual(store.state.filteredOptions.length, 250);
@@ -409,6 +410,265 @@ tape.test('commit()', (st) => {
 
                 t.end();
             });
+
+            sTest.test('should manage request in the wrong order', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+                resetCall(spy);
+
+                let search = 'search1';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                const fetch1 = command.fetch;
+                const promise1 = spy.promise;
+
+                await sleep(0);
+                search = 'search2';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                const fetch2 = command.fetch;
+                const promise2 = spy.promise;
+
+                await sleep(0);
+                search = 'search3';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                const fetch3 = command.fetch;
+                const promise3 = spy.promise;
+
+                fetch2();
+                await _.nextVueTick(store, promise2);
+
+                // after first result (deprecated)
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.allOptions.length, 100);
+                t.deepEqual(store.state.totalAllOptions, 300);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                t.deepEqual(store.state.totalFilteredOptions, Infinity);
+
+                fetch3();
+                await _.nextVueTick(store, promise3);
+
+                // after second result
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.allOptions.length, 100);
+                t.deepEqual(store.state.totalAllOptions, 300);
+                t.deepEqual(store.state.filteredOptions.length, 100);
+                t.deepEqual(store.state.totalFilteredOptions, 250);
+                t.deepEqual(store.state.filteredOptions[0].text, 'search3alpha0');
+
+                fetch1();
+                await _.nextVueTick(store, promise1);
+
+                // after third result (deprecated)
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.allOptions.length, 100);
+                t.deepEqual(store.state.totalAllOptions, 300);
+                t.deepEqual(store.state.filteredOptions.length, 100);
+                t.deepEqual(store.state.totalFilteredOptions, 250);
+                t.deepEqual(store.state.filteredOptions[0].text, 'search3alpha0');
+
+                t.end();
+            });
+
+            sTest.test('should search through all options', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                        params: {
+                            optionBehavior: 'sort-ODE',
+                        },
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+                resetCall(spy);
+
+                const search = '2';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 1);
+                resetCall(spy);
+
+                await sleep(0);
+                command.fetch();
+                await _.nextVueTick(store, command.promise);
+
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.allOptions.length, 103);
+                t.deepEqual(store.state.totalAllOptions, 303);
+                t.deepEqual(store.state.filteredOptions.length, 51);
+                t.deepEqual(store.state.totalFilteredOptions, 51);
+
+                t.end();
+            });
+
+            sTest.test('should display static options', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                        params: {
+                            optionBehavior: 'sort-DOE',
+                        },
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+                resetCall(spy);
+
+                const search = '2';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                resetCall(spy);
+
+                await sleep(0);
+                command.fetch();
+                await _.nextVueTick(store, command.promise);
+
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.allOptions.length, 100);
+                t.deepEqual(store.state.totalAllOptions, 303);
+                t.deepEqual(store.state.filteredOptions.length, 51);
+                t.deepEqual(store.state.totalFilteredOptions, 51);
+
+                t.end();
+            });
+
+            sTest.test('should search through all fetched options', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 30, searchTotal: 5, addPrefix: true, command, spy }),
+                        params: {
+                            optionBehavior: 'sort-DOE',
+                        },
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+                await _.nextVueTick(store, spy.promise);
+                resetCall(spy);
+
+                const search = '2';
+                store.commit('searchText', search);
+                await _.nextVueTick(store, sleep(0));
+
+                t.false(toHaveBeenCalled(spy));
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.filteredOptions.length, 13);
+
+                t.end();
+            });
+
+            sTest.test('should search only in displayed options', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 0, addPrefix: true, command, spy }),
+                        params: {
+                            optionBehavior: 'force-DOE',
+                        },
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+                resetCall(spy);
+
+                const search = '2';
+                store.commit('searchText', search);
+
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.is(store.state.status.searching, true);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                resetCall(spy);
+
+                await sleep(0);
+                command.fetch();
+                await _.nextVueTick(store, command.promise);
+
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.filteredOptions.length, 0);
+                t.deepEqual(store.state.totalFilteredOptions, 0);
+                t.is(store.state.status.errorMessage, '');
+
+                t.end();
+            });
+
+            sTest.test('should restore all options', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                        params: {
+                            optionBehavior: 'sort-ODE',
+                        },
+                    },
+                });
+                store.commit('isOpen', true);
+                command.fetch();
+
+                const search = '2';
+                store.commit('searchText', search);
+                await sleep(0);
+                command.fetch();
+                await _.nextVueTick(store, command.promise);
+
+                store.commit('searchText', '');
+                await sleep(0);
+                command.fetch();
+                await _.nextVueTick(store, command.promise);
+
+                t.is(store.state.status.searching, false);
+                t.deepEqual(store.state.filteredOptions.length, 103);
+                t.deepEqual(store.state.totalFilteredOptions, 303);
+
+                resetCall(spy);
+                await sleep(0);
+                store.commit('offsetItem', 100);
+                await _.nextVueTick(store, sleep(0));
+
+                t.true(toHaveBeenCalledWith(spy, ['', 100, 100], true));
+                t.end();
+            });
         });
     });
 
@@ -426,16 +686,16 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 store.commit('offsetItem', 100);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 resetCall(spy);
                 store.commit('offsetItem', 70);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.false(toHaveBeenCalled(spy));
                 t.deepEqual(store.state.allOptions.length, 200);
@@ -455,12 +715,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 resetCall(spy);
                 store.commit('offsetItem', 50);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.false(toHaveBeenCalled(spy));
                 t.deepEqual(store.state.allOptions.length, 100);
@@ -481,12 +741,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 resetCall(spy);
                 store.commit('offsetItem', 51);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 100]));
                 t.deepEqual(store.state.allOptions.length, 200);
@@ -495,7 +755,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 190);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 200, 100]));
                 t.deepEqual(store.state.allOptions.length, 300);
@@ -516,12 +776,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 resetCall(spy);
                 store.commit('offsetItem', 180);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 200]));
                 t.deepEqual(store.state.allOptions.length, 300);
@@ -548,7 +808,7 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 0, 100]));
                 t.deepEqual(store.state.allOptions.length, 100);
@@ -560,7 +820,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 100);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 /* The items of the first group have been fetched */
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 100]));
@@ -573,7 +833,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 151);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 /* As there is the group item which has been added
                 * we currently have all data so there is no query */
@@ -586,7 +846,7 @@ tape.test('commit()', (st) => {
 
                 store.commit('offsetItem', 152);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 /* The items of the second group have been fetched */
                 t.true(toHaveBeenCalledWith(spy, ['', 200, 100]));
@@ -599,7 +859,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 252);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 /* As there are the group items which have been added
                 * we currently have all data so there is no query */
@@ -612,7 +872,7 @@ tape.test('commit()', (st) => {
 
                 store.commit('offsetItem', 253);
                 command.fetch();
-                await command.promise;
+                await _.nextVueTick(store, command.promise);
 
                 /* Next items are in second group, so no more group
                 * item has been added in filteredOptions */
@@ -666,7 +926,7 @@ tape.test('commit()', (st) => {
             t.deepEqual(store.state.status.searching, true);
             resetCall(spy);
             command.fetch();
-            await command.promise;
+            await _.nextVueTick(store, command.promise);
 
             // after initial search
             t.deepEqual(store.state.status.searching, false);
@@ -684,7 +944,7 @@ tape.test('commit()', (st) => {
             t.deepEqual(store.state.status.searching, true);
             resetCall(spy);
             command.fetch();
-            await command.promise;
+            await _.nextVueTick(store, command.promise);
 
             // receive response
             t.deepEqual(store.state.status.searching, false);

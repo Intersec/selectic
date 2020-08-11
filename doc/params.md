@@ -277,7 +277,7 @@ Read [the extended properties documentation](extendedProperties.md) for more inf
 
 ## listPosition
 
-Type: `'auto' | 'bottom' | 'top`
+Type: `'auto' | 'bottom' | 'top'`
 
 Default value: `'auto'`
 
@@ -289,6 +289,46 @@ With the `'auto'` value it displays the list at bottom, but if there is not enou
 <selectic
     params={{
         listPosition: 'top',
+    }}
+    options={optionList}
+/>
+```
+
+## optionBehavior
+
+Type: `string`
+
+Default value: `'sort-ODE'`
+
+`optionBehavior` describes how different options should be ordered when they are set from different input.
+
+There are 3 different input:
+* _options_ attribute **(O)**
+* dynamic options **(D)**
+* inner elements **(E)**
+
+### sort
+
+`sort-XXX` (_X_ is either `'O'` or `'D'` or `'E'`)
+
+Display all sources in the given order.
+
+`sort-EDO` means that inner elements are displayed first, then element from dynamic options and finally the ones in the _options_ attributes.
+
+### override
+
+`force-XXX` (_X_ is either `'O'` or `'D'` or `'E'`)
+
+Display only one source (the first which is not empty).
+
+`force-DEO` means that it displays dynamic options if there are any, otherwise displays inner elements if they are set, otherwise display what is in _options_ attributes.
+
+### Example
+
+```html
+<selectic
+    params={{
+        optionBehavior: 'sort-DOE',
     }}
     options={optionList}
 />

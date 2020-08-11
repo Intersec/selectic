@@ -111,6 +111,13 @@ export interface ParamProps {
      * With 'auto' it is displayed by default at bottom, but it can be at
      * top if there is not enough space below. */
     listPosition?: ListPosition;
+
+    /* Described behavior when options from several sources are set (static, dynamic, slots)
+     * It describe what to do (sort or force)
+     * and the order (O → static options, D → dynamic options, E → slot elements)
+     * Example: "sort-ODE"
+     */
+    optionBehavior?: string;
 }
 
 export interface Props {
@@ -551,6 +558,7 @@ export default class Selectic extends Vue<Props> {
                 formatOption: this.params.formatOption,
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
+                optionBehavior: this.params.optionBehavior, /* it can be undefined */
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
