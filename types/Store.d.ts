@@ -162,6 +162,7 @@ export default class SelecticStore extends Vue<Props> {
     private buildAllOptions;
     private buildFilteredOptions;
     private buildSelectedOptions;
+    private fetchData;
     private filterOptions;
     private addStaticFilteredOptions;
     private buildSelectedItems;

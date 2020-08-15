@@ -20,6 +20,7 @@ const {
     buildGetItemsCb,
     sleep,
     toHaveBeenCalledWith,
+    resetCall,
 } = require('../helper.js');
 const tape = require('tape');
 const StoreFile = require('../dist/Store.js');
@@ -1175,7 +1176,7 @@ tape.test('Store creation', (subT) => {
             });
         });
 
-        st.test('manage filteredOptions', (sTest) => {
+        st.test('manage the filteredOptions', (sTest) => {
             sTest.test('should display only the first group', async (t) => {
                 const command1 = {};
                 const spy1 = {};
@@ -1315,7 +1316,32 @@ tape.test('Store creation', (subT) => {
                 t.end();
             });
 
-            sTest.test('should fetch list only when its needed', async (t) => {
+            sTest.test('should fetch dynamics with correct offset', async (t) => {
+                const command = {};
+                const spy = {};
+
+                const store = new Store({
+                    propsData: {
+                        options: getOptions(3),
+                        fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
+                        params: {
+                            optionBehavior: 'sort-EOD',
+                        },
+                    },
+                });
+
+                store.commit('isOpen', true);
+                await sleep(0);
+                t.is(store.state.filteredOptions.length, 3); // previous options should be displayed
+                t.true(toHaveBeenCalledWith(spy, ['', 0, 100])); // dynamic index should always start at 0
+                command.fetch();
+                await _.nextVueTick(store, spy.promise);
+
+                t.is(store.state.filteredOptions.length, 7); // finally all options should be displayed
+                t.end();
+            });
+
+            sTest.test('should fetch list to get size', async (t) => {
                 const command1 = {};
                 const spy1 = {};
 
@@ -1332,16 +1358,22 @@ tape.test('Store creation', (subT) => {
                 store1.commit('isOpen', true);
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 100);
-                t.false(toHaveBeenCalled(spy1));
+                t.true(toHaveBeenCalledWith(spy1, ['', 0, 100]));
 
-                store1.commit('offsetItem', 95);
-                await _.nextVueTick(store1);
-                t.true(toHaveBeenCalledWith(spy1, ['', 0, 200]));
                 command1.fetch();
                 await _.nextVueTick(store1, spy1.promise);
 
                 t.is(store1.state.allOptions.length, 104);
                 t.is(store1.state.filteredOptions.length, 104);
+
+                resetCall(spy1);
+
+                store1.commit('offsetItem', 95);
+                await _.nextVueTick(store1);
+                t.false(toHaveBeenCalled(spy1));
+                command1.fetch();
+                await _.nextVueTick(store1, spy1.promise);
+
                 t.end();
             });
         });

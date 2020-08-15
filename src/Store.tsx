@@ -892,7 +892,6 @@ export default class SelecticStore extends Vue<Props> {
                 this.state.totalAllOptions = Infinity;
                 this.state.totalDynOptions = Infinity;
             } else {
-                // this.state.totalAllOptions = allOptions.length;
                 this.state.totalDynOptions = 0;
             }
         }
@@ -978,7 +977,6 @@ export default class SelecticStore extends Vue<Props> {
         /* When we only have partial options */
 
         const offsetItem = this.state.offsetItem;
-        const pageSize = this.state.pageSize;
         const marginSize = this.marginSize;
         const endIndex = offsetItem + marginSize;
 
@@ -989,96 +987,23 @@ export default class SelecticStore extends Vue<Props> {
         if (!search && endIndex <= allOptionsLength) {
             this.state.filteredOptions = this.buildGroupItems(allOptions);
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
+            if (this.isPartial && this.state.totalDynOptions === Infinity) {
+                this.fetchData();
+            }
             return;
         }
 
-        if (search) {
-            if (filteredOptionsLength === 0 && this.state.optionBehaviorOperation === 'sort') {
-                this.addStaticFilteredOptions();
+        if (filteredOptionsLength === 0 && this.state.optionBehaviorOperation === 'sort') {
+            this.addStaticFilteredOptions();
 
-                filteredOptionsLength = this.state.filteredOptions.length;
-                this.dynOffset = filteredOptionsLength;
-                if (endIndex <= filteredOptionsLength) {
-                    return;
-                }
-            }
-        }
-
-        if (!this.fetchCallback) {
-            this.state.status.errorMessage = this.labels.noFetchMethod;
-            return;
-        }
-
-        /* Run the query */
-        this.state.status.searching = true;
-
-        /* Manage cases where offsetItem is not equal to the last item received */
-        const offset = filteredOptionsLength - this.nbGroups(this.state.filteredOptions) - this.dynOffset;
-        const nbItems = endIndex - offset;
-        const limit = Math.ceil(nbItems / pageSize) * pageSize;
-
-        try {
-            const requestId = ++this.requestId;
-            const {total: rTotal, result} = await this.fetchCallback(search, offset, limit);
-            let total = rTotal;
-
-            /* Assert result is correctly formatted */
-            if (!Array.isArray(result)) {
-                throw new Error(this.labels.wrongFormattedData);
-            }
-
-            /* Handle case where total is not returned */
-            if (typeof total !== 'number') {
-                total = search ? this.state.totalFilteredOptions
-                               : this.state.totalDynOptions;
-
-                if (!isFinite(total)) {
-                    total = result.length;
-                }
-            }
-
-            if (!search) {
-                /* update cache */
-                this.state.totalDynOptions = total;
-                this.state.dynOptions.splice(offset, limit, ...result);
-                this.$nextTick(() => this.buildAllOptions(true));
-            }
-
-            /* Check request is not obsolete */
-            if (requestId !== this.requestId) {
+            filteredOptionsLength = this.state.filteredOptions.length;
+            this.dynOffset = filteredOptionsLength;
+            if (endIndex <= filteredOptionsLength) {
                 return;
             }
-
-            if (!search) {
-                this.state.filteredOptions = this.buildGroupItems(this.state.allOptions);
-            } else {
-                const previousItem = this.state.filteredOptions[filteredOptionsLength - 1];
-                const options = this.buildGroupItems(result, previousItem);
-                const nbGroups1 = this.nbGroups(options);
-
-                this.state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
-            }
-
-            let nbGroups = this.state.groups.size;
-            if (offset + limit >= total) {
-                nbGroups = this.nbGroups(this.state.filteredOptions);
-            }
-
-            this.state.totalFilteredOptions = total + nbGroups + this.dynOffset;
-
-            if (search && this.state.totalFilteredOptions <= this.state.filteredOptions.length) {
-                this.addStaticFilteredOptions(true);
-            }
-
-            this.state.status.errorMessage = '';
-        } catch (e) {
-            this.state.status.errorMessage = e.message;
-            if (!search) {
-                this.state.totalDynOptions = 0;
-                this.buildAllOptions(true);
-            }
         }
-        this.state.status.searching = false;
+
+        await this.fetchData();
     }
 
     private async buildSelectedOptions() {
@@ -1138,7 +1063,99 @@ export default class SelecticStore extends Vue<Props> {
         }
     }
 
+    private async fetchData() {
+        const state = this.state;
+
+        if (!this.fetchCallback) {
+            state.status.errorMessage = this.labels.noFetchMethod;
+            return;
+        }
+
+        const search = state.searchText;
+        const filteredOptionsLength = state.filteredOptions.length;
+        const offsetItem = state.offsetItem;
+        const pageSize = state.pageSize;
+        const marginSize = this.marginSize;
+        const endIndex = offsetItem + marginSize;
+
+        /* Run the query */
+        this.state.status.searching = true;
+
+        /* Manage cases where offsetItem is not equal to the last item received */
+        const offset = filteredOptionsLength - this.nbGroups(state.filteredOptions) - this.dynOffset;
+        const nbItems = endIndex - offset;
+        const limit = Math.ceil(nbItems / pageSize) * pageSize;
+
+        try {
+            const requestId = ++this.requestId;
+            const {total: rTotal, result} = await this.fetchCallback(search, offset, limit);
+            let total = rTotal;
+
+            /* Assert result is correctly formatted */
+            if (!Array.isArray(result)) {
+                throw new Error(this.labels.wrongFormattedData);
+            }
+
+            /* Handle case where total is not returned */
+            if (typeof total !== 'number') {
+                total = search ? state.totalFilteredOptions
+                               : state.totalDynOptions;
+
+                if (!isFinite(total)) {
+                    total = result.length;
+                }
+            }
+
+            if (!search) {
+                /* update cache */
+                state.totalDynOptions = total;
+                state.dynOptions.splice(offset, limit, ...result);
+                this.$nextTick(() => this.buildAllOptions(true));
+            }
+
+            /* Check request is not obsolete */
+            if (requestId !== this.requestId) {
+                return;
+            }
+
+            if (!search) {
+                state.filteredOptions = this.buildGroupItems(state.allOptions);
+            } else {
+                const previousItem = state.filteredOptions[filteredOptionsLength - 1];
+                const options = this.buildGroupItems(result, previousItem);
+                const nbGroups1 = this.nbGroups(options);
+
+                state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
+            }
+
+            let nbGroups = state.groups.size;
+            if (offset + limit >= total) {
+                nbGroups = this.nbGroups(state.filteredOptions);
+            }
+
+            state.totalFilteredOptions = total + nbGroups + this.dynOffset;
+
+            if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
+                this.addStaticFilteredOptions(true);
+            }
+
+            state.status.errorMessage = '';
+        } catch (e) {
+            state.status.errorMessage = e.message;
+            if (!search) {
+                state.totalDynOptions = 0;
+                this.buildAllOptions(true);
+            }
+        }
+
+        this.state.status.searching = false;
+    }
+
     private filterOptions(options: OptionValue[], search: string): OptionItem[] {
+        if (!search) {
+            return this.buildGroupItems(options);
+        }
+
         /* Filter options on what is search for */
         const rgx = convertToRegExp(search, 'i');
         return this.buildGroupItems(
