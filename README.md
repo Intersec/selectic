@@ -46,7 +46,7 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 * Scroll bar always indicates the size of the list (even for dynamic list),
   next pages to fetch are already computed the size of the list.
 * Performance optimisation for list containing large number of items.
-* Emits `input` and `change` events.
+* Emits `input`, `change`, `open`, and `close` events.
 * Supports a reverse selection system (for very long list where only some
   elements are not selected).
 * All displayed text can be changed (for example, to translate them in another

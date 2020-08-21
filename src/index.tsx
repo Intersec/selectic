@@ -10,10 +10,12 @@
  */
 
 /* Events emitted are:
- *   change [value]: triggered when the list is closed and a change occurs
- *   input [value]: triggered when a change occurs
- *   item:click [id]: triggered on multiple select, when user click on
+ *   change [value, isExcluded, component]: triggered when the list is closed and a change occurs
+ *   input [value, isExcluded, component]: triggered when a change occurs
+ *   item:click [id, component]: triggered on multiple select, when user click on
  *                    selected item (in main input)
+ *   open [component]: triggered when the list opens.
+ *   close [component]: triggered when the list closes.
  */
 
 import {Vue, Component, Prop, Watch} from 'vtyx';
@@ -409,12 +411,14 @@ export default class Selectic extends Vue<Props> {
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
             this.computeOffset();
+            this.$emit('open', this);
         } else {
             this.removeListeners();
             if (state.status.hasChanged) {
-                this.$emit('change', this.getValue(), state.selectionIsExcluded);
+                this.$emit('change', this.getValue(), state.selectionIsExcluded, this);
                 this.store.resetChange();
             }
+            this.$emit('close', this);
         }
     }
 
@@ -494,10 +498,10 @@ export default class Selectic extends Vue<Props> {
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
 
-            this.$emit('input', value, selectionIsExcluded);
+            this.$emit('input', value, selectionIsExcluded, this);
 
             if (!this.isFocused) {
-                this.$emit('change', value, selectionIsExcluded);
+                this.$emit('change', value, selectionIsExcluded, this);
                 this.store.resetChange();
             }
         }
@@ -603,7 +607,7 @@ export default class Selectic extends Vue<Props> {
                     store={this.store}
                     id={id}
                     on={{
-                        'item:click': (id: OptionId) => this.$emit('item:click', id),
+                        'item:click': (id: OptionId) => this.$emit('item:click', id, this),
                     }}
                     ref="mainInput"
                 />
