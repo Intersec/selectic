@@ -32,6 +32,7 @@ export interface Props {
     className?: string;
     title?: string;
     texts?: PartialMessages;
+    noCache?: Boolean;
     params?: ParamProps;
 }
 export declare function changeTexts(texts: PartialMessages): void;
@@ -51,6 +52,7 @@ export default class Selectic extends Vue<Props> {
     className: string;
     title?: string;
     texts?: PartialMessages;
+    noCache: boolean;
     params: ParamProps;
     elementBottom: number;
     elementTop: number;

@@ -43,7 +43,7 @@ This value can be changed automatically by selectic if all options are fetched.
 
 This property is to list all options available ([read how to build a list](list.md)).
 
-This property can be ommited in dynamic mode ([read how to build dynamic list](dynamic.md));
+This property can be ommited in dynamic mode ([read how to build dynamic list](dynamic.md)).
 
 ## groups
 
@@ -87,6 +87,26 @@ It changes the texts only for this component. To change texts for all selectic c
     }}
 />
 ```
+
+## noCache
+
+Type: `Boolean`
+
+If `noCache` is set to `true`, the dynamic cache is cleared each time the list is opening. This means that selectic has to re-fetch options every time.
+
+This is useful when we want up to date options from backend.
+
+This attribute has effects only in ([dynamic mode](dynamic.md)).
+
+```html
+<selectic
+    params={{
+        fetchCallback: fetchData,
+    }}
+    noCache
+/>
+```
+
 
 ## params
 

@@ -1979,8 +1979,12 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
         window.removeEventListener('resize', this.windowResize, false);
     }
     focusToggled() {
-        const state = this.store.state;
+        const store = this.store;
+        const state = store.state;
         if (this.isFocused) {
+            if (this.noCache) {
+                store.clearCache();
+            }
             this.computeWidth();
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
@@ -2162,6 +2166,9 @@ __decorate$5([
 __decorate$5([
     vtyx.Prop()
 ], Selectic$1.prototype, "texts", void 0);
+__decorate$5([
+    vtyx.Prop({ default: false })
+], Selectic$1.prototype, "noCache", void 0);
 __decorate$5([
     vtyx.Prop({ default: () => ({
             allowClearSelection: false,

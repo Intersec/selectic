@@ -156,6 +156,9 @@ export interface Props {
     /* Replace the default texts used in Selectic */
     texts?: PartialMessages;
 
+    /* If enabled, it resets the dynamic cache when selectic opens */
+    noCache?: Boolean;
+
     /* Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
@@ -209,6 +212,9 @@ export default class Selectic extends Vue<Props> {
 
     @Prop()
     public texts?: PartialMessages;
+
+    @Prop({ default: false })
+    public noCache: boolean;
 
     @Prop({default: () => ({
         allowClearSelection: false,
@@ -404,9 +410,13 @@ export default class Selectic extends Vue<Props> {
     }
 
     private focusToggled() {
-        const state = this.store.state;
+        const store = this.store;
+        const state = store.state;
 
         if (this.isFocused) {
+            if (this.noCache) {
+                store.clearCache();
+            }
             this.computeWidth();
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
