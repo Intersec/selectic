@@ -123,6 +123,9 @@ export interface SelecticStoreStateParams {
      * Example: "sort-ODE"
      */
     optionBehavior?: string;
+
+    /* If true, the component is open at start */
+    isOpen?: boolean;
 }
 
 export interface Props {

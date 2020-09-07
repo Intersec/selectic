@@ -39,6 +39,7 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 * Can load dynamically list from a server and the list can be paginate (with a
   cache system to avoid reloading previous requests).
 * Can add options from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way.
+* Possibility to combine options from different sources (static or dynamic) or to use the other as fallback (if the list is empty).
 * Supports basic Select properties like `multiple`, `disabled`, `title`
 * Supports group element (equivalent of optGroup), even for dynamic list.
 * Supports `placeholder` to display a default text when there is no selection.
@@ -55,7 +56,7 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 * Options to auto-disable the component when there is no options or only one
   mandatory option.
 * Handle selection overflow either by displaying a tag "+x more" either by adding several lines and show all selected options.
-* Possibility to combine options from different sources (static or dynamic) or to use the other as fallback (if the list is empty).
+* Possibility to open the component programatically.
 
 ## Documentation
 

@@ -8,7 +8,7 @@ All these methods should be called directly on the component instance.
 
 ## clearCache
 
-`clearCache(forceReset)`
+`clearCache(forceReset: boolean = false) => void`
 
 Whole cache in selectic are cleared, and so all options are refetched.
 This method is mainly useful in _dynamic_ mode when data should be completely changed (due to some context change).
@@ -17,7 +17,7 @@ If `forceReset` is set to `true`, the current selection is also cleared. Otherwi
 
 ## changeTexts
 
-`changeTexts(texts)`
+`changeTexts(texts: Object) => void`
 
 This method allows to change any texts used in the component.
 
@@ -45,3 +45,13 @@ This method checks if there is a selection.
 
 It returns `false` if there are no selected options and `true` if there is at least one selected option.
 
+## toggleOpen
+
+`toggleOpen(open?: boolean) => boolean`
+
+This methods force the "open" state of the component.
+
+if `open` is not set, it toggles the current state.
+
+It returns the final state.
+Keep in mind that the state can be changed immediatley afterward by automatic settings (like [autoDisabled](params.md#autoDisabled)).

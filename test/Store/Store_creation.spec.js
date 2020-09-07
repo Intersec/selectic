@@ -1587,4 +1587,65 @@ tape.test('Store creation', (subT) => {
             });
         });
     });
+
+    subT.test('"isOpen" property', (sTest) => {
+        sTest.test('should open the component', (t) => {
+            const store = new Store({
+                propsData: {
+                    options: getOptions(3),
+                    params: {
+                        isOpen: true,
+                    },
+                },
+            });
+
+            t.is(store.state.isOpen, true);
+            t.is(store.state.filteredOptions.length, 3); // should have been created as component is open
+
+            t.end();
+        });
+
+        sTest.test('should not open the component', async (t) => {
+            const store = new Store({
+                propsData: {
+                    params: {
+                        isOpen: true,
+                    },
+                },
+            });
+
+            await _.nextVueTick(store);
+
+            t.is(store.state.isOpen, false);
+            t.is(store.state.filteredOptions.length, 0);
+
+            t.end();
+        });
+
+        sTest.test('should open the component for dynamic list', async (t) => {
+            const command = {};
+            const spy = {};
+
+            const store = new Store({
+                propsData: {
+                    fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
+                    params: {
+                        isOpen: true,
+                    },
+                },
+            });
+
+            t.is(store.state.isOpen, true);
+            t.is(store.state.filteredOptions.length, 0);
+            t.true(toHaveBeenCalled(spy));
+
+            command.fetch();
+            await _.nextVueTick(store, spy.promise);
+
+            t.is(store.state.isOpen, true);
+            t.is(store.state.filteredOptions.length, 4);
+
+            t.end();
+        });
+    });
 });

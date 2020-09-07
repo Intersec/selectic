@@ -1996,6 +1996,13 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
         const total = this.store.state.totalAllOptions;
         return total === 0;
     }
+    toggleOpen(open) {
+        if (typeof open === 'undefined') {
+            open = !this.store.state.isOpen;
+        }
+        this.store.commit('isOpen', open);
+        return this.store.state.isOpen;
+    }
     /* }}} */
     /* {{{ private methods */
     computeWidth() {
@@ -2101,6 +2108,10 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
     }
     onPlaceholderChanged() {
         this.store.commit('placeholder', this.placeholder);
+    }
+    onOpenChanged() {
+        var _a;
+        this.store.commit('isOpen', (_a = this.open) !== null && _a !== void 0 ? _a : false);
     }
     onFocusChanged() {
         this.focusToggled();
@@ -2246,6 +2257,7 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                     formatSelection: this.params.formatSelection,
                     listPosition: this.params.listPosition || 'auto',
                     optionBehavior: this.params.optionBehavior,
+                    isOpen: !!this.open,
                 },
                 fetchCallback: this.params.fetchCallback,
                 getItemsCallback: this.params.getItemsCallback,
@@ -2330,6 +2342,9 @@ __decorate$5([
     vtyx.Prop({ default: false })
 ], Selectic$1.prototype, "noCache", void 0);
 __decorate$5([
+    vtyx.Prop()
+], Selectic$1.prototype, "open", void 0);
+__decorate$5([
     vtyx.Prop({ default: () => ({
             allowClearSelection: false,
             strictValue: false,
@@ -2357,6 +2372,9 @@ __decorate$5([
 __decorate$5([
     vtyx.Watch('placeholder')
 ], Selectic$1.prototype, "onPlaceholderChanged", null);
+__decorate$5([
+    vtyx.Watch('open')
+], Selectic$1.prototype, "onOpenChanged", null);
 __decorate$5([
     vtyx.Watch('isFocused')
 ], Selectic$1.prototype, "onFocusChanged", null);

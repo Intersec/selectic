@@ -666,7 +666,7 @@ tape.test('commit()', (st) => {
                 store.commit('offsetItem', 100);
                 await _.nextVueTick(store, sleep(0));
 
-                t.true(toHaveBeenCalledWith(spy, ['', 100, 100], true));
+                t.true(toHaveBeenCalledWith(spy, ['', 100, 100]));
                 t.end();
             });
         });

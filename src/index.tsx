@@ -162,6 +162,10 @@ export interface Props {
     /* If enabled, it resets the dynamic cache when selectic opens */
     noCache?: Boolean;
 
+    /* If true, the component opens (at start or if it is closed).
+     * If false, the components closes (if it is opened). */
+    open?: Boolean;
+
     /* Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
@@ -218,6 +222,9 @@ export default class Selectic extends Vue<Props> {
 
     @Prop({ default: false })
     public noCache: boolean;
+
+    @Prop()
+    public open?: boolean;
 
     @Prop({default: () => ({
         allowClearSelection: false,
@@ -351,6 +358,16 @@ export default class Selectic extends Vue<Props> {
         const total = this.store.state.totalAllOptions;
 
         return total === 0;
+    }
+
+    public toggleOpen(open?: boolean): boolean {
+        if (typeof open === 'undefined') {
+            open = !this.store.state.isOpen;
+        }
+
+        this.store.commit('isOpen', open);
+
+        return this.store.state.isOpen;
     }
 
     /* }}} */
@@ -494,6 +511,11 @@ export default class Selectic extends Vue<Props> {
     @Watch('placeholder')
     protected onPlaceholderChanged() {
         this.store.commit('placeholder', this.placeholder);
+    }
+
+    @Watch('open')
+    protected onOpenChanged() {
+        this.store.commit('isOpen', this.open ?? false);
     }
 
     @Watch('isFocused')
@@ -663,6 +685,7 @@ export default class Selectic extends Vue<Props> {
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior, /* it can be undefined */
+                isOpen: !!this.open,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,

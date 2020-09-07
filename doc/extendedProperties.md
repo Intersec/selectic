@@ -8,6 +8,8 @@ Selectic supports common properties which are related to `<select>` element ([re
 
 Type: `optionId` or `optionId[]`
 
+Default: `null` or `[]`
+
 The selected value.  This is the initial value, and it can be altered to change the current selection.
 
 This is the id of the selected option or an array of id (if `multiple` is set).
@@ -22,6 +24,8 @@ This is the id of the selected option or an array of id (if `multiple` is set).
 ## selectionIsExcluded
 
 Type: `boolean`
+
+Default: `false`
 
 It should be only used in _multiple_ mode.
 
@@ -41,6 +45,10 @@ This value can be changed automatically by selectic if all options are fetched.
 
 ## options
 
+Type: `Option[]`
+
+Default: `[]`
+
 This property is to list all options available ([read how to build a list](list.md)).
 
 This property can be ommited in dynamic mode ([read how to build dynamic list](dynamic.md)).
@@ -48,6 +56,8 @@ This property can be ommited in dynamic mode ([read how to build dynamic list](d
 ## groups
 
 Type: `Option[]`
+
+Default: `[]`
 
 This property list options which should contains other options.
 
@@ -68,6 +78,8 @@ It is required to fill this property only in _dynamic_ mode in order to know to 
 ## texts
 
 Type: `Object`
+
+Default: `{}`
 
 The `texts` property is to change texts in the component.
 
@@ -92,6 +104,8 @@ It changes the texts only for this component. To change texts for all selectic c
 
 Type: `Boolean`
 
+Default: `false`
+
 If `noCache` is set to `true`, the dynamic cache is cleared each time the list is opening. This means that selectic has to re-fetch options every time.
 
 This is useful when we want up to date options from backend.
@@ -107,6 +121,30 @@ This attribute has effects only in ([dynamic mode](dynamic.md)).
 />
 ```
 
+## open
+
+Type: `boolean`
+
+Default: `false`
+
+If `open` is set to `true`, the selectic component will open (if closed).
+If `open` is set to `false`, the selectic component will close (if opened).
+
+This allows to force the selectic to a given state. The state may be changed due to other user actions (like selecting a value which close the component). Then to re-open the component this attribute should be reset to `false` and then to `true`.
+
+It also allows to start in an open state.
+
+This attribute purpose is to change the state programatically. To keep state unchanged there are several other attributes ([disabled](extendedProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepOpenWithOtherSelectic), ...).
+The current state can be updated with the [open](events.md#open) and [close](events.md#close) events.
+
+It is also possible to change the "open" state with the method [toggleOpen](methods.md#toggleOpen).
+
+```html
+<selectic
+    options={optionList}
+    open
+/>
+```
 
 ## params
 

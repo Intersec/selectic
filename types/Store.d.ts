@@ -48,6 +48,7 @@ export interface SelecticStoreStateParams {
     formatOption?: FormatCallback;
     formatSelection?: FormatCallback;
     optionBehavior?: string;
+    isOpen?: boolean;
 }
 export interface Props {
     value?: SelectedValue;

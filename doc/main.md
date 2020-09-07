@@ -21,6 +21,8 @@
 
 * input
 * change
+* open
+* close
 
 ## Methods
 
@@ -31,3 +33,4 @@
 * getValue
 * getSelectedItems
 * isEmpty
+* toggleOpen

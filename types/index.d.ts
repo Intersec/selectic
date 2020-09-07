@@ -34,6 +34,7 @@ export interface Props {
     title?: string;
     texts?: PartialMessages;
     noCache?: Boolean;
+    open?: Boolean;
     params?: ParamProps;
 }
 export declare function changeTexts(texts: PartialMessages): void;
@@ -54,6 +55,7 @@ export default class Selectic extends Vue<Props> {
     title?: string;
     texts?: PartialMessages;
     noCache: boolean;
+    open?: boolean;
     params: ParamProps;
     elementBottom: number;
     elementTop: number;
@@ -78,6 +80,7 @@ export default class Selectic extends Vue<Props> {
     getValue(): SelectedValue;
     getSelectedItems(): OptionValue | OptionValue[];
     isEmpty(): boolean;
+    toggleOpen(open?: boolean): boolean;
     private computeWidth;
     private computeOffset;
     private removeListeners;
@@ -90,6 +93,7 @@ export default class Selectic extends Vue<Props> {
     protected onDisabledChange(): void;
     protected onGroupsChanged(): void;
     protected onPlaceholderChanged(): void;
+    protected onOpenChanged(): void;
     protected onFocusChanged(): void;
     protected onInternalValueChange(): void;
     private checkFocus;
