@@ -1033,4 +1033,64 @@ tape.test('commit()', (st) => {
             t.end();
         });
     });
+
+    st.test('when changing "isOpen"', (sTest) => {
+        sTest.test('should close other selectic components', async (t) => {
+            const store1 = new Store({propsData: {
+                options: getOptions(5),
+            }});
+            const store2 = new Store({propsData: {
+                options: getOptions(5),
+            }});
+
+            store1.commit('isOpen', true);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.isOpen, true);
+            t.is(store2.state.isOpen, false);
+
+            store2.commit('isOpen', true);
+            await _.nextVueTick(store2);
+
+            t.is(store1.state.isOpen, false); // store1 should have been closed
+            t.is(store2.state.isOpen, true);
+
+            t.end();
+        });
+
+        sTest.test('should keep selectic component open', async (t) => {
+            const store1 = new Store({propsData: {
+                options: getOptions(5),
+                keepOpenWithOtherSelectic: true,
+            }});
+            const store2 = new Store({propsData: {
+                options: getOptions(5),
+            }});
+
+            store1.commit('isOpen', true);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.isOpen, true);
+            t.is(store2.state.isOpen, false);
+
+            store2.commit('isOpen', true);
+            await _.nextVueTick(store2);
+
+            t.is(store1.state.isOpen, true); // store1 should stay open
+            t.is(store2.state.isOpen, true);
+
+            store1.commit('isOpen', false);
+            await _.nextVueTick(store1);
+
+            t.is(store2.state.isOpen, true); // nothing should happen when a component is closed
+
+            store1.commit('isOpen', true);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.isOpen, true);
+            t.is(store2.state.isOpen, false); // store2 should have been closed
+
+            t.end();
+        });
+    });
 });

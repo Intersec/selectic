@@ -120,6 +120,9 @@ export interface ParamProps {
      * Example: "sort-ODE"
      */
     optionBehavior?: string;
+
+    /* Keep this component open if another Selectic component opens */
+    keepOpenWithOtherSelectic?: boolean;
 }
 
 export interface Props {
@@ -640,6 +643,7 @@ export default class Selectic extends Vue<Props> {
             disabled: this.disabled,
             texts: this.texts,
             groups: this.groups,
+            keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
                 multiple: this.multiple,
                 pageSize: this.params.pageSize || 100,

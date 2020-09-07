@@ -333,3 +333,23 @@ Display only one source (the first which is not empty).
     options={optionList}
 />
 ```
+
+## keepOpenWithOtherSelectic
+
+Type: `boolean`
+
+Default value: `false`
+
+By default, only one selectic component can be open at the same time. So if another Selectic component is open (mainly programmtically) then any previously open component is closed.
+If `keepOpenWithOtherSelectic` is set to `true`, this component stays open when another Selectic component opens.
+
+Note: This attribute does not prevent closing when user clicks outside the component.
+
+```html
+<selectic
+    params={{
+        keepOpenWithOtherSelectic: true,
+    }}
+    options={optionList}
+/>
+```
