@@ -1,0 +1,362 @@
+/* {{{ Variables */
+
+:root {
+    --selectic-color: #555555;
+    --selectic-bg: #ffffff;
+    --selectic-color-disabled: #787878;
+    --selectic-bg-disabled: #eeeeee;
+    --selectic-more-items-bg-disabled: #cccccc;
+    --selectic-selected-item-color: #428bca;
+    --selectic-active-item-color: #ffffff;
+    --selectic-active-item-bg: #66afe9;
+    --selectic-info-bg: #5bc0de;
+    --selectic-info-color: #31708f;
+    --selectic-panel-bg: #f0f0f0;
+    --selectic-separator-bordercolor: #cccccc;
+    --selectic-value-bg: #f0f0f0;
+    --selectic-cursor-disabled: not-allowed;
+    /* XXX: Currently it is important to keep this size for a correct scroll
+     * height estimation */
+    --selectic-input-height: 30px;
+}
+
+/* }}} */
+/* {{{ Bootstrap equivalent style */
+
+.form-control {
+    display: block;
+    width: 100%;
+    height: calc(var(--selectic-input-height) + 4px);
+    /* padding: 6px 12px; */
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: var(--selectic-color, #555555);
+    background-color: var(--selectic-bg, #ffffff);
+    background-image: none;
+    border: 1px solid var(--selectic-separator-bordercolor, #cccccc); /* should use a better variable */
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+/*
+.control-label {
+    -- no important rules
+}
+*/
+.has-feedback {
+    position: relative;
+}
+/*
+.has-feedback .form-control {
+    padding-right: 42.5px;
+}
+*/
+.form-control-feedback.fa,
+.form-control-feedback {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    display: block;
+    width: calc(var(--selectic-input-height) + 4px);
+    height: calc(var(--selectic-input-height) + 4px);
+    line-height: calc(var(--selectic-input-height) + 4px);
+    text-align: center;
+    pointer-events: none;
+}
+
+/* }}} */
+
+.selectic.form-control {
+    display: inline-block;
+    padding: 0;
+    cursor: pointer;
+    border: unset;
+}
+
+.selectic .has-feedback {
+    padding-right: calc(var(--selectic-input-height) + 4px);
+}
+
+.has-feedback .selectic-input {
+    padding-right: calc(var(--selectic-input-height) + 4px);
+}
+
+.has-feedback .selectic__icon-container.form-control-feedback {
+    right: 0;
+}
+
+/* The input which contains the selected value
+ * XXX: This input should stay hidden behind other elements, but is "visible"
+ * (in term of DOM point of view) in order to get and to trigger the `focus`
+ * DOM event. */
+.selectic__input-value {
+    position: fixed;
+    opacity: 0;
+    z-index: -1000;
+    top: -100px;
+}
+
+/* XXX: .form-control has been added to this selector to improve priority and
+ * override some rules of the original .form-control */
+.selectic-input.form-control {
+    display: inline-flex;
+    justify-content: space-between;
+    overflow: hidden;
+    width: 100%;
+    min-height: var(--selectic-input-height);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 5px;
+    line-height: calc(var(--selectic-input-height) - 4px);
+    color: var(--selectic-color, #555555);
+}
+
+.selectic-input__reverse-icon {
+    align-self: center;
+    margin-right: 3px;
+    cursor: default;
+}
+.selectic-input__clear-icon {
+    align-self: center;
+    margin-left: 3px;
+    cursor: pointer;
+}
+.selectic-input__clear-icon:hover {
+    color: var(--selectic-selected-item-color, #428bca);
+}
+
+.selectic-input.focused {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.selectic-input.disabled {
+    cursor: var(--selectic-cursor-disabled, not-allowed);
+    background-color: var(--selectic-bg-disabled, #eeeeee);
+}
+.selectic-input.disabled .more-items {
+	background-color: var(--selectic-more-items-bg-disabled);
+}
+
+.selectic-input__selected-items {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.selectic-input__selected-items__placeholder {
+    font-style: italic;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.selectic-icon {
+    color: var(--selectic-color, #555555);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.selectic__extended-list {
+    position: fixed;
+    z-index: 2000;
+    background-color: var(--selectic-bg, #ffffff);
+    box-shadow: 2px 5px 12px 0px #888888;
+    border-radius: 0 0 4px 4px;
+    padding: 0;
+    min-width: 200px;
+}
+.selectic__extended-list__list-items {
+    max-height: 300px;
+    overflow: auto;
+    padding-left: 0;
+}
+
+.selectic-item {
+    min-height: calc(var(--selectic-input-height) - 3px);
+    padding: 2px 8px;
+    display: block;
+    box-sizing: border-box;
+    position: relative;
+    list-style-type: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.selectic-item:not(.selected) .selectic-item_icon {
+    opacity: 0;
+}
+
+.selectic-item__active {
+    background-color: var(--selectic-active-item-bg, #66afe9);
+    color: var(--selectic-active-item-color, #ffffff);
+}
+.selectic-item__active:not(.selected) .selectic-item_icon {
+    opacity: 0.2;
+}
+
+.selectic-item__disabled {
+    color: var(--selectic-color-disabled, #787878);
+    background-color: var(--selectic-bg-disabled, #eeeeee);
+}
+
+.selectic-item__is-in-group {
+    padding-left: 2em;
+}
+
+.selectic-item__is-group {
+    font-weight: bold;
+    cursor: default;
+}
+
+.selectic-item.selected {
+    color: var(--selectic-selected-item-color, #428bca);
+}
+.selectic-search-scope {
+    color: #e0e0e0;
+    left: auto;
+    right: 10px;
+}
+
+.selectic__message {
+    text-align: center;
+    padding: 3px;
+}
+
+.filter-panel {
+    padding: 3px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: var(--selectic-panel-bg, #f0f0f0);
+    border-bottom: 1px solid var(--selectic-separator-bordercolor, #cccccc);
+}
+
+.panelclosed {
+    max-height: 0px;
+    transition: max-height 0.3s ease-out;
+    overflow: hidden;
+}
+
+.panelopened {
+    max-height: 200px;
+    transition: max-height 0.3s ease-in;
+    overflow: hidden;
+}
+
+.filter-panel__input {
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-bottom: 10px;
+    margin-bottom: 0px;
+}
+.filter-input {
+    height: calc(var(--selectic-input-height) * 0.75);
+}
+
+.checkbox-filter {
+    padding: 5px;
+    text-align: center;
+}
+
+.curtain-handler {
+    text-align: center;
+}
+
+.toggle-selectic {
+    margin: 5px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.toggle-boolean-select-all-toggle {
+    display: inline;
+    margin-right: 15px;
+}
+
+.toggle-boolean-excluding-toggle {
+    display: inline;
+    margin-right: 15px;
+}
+
+.single-value {
+    display: grid;
+    grid-template: "value icon" 1fr / max-content max-content;
+
+    padding: 2px;
+    padding-left: 5px;
+    margin-left: 0;
+    margin-right: 5px;
+    /* margin top/bottom are mainly to create a gutter in multilines */
+    margin-top: 2px;
+    margin-bottom: 2px;
+
+    border-radius: 3px;
+    background-color: var(--selectic-value-bg, #f0f0f0);
+    max-height: calc(var(--selectic-input-height) - 10px);
+    max-width: 100%;
+    min-width: 30px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: initial;
+    vertical-align: middle;
+}
+
+.more-items {
+    display: inline-block;
+
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 10px;
+
+    background-color: var(--selectic-info-bg, #5bc0de);
+    color: var(--selectic-info-color, #31708f);
+    cursor: help;
+}
+.selectic-input__selected-items__value {
+    grid-area: value;
+    align-self: center;
+    justify-self: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.selectic-input__selected-items__icon {
+    grid-area: icon;
+    align-self: center;
+    justify-self: center;
+    margin-left: 5px;
+}
+.selectic-input__selected-items__icon:hover {
+    color: var(--selectic-selected-item-color, #428bca);
+}
+
+.selectic__label-disabled {
+    opacity: 0.5;
+    transition: opacity 400ms;
+}
+
+/* XXX: override padding of bootstrap input-sm.
+ * This padding introduce a line shift. */
+.selectic.input-sm {
+    padding: 0;
+}
+
+/* {{{ overflow multiline */
+
+.selectic--overflow-multiline,
+.selectic--overflow-multiline.form-control,
+.selectic--overflow-multiline .form-control {
+    height: unset;
+}
+
+.selectic--overflow-multiline .selectic-input {
+    overflow: unset;
+}
+
+.selectic--overflow-multiline .selectic-input__selected-items {
+    flex-wrap: wrap;
+}
+
+/* }}} */
