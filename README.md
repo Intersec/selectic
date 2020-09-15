@@ -13,13 +13,14 @@ It integrates well with VueJS and is reactive to option changes.
 
 It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 
+There are very few dependencies and package stay very small.
+
 ## Example
 
-```jsx
+```html
 <Selectic
-  multiple
   value="item2"
-  options={[{
+  :options="[{
       id: 'item1',
       text: 'The first item',
       icon: 'fa fa-thumbs-o-up',
@@ -27,11 +28,11 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
       id: 'item2',
       text: 'Another item',
       title: 'second choice',
-  }]}
+  }]"
+  multiple
 
-  onInput={this.onChange}
+  @input="onChange"
 />
-```
 
 ## Features
 
@@ -57,6 +58,7 @@ It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
   mandatory option.
 * Handle selection overflow either by displaying a tag "+x more" either by adding several lines and show all selected options.
 * Possibility to open the component programatically.
+* CSS styles can be easily changed to fit your theme.
 
 ## Documentation
 

@@ -1,20 +1,43 @@
 /* {{{ Variables */
 
 :root {
+    --selectic-font-size: 14px;
+    --selectic-cursor-disabled: not-allowed;
+
+    /* The main element */
     --selectic-color: #555555;
     --selectic-bg: #ffffff;
+
+    /* The main element (when disabled) */
     --selectic-color-disabled: #787878;
     --selectic-bg-disabled: #eeeeee;
-    --selectic-more-items-bg-disabled: #cccccc;
-    --selectic-selected-item-color: #428bca;
-    --selectic-active-item-color: #ffffff;
-    --selectic-active-item-bg: #66afe9;
-    --selectic-info-bg: #5bc0de;
-    --selectic-info-color: #31708f;
+
+    /* The list */
     --selectic-panel-bg: #f0f0f0;
     --selectic-separator-bordercolor: #cccccc;
+    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */
+
+    /* The current selected item */
+    --selectic-selected-item-color: #428bca;
+
+    /* When mouse is over items or by selecting with key arrows */
+    --selectic-active-item-color: #ffffff;
+    --selectic-active-item-bg: #66afe9;
+
+    /* Selected values in main element */
     --selectic-value-bg: #f0f0f0;
-    --selectic-cursor-disabled: not-allowed;
+    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */
+    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */
+    --selectic-more-items-bg-disabled: #cccccc;
+
+    /* Information message */
+    --selectic-info-bg: #5bc0de;
+    --selectic-info-color: #ffffff;
+
+    /* Error message */
+    --selectic-error-bg: #b72c29;
+    --selectic-error-color: #ffffff;
+
     /* XXX: Currently it is important to keep this size for a correct scroll
      * height estimation */
     --selectic-input-height: 30px;
@@ -26,31 +49,20 @@
 .form-control {
     display: block;
     width: 100%;
-    height: calc(var(--selectic-input-height) + 4px);
-    /* padding: 6px 12px; */
-    font-size: 14px;
+    height: calc(var(--selectic-input-height) - 2px);
+    font-size: var(--selectic-font-size);
     line-height: 1.42857143;
-    color: var(--selectic-color, #555555);
-    background-color: var(--selectic-bg, #ffffff);
+    color: var(--selectic-color);
+    background-color: var(--selectic-bg);
     background-image: none;
-    border: 1px solid var(--selectic-separator-bordercolor, #cccccc); /* should use a better variable */
+    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */
     border-radius: 4px;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
-/*
-.control-label {
-    -- no important rules
-}
-*/
 .has-feedback {
     position: relative;
 }
-/*
-.has-feedback .form-control {
-    padding-right: 42.5px;
-}
-*/
 .form-control-feedback.fa,
 .form-control-feedback {
     position: absolute;
@@ -60,9 +72,19 @@
     display: block;
     width: calc(var(--selectic-input-height) + 4px);
     height: calc(var(--selectic-input-height) + 4px);
-    line-height: calc(var(--selectic-input-height) + 4px);
+    line-height: var(--selectic-input-height);
     text-align: center;
     pointer-events: none;
+}
+
+.alert-info {
+    background-color: var(--selectic-info-bg);
+    color: var(--selectic-info-color);
+}
+
+.alert-danger {
+    background-color: var(--selectic-error-bg);
+    color: var(--selectic-error-color);
 }
 
 /* }}} */
@@ -72,10 +94,6 @@
     padding: 0;
     cursor: pointer;
     border: unset;
-}
-
-.selectic .has-feedback {
-    padding-right: calc(var(--selectic-input-height) + 4px);
 }
 
 .has-feedback .selectic-input {
@@ -109,7 +127,7 @@
     padding-bottom: 0;
     padding-left: 5px;
     line-height: calc(var(--selectic-input-height) - 4px);
-    color: var(--selectic-color, #555555);
+    color: var(--selectic-color);
 }
 
 .selectic-input__reverse-icon {
@@ -123,7 +141,7 @@
     cursor: pointer;
 }
 .selectic-input__clear-icon:hover {
-    color: var(--selectic-selected-item-color, #428bca);
+    color: var(--selectic-selected-item-color);
 }
 
 .selectic-input.focused {
@@ -132,8 +150,8 @@
 }
 
 .selectic-input.disabled {
-    cursor: var(--selectic-cursor-disabled, not-allowed);
-    background-color: var(--selectic-bg-disabled, #eeeeee);
+    cursor: var(--selectic-cursor-disabled);
+    background-color: var(--selectic-bg-disabled);
 }
 .selectic-input.disabled .more-items {
 	background-color: var(--selectic-more-items-bg-disabled);
@@ -153,7 +171,7 @@
 }
 
 .selectic-icon {
-    color: var(--selectic-color, #555555);
+    color: var(--selectic-color);
     text-align: center;
     vertical-align: middle;
 }
@@ -168,17 +186,18 @@
     min-width: 200px;
 }
 .selectic__extended-list__list-items {
-    max-height: 300px;
+    max-height: calc(var(--selectic-input-height) * 10);
     overflow: auto;
     padding-left: 0;
 }
 
 .selectic-item {
-    min-height: calc(var(--selectic-input-height) - 3px);
-    padding: 2px 8px;
     display: block;
-    box-sizing: border-box;
     position: relative;
+    box-sizing: border-box;
+    padding: 2px 8px;
+    color: var(--selectic-item-color, var(--selectic-color));
+    min-height: calc(var(--selectic-input-height) - 3px);
     list-style-type: none;
     white-space: nowrap;
     cursor: pointer;
@@ -188,16 +207,16 @@
 }
 
 .selectic-item__active {
-    background-color: var(--selectic-active-item-bg, #66afe9);
-    color: var(--selectic-active-item-color, #ffffff);
+    background-color: var(--selectic-active-item-bg);
+    color: var(--selectic-active-item-color);
 }
 .selectic-item__active:not(.selected) .selectic-item_icon {
     opacity: 0.2;
 }
 
 .selectic-item__disabled {
-    color: var(--selectic-color-disabled, #787878);
-    background-color: var(--selectic-bg-disabled, #eeeeee);
+    color: var(--selectic-color-disabled);
+    background-color: var(--selectic-bg-disabled);
 }
 
 .selectic-item__is-in-group {
@@ -210,7 +229,7 @@
 }
 
 .selectic-item.selected {
-    color: var(--selectic-selected-item-color, #428bca);
+    color: var(--selectic-selected-item-color);
 }
 .selectic-search-scope {
     color: #e0e0e0;
@@ -227,8 +246,8 @@
     padding: 3px;
     margin-left: 0px;
     margin-right: 0px;
-    background-color: var(--selectic-panel-bg, #f0f0f0);
-    border-bottom: 1px solid var(--selectic-separator-bordercolor, #cccccc);
+    background-color: var(--selectic-panel-bg);
+    border-bottom: 1px solid var(--selectic-separator-bordercolor);
 }
 
 .panelclosed {
@@ -291,7 +310,7 @@
     margin-bottom: 2px;
 
     border-radius: 3px;
-    background-color: var(--selectic-value-bg, #f0f0f0);
+    background-color: var(--selectic-value-bg);
     max-height: calc(var(--selectic-input-height) - 10px);
     max-width: 100%;
     min-width: 30px;
@@ -309,8 +328,8 @@
     padding-right: 5px;
     border-radius: 10px;
 
-    background-color: var(--selectic-info-bg, #5bc0de);
-    color: var(--selectic-info-color, #31708f);
+    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));
+    color: var(--selectic-more-items-color, var(--selectic-info-color));
     cursor: help;
 }
 .selectic-input__selected-items__value {
@@ -329,7 +348,7 @@
     margin-left: 5px;
 }
 .selectic-input__selected-items__icon:hover {
-    color: var(--selectic-selected-item-color, #428bca);
+    color: var(--selectic-selected-item-color);
 }
 
 .selectic__label-disabled {

@@ -19,6 +19,7 @@
  */
 
 import {Vue, Component, Prop, Watch} from 'vtyx';
+import './css/selectic.css';
 
 import Store, {
     changeTexts as storeChangeTexts,

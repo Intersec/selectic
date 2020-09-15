@@ -1,4 +1,5 @@
 import { Vue } from 'vtyx';
+import './css/selectic.css';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';

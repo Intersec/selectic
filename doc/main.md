@@ -14,6 +14,7 @@
   * optgroup
 * Advanced configuration [(details)](./params.md)
 * Change texts [(details)](./changeText.md)
+* Change CSS style [(details)](./css.md)
 
 ## Events
 

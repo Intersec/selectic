@@ -1,5 +1,12 @@
+import postcss from 'rollup-plugin-postcss';
+
 export default [{
     input: 'lib/index.js',
+    plugins: [
+        postcss({
+            extensions: [ '.css' ],
+        }),
+    ],
     output: [{
         file: 'dist/selectic.common.js',
         exports: "named",
