@@ -181,8 +181,8 @@ export default class SelecticStore extends Vue<Props> {
     private checkAutoSelect;
     private checkAutoDisabled;
     private checkHideFilter;
-    protected onOptionsChange(): void;
-    protected onChildOptionsChange(): void;
+    protected onOptionsChange(options?: OptionValue[], oldOptions?: OptionValue[]): void;
+    protected onChildOptionsChange(childOptions?: OptionValue[], oldChildOptions?: OptionValue[]): void;
     protected onValueChange(): void;
     protected onSelectionExcludedChange(): void;
     protected onDisabledChange(): void;

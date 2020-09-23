@@ -11,13 +11,16 @@ reverse selection, and many other possibilities.
 
 It integrates well with VueJS and is reactive to option changes.
 
-It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
-
-There are very few dependencies and package stay very small.
+There are very few dependencies and code stays very small (~90kB).
 
 ## Example
 
 ```html
+<Selectic
+  :options="['first choice', 'second choice', 'third choice']"
+  v-model="selection"
+/>
+
 <Selectic
   value="item2"
   :options="[{
@@ -28,19 +31,32 @@ There are very few dependencies and package stay very small.
       id: 'item2',
       text: 'Another item',
       title: 'second choice',
+  }, {
+      id: 'item3',
+      text: 'Disabled item',
+      disabled: true,
   }]"
   multiple
 
   @input="onChange"
 />
 
+<Selectic>
+  <optgroup label="Animals">
+    <option>Cat</option>
+    <option value="dog">Dog</option>
+    <option :value="42">42 goldfishes</option>
+  </optgroup>
+</Selectic>
+```
+
 ## Features
 
-* Build select from list of item (either string array or object array).
+* List of items (either string array or object array).
 * Can load dynamically list from a server and the list can be paginate (with a
   cache system to avoid reloading previous requests).
-* Can add options from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way.
-* Possibility to combine options from different sources (static or dynamic) or to use the other as fallback (if the list is empty).
+* Slots: options may be added from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way.
+* Multi-sources: Possibility to combine options from different sources (static, dynamic or slots) or to use the other as fallback (if the list is empty).
 * Supports basic Select properties like `multiple`, `disabled`, `title`
 * Supports group element (equivalent of optGroup), even for dynamic list.
 * Supports `placeholder` to display a default text when there is no selection.
@@ -59,10 +75,13 @@ There are very few dependencies and package stay very small.
 * Handle selection overflow either by displaying a tag "+x more" either by adding several lines and show all selected options.
 * Possibility to open the component programatically.
 * CSS styles can be easily changed to fit your theme.
+* Strong typing: all Typescript types are provided.
 
 ## Documentation
 
 [Read the documentation](./doc/main.md) to know how to configure Selectic and all its possibilities.
+
+It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 
 ## Tests
 

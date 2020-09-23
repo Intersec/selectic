@@ -528,10 +528,12 @@ let SelecticStore = class SelecticStore extends Vue {
             if (subOptions) {
                 const groupId = option.id;
                 this.state.groups.set(groupId, option.text);
-                subOptions.forEach((subOpt) => {
-                    subOpt.group = groupId;
+                const sOpts = subOptions.map((subOpt) => {
+                    return Object.assign({}, subOpt, {
+                        group: groupId,
+                    });
                 });
-                childOptions.push(...subOptions);
+                childOptions.push(...sOpts);
                 return;
             }
             childOptions.push(option);
@@ -950,13 +952,21 @@ let SelecticStore = class SelecticStore extends Vue {
     /* }}} */
     /* }}} */
     /* {{{ watch */
-    onOptionsChange() {
+    onOptionsChange(options, oldOptions) {
+        if (JSON.stringify(options) === JSON.stringify(oldOptions)) {
+            /* There is no real difference, only a change of reference */
+            return;
+        }
         this.cacheItem.clear();
         this.buildAllOptions();
         this.assertCorrectValue();
         this.buildSelectedOptions();
     }
-    onChildOptionsChange() {
+    onChildOptionsChange(childOptions, oldChildOptions) {
+        if (JSON.stringify(childOptions) === JSON.stringify(oldChildOptions)) {
+            /* There is no real difference, only a change of reference */
+            return;
+        }
         this.cacheItem.clear();
         this.buildAllOptions();
         this.assertCorrectValue();
