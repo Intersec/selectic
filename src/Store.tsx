@@ -838,6 +838,10 @@ export default class SelecticStore extends Vue<Props> {
         }
 
         state.internalValue = newValue;
+
+        if (state.autoSelect && newValue === null) {
+            this.checkAutoSelect();
+        }
     }
 
     private updateFilteredOptions() {
@@ -1402,8 +1406,12 @@ export default class SelecticStore extends Vue<Props> {
         const nb = enabledOptions.length;
         const value = state.internalValue;
         const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
+        const hasValidValue = hasValue && (
+            Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
+            this.hasValue(value)
+        );
         const isEmpty = nb === 0;
-        const hasOnlyOneOption = nb === 1 && hasValue && !state.allowClearSelection;
+        const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
 
         if (hasOnlyOneOption || isEmpty) {
             this.commit('isOpen', false);
@@ -1438,6 +1446,7 @@ export default class SelecticStore extends Vue<Props> {
             return;
         }
         this.cacheItem.clear();
+        this.commit('isOpen', false);
         this.buildAllOptions();
         this.assertCorrectValue();
         this.buildSelectedOptions();
@@ -1450,6 +1459,7 @@ export default class SelecticStore extends Vue<Props> {
             return;
         }
         this.cacheItem.clear();
+        this.commit('isOpen', false);
         this.buildAllOptions();
         this.assertCorrectValue();
         this.buildSelectedOptions();

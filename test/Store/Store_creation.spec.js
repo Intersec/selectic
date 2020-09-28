@@ -83,7 +83,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 isGroup: false,
             });
             t.is(state.status.errorMessage, '');
@@ -107,7 +107,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 isGroup: false,
             });
             t.is(state.status.errorMessage, '');
@@ -131,7 +131,7 @@ tape.test('Store creation', (subT) => {
                 id: 'alpha',
                 text: 'alpha',
                 disabled: false,
-                selected: false,
+                selected: true,
                 isGroup: false,
             });
             t.is(state.status.errorMessage, '');
@@ -190,7 +190,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 group: 'group1',
                 isGroup: false,
             });
@@ -235,7 +235,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 group: 'group1',
                 isGroup: false,
             });
@@ -261,7 +261,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 isGroup: false,
             });
             t.is(state.status.errorMessage, '');
@@ -290,7 +290,7 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle optgroup option', (t) => {
+        sTest.test('should handle optgroup option', async (t) => {
             const propOptions1 = getOptions(5);
             const propOptions2 = getOptions(5, '', 5);
             const propOptions = [{
@@ -305,6 +305,7 @@ tape.test('Store creation', (subT) => {
 
             const store = new Store({ propsData: { childOptions: propOptions } });
             store.commit('isOpen', true);
+            await _.nextVueTick(store);
             const state = store.state;
 
             const firstOption = state.filteredOptions[0];
@@ -314,6 +315,8 @@ tape.test('Store creation', (subT) => {
             t.is(state.totalAllOptions, 10);
             t.is(state.filteredOptions.length, 12);
             t.is(state.totalFilteredOptions, 12);
+            t.is(state.internalValue, 0, 'should auto-select the first option');
+            t.is(state.isOpen, true, 'should stay open');
 
             t.deepEqual(firstOption, {
                 id: 'group1',
@@ -326,7 +329,7 @@ tape.test('Store creation', (subT) => {
                 id: 0,
                 text: 'text0',
                 disabled: false,
-                selected: false,
+                selected: true,
                 group: 'group1',
                 isGroup: false,
             });
@@ -480,9 +483,8 @@ tape.test('Store creation', (subT) => {
                 },
             });
 
-            t.is(store.state.internalValue, null);
             await sleep(0);
-            t.is(store.state.internalValue, 0);
+            t.is(store.state.internalValue, 0, 'should select the first value');
             t.end();
         });
 
@@ -499,9 +501,8 @@ tape.test('Store creation', (subT) => {
                 },
             });
 
-            t.is(store.state.internalValue, null);
             await sleep(0);
-            t.is(store.state.internalValue, 2);
+            t.is(store.state.internalValue, 2, 'should auto-select the first enabled value');
             t.end();
         });
 
@@ -515,9 +516,8 @@ tape.test('Store creation', (subT) => {
                 },
             });
 
-            t.is(store.state.internalValue, null);
             await sleep(0);
-            t.is(store.state.internalValue, 0);
+            t.is(store.state.internalValue, 0, 'should auto-select the only option');
             t.end();
         });
 
@@ -768,9 +768,8 @@ tape.test('Store creation', (subT) => {
             store.commit('isOpen', false);
             await sleep(0);
 
-            /* assert Selectic is not disbaled */
-            t.is(store.state.disabled, false);
-            t.is(store.state.internalValue, null);
+            t.is(store.state.disabled, false, 'should not disable');
+            t.is(store.state.internalValue, null, 'should not have change value');
 
             t.end();
         });
@@ -1355,7 +1354,6 @@ tape.test('Store creation', (subT) => {
                 await _.nextVueTick(store2, spy2.promise);
 
                 t.is(store2.state.filteredOptions.length, 4);
-                t.end();
 
                 const command3 = {};
                 const spy3 = {};
@@ -1364,7 +1362,7 @@ tape.test('Store creation', (subT) => {
                     propsData: {
                         options: getOptions(0),
                         childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                        fetchCallback: buildFetchCb({ total: 4, command: command3, spy: spy3 }),
                         params: {
                             optionBehavior: 'force-OED',
                         },
@@ -1563,10 +1561,9 @@ tape.test('Store creation', (subT) => {
             });
 
             sTest.test('should call getItemsCallback only if needed', async (t) => {
-                const command1 = {};
                 const spyGetItems = {};
 
-                const store1 = new Store({
+                new Store({
                     propsData: {
                         options: getOptions(10, '', 10),
                         childOptions: getOptions(10, '', 20),

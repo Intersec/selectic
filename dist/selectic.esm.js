@@ -463,6 +463,9 @@ let SelecticStore = class SelecticStore extends Vue {
             }
         }
         state.internalValue = newValue;
+        if (state.autoSelect && newValue === null) {
+            this.checkAutoSelect();
+        }
     }
     updateFilteredOptions() {
         if (!this.doNotUpdate) {
@@ -927,8 +930,10 @@ let SelecticStore = class SelecticStore extends Vue {
         const nb = enabledOptions.length;
         const value = state.internalValue;
         const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
+        const hasValidValue = hasValue && (Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
+            this.hasValue(value));
         const isEmpty = nb === 0;
-        const hasOnlyOneOption = nb === 1 && hasValue && !state.allowClearSelection;
+        const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
         if (hasOnlyOneOption || isEmpty) {
             this.commit('isOpen', false);
             this.commit('disabled', true);
@@ -958,6 +963,7 @@ let SelecticStore = class SelecticStore extends Vue {
             return;
         }
         this.cacheItem.clear();
+        this.commit('isOpen', false);
         this.buildAllOptions();
         this.assertCorrectValue();
         this.buildSelectedOptions();
@@ -968,6 +974,7 @@ let SelecticStore = class SelecticStore extends Vue {
             return;
         }
         this.cacheItem.clear();
+        this.commit('isOpen', false);
         this.buildAllOptions();
         this.assertCorrectValue();
         this.buildSelectedOptions();

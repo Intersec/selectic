@@ -37,28 +37,41 @@ tape.test('change props', (subT) => {
 
     subT.test('"options"', (sTest) => {
         sTest.test('should change options', async (t) => {
-            const propOptions = getOptions(15, 'alpha');
+            const propOptions = getOptions(15, 'alpha', 2);
             const store = new Store({ propsData: { options: propOptions } });
             await _.nextVueTick(store);
-            store.commit('isOpen', true);
 
+            store.commit('isOpen', true);
             await _.nextVueTick(store);
 
             t.is(store.state.allOptions.length, 15);
 
+            /* change options */
             store.options = getOptions(5, 'beta');
+            await _.nextVueTick(store);
 
+            t.is(store.state.isOpen, false, 'should close the component');
+
+            store.commit('isOpen', true);
             await _.nextVueTick(store);
             const firstOption = store.state.filteredOptions[0];
+            const selectedOption = store.state.filteredOptions[2];
 
-            t.is(store.state.allOptions.length, 5);
-            t.is(store.state.totalAllOptions, 5);
-            t.is(store.state.filteredOptions.length, 5);
-            t.is(store.state.totalFilteredOptions, 5);
-            t.is(store.state.internalValue, 0);
+            t.is(store.state.allOptions.length, 5, 'should have updated allOptions');
+            t.is(store.state.totalAllOptions, 5, 'should have updated totalAllOptions');
+            t.is(store.state.filteredOptions.length, 5, 'should have updated filteredOptions');
+            t.is(store.state.totalFilteredOptions, 5, 'should have updated totalFilteredOptions');
+            t.is(store.state.internalValue, 2, 'should keep previous selected value');
             t.deepEqual(firstOption, {
                 id: 0,
                 text: 'beta0',
+                disabled: false,
+                selected: false,
+                isGroup: false,
+            });
+            t.deepEqual(selectedOption, {
+                id: 2,
+                text: 'beta2',
                 disabled: false,
                 selected: true,
                 isGroup: false,
@@ -159,16 +172,17 @@ tape.test('change props', (subT) => {
             store.options = getOptions(1, 'beta');
             await _.nextVueTick(store);
 
-            t.is(store.state.internalValue, 0);
-            t.is(store.state.disabled, true);
-            t.is(store.state.isOpen, false);
+            t.is(store.state.internalValue, 0, 'should keep the correct value selected');
+            t.is(store.state.disabled, true, 'should disable the component');
+            t.is(store.state.isOpen, false, 'should close the component');
             t.end();
         });
 
-        sTest.test('should enable the select when more options are given', async (t) => {
+        sTest.test('should not disable the select with an invalid value', async (t) => {
             const store = new Store({
                 propsData: {
-                    options: getOptions(1, 'alpha'),
+                    value: 2,
+                    options: getOptions(5, 'alpha'),
                     params: {
                         autoDisabled: true,
                     },
@@ -179,16 +193,73 @@ tape.test('change props', (subT) => {
             store.commit('isOpen', true);
             await _.nextVueTick(store);
 
-            t.is(store.state.internalValue, 0);
+            t.is(store.state.internalValue, 2);
+            t.is(store.state.disabled, false);
+            t.is(store.state.isOpen, true);
+
+            store.options = getOptions(1, 'beta', 6);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 2, 'should keep the invalid value');
+            t.is(store.state.disabled, false, 'should not disable the component');
+            t.is(store.state.isOpen, false, 'should close the component');
+            t.end();
+        });
+
+        sTest.test('should disable the select with an invalid value in strict mode', async (t) => {
+            const store = new Store({
+                propsData: {
+                    value: 2,
+                    options: getOptions(5, 'alpha'),
+                    params: {
+                        autoDisabled: true,
+                        strictValue: true,
+                        autoSelect: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 2);
+            t.is(store.state.disabled, false);
+            t.is(store.state.isOpen, true);
+
+            store.options = getOptions(1, 'beta', 6);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 6, 'should have auto-selected the first value');
+            t.is(store.state.disabled, true, 'should disable the component');
+            t.is(store.state.isOpen, false, 'should have close the component');
+            t.end();
+        });
+
+        sTest.test('should enable the select when more options are given', async (t) => {
+            const store = new Store({
+                propsData: {
+                    options: getOptions(1, 'alpha', 1),
+                    params: {
+                        autoDisabled: true,
+                    },
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 1);
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
             store.options = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
-            t.is(store.state.internalValue, 0);
-            t.is(store.state.disabled, false);
-            t.is(store.state.isOpen, false);
+            t.is(store.state.internalValue, 1, 'should keep selected value');
+            t.is(store.state.disabled, false, 'should enable the component');
+            t.is(store.state.isOpen, false, 'should close the component anyway');
             t.end();
         });
 
@@ -223,28 +294,32 @@ tape.test('change props', (subT) => {
 
     subT.test('"childOptions"', (sTest) => {
         sTest.test('should change childOptions', async (t) => {
-            const propOptions = getOptions(15, 'alpha');
+            const propOptions = getOptions(15, 'alpha', 1);
             const store = new Store({ propsData: { childOptions: propOptions } });
             await _.nextVueTick(store);
-            store.commit('isOpen', true);
 
+            store.commit('isOpen', true);
             await _.nextVueTick(store);
 
             t.is(store.state.allOptions.length, 15);
 
             store.childOptions = getOptions(5, 'beta');
-
             await _.nextVueTick(store);
-            const firstOption = store.state.filteredOptions[0];
 
-            t.is(store.state.allOptions.length, 5);
-            t.is(store.state.totalAllOptions, 5);
-            t.is(store.state.filteredOptions.length, 5);
-            t.is(store.state.totalFilteredOptions, 5);
-            t.is(store.state.internalValue, 0);
-            t.deepEqual(firstOption, {
-                id: 0,
-                text: 'beta0',
+            t.is(store.state.isOpen, false, 'should close component');
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+            const secondOption = store.state.filteredOptions[1];
+
+            t.is(store.state.allOptions.length, 5, 'should have updated allOptions');
+            t.is(store.state.totalAllOptions, 5, 'should have updated totalAllOptions');
+            t.is(store.state.filteredOptions.length, 5, 'should have updated filteredOptions');
+            t.is(store.state.totalFilteredOptions, 5, 'should have updated totalFilteredOptions');
+            t.is(store.state.internalValue, 1, 'should have kept previous selected value');
+            t.deepEqual(secondOption, {
+                id: 1,
+                text: 'beta1',
                 disabled: false,
                 selected: true,
                 isGroup: false,
