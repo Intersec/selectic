@@ -97,7 +97,7 @@
 }
 
 .has-feedback .selectic-input {
-    padding-right: calc(var(--selectic-input-height) + 4px);
+    padding-right: 0;
 }
 
 .has-feedback .selectic__icon-container.form-control-feedback {
