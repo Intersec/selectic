@@ -968,7 +968,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         }
         this.cacheItem.clear();
         this.commit('isOpen', false);
-        this.buildAllOptions();
+        this.buildAllOptions(true);
         this.assertCorrectValue();
         this.buildSelectedOptions();
     }
@@ -979,7 +979,7 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
         }
         this.cacheItem.clear();
         this.commit('isOpen', false);
-        this.buildAllOptions();
+        this.buildAllOptions(true);
         this.assertCorrectValue();
         this.buildSelectedOptions();
     }

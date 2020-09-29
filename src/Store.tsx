@@ -1447,7 +1447,7 @@ export default class SelecticStore extends Vue<Props> {
         }
         this.cacheItem.clear();
         this.commit('isOpen', false);
-        this.buildAllOptions();
+        this.buildAllOptions(true);
         this.assertCorrectValue();
         this.buildSelectedOptions();
     }
@@ -1460,7 +1460,7 @@ export default class SelecticStore extends Vue<Props> {
         }
         this.cacheItem.clear();
         this.commit('isOpen', false);
-        this.buildAllOptions();
+        this.buildAllOptions(true);
         this.assertCorrectValue();
         this.buildSelectedOptions();
     }

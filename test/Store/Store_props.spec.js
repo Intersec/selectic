@@ -290,6 +290,42 @@ tape.test('change props', (subT) => {
             t.is(store.state.isOpen, false);
             t.end();
         });
+
+        sTest.test('should fallback to next option source', async (t) => {
+            const command = {};
+            const spy = {};
+
+            const store = new Store({
+                propsData: {
+                    options: getOptions(10),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command, spy }),
+                    params: {
+                        optionBehavior: 'force-ODE',
+                    },
+                },
+            });
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+            t.is(store.state.filteredOptions.length, 10);
+
+            store.options = [];
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.sleep(0);
+            command.fetch();
+            await _.nextVueTick(store, spy.promise);
+
+            t.is(store.state.filteredOptions.length, 4, 'should fallback to dynamic options');
+
+            store.options = getOptions(3);
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.filteredOptions.length, 3, 'should get back to static options');
+            t.end();
+        });
     });
 
     subT.test('"childOptions"', (sTest) => {
@@ -513,6 +549,42 @@ tape.test('change props', (subT) => {
             t.is(store.state.internalValue, 0);
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
+            t.end();
+        });
+
+        sTest.test('should fallback to next option source', async (t) => {
+            const command = {};
+            const spy = {};
+
+            const store = new Store({
+                propsData: {
+                    options: getOptions(10),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command, spy }),
+                    params: {
+                        optionBehavior: 'force-EDO',
+                    },
+                },
+            });
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+            t.is(store.state.filteredOptions.length, 2);
+
+            store.childOptions = [];
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.sleep(0);
+            command.fetch();
+            await _.nextVueTick(store, spy.promise);
+
+            t.is(store.state.filteredOptions.length, 4, 'should fallback to dynamic options');
+
+            store.childOptions = getOptions(2);
+            await _.nextVueTick(store);
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.filteredOptions.length, 2, 'should get back to element options');
             t.end();
         });
     });
