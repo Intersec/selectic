@@ -313,6 +313,16 @@ export default class Selectic extends Vue<Props> {
         }];
     }
 
+    get hasGivenValue() {
+        const value = this.value;
+
+        return value !== null && value !== undefined;
+    }
+
+    get defaultValue() {
+        return this.params.emptyValue ?? null;
+    }
+
     /* }}} */
     /* {{{ methods */
     /* {{{ public methods */
@@ -459,6 +469,9 @@ export default class Selectic extends Vue<Props> {
                 && oldValue.length === newValue.length
                 && oldValue.every((val) => newValue.includes(val));
         }
+        if (oldValue === undefined && newValue === this.defaultValue) {
+            return true;
+        }
         return oldValue === newValue;
     }
 
@@ -476,7 +489,7 @@ export default class Selectic extends Vue<Props> {
         );
 
         if (!areSimilar) {
-            this.store.value = this.value;
+            this.store.commit('internalValue', this.value ?? null);
         }
     }
 
@@ -529,7 +542,8 @@ export default class Selectic extends Vue<Props> {
         const oldValue = this._oldValue;
         const value = this.getValue();
         const areSimilar = this.compareValues(oldValue, value);
-        const canTrigger = oldValue !== undefined && !areSimilar;
+        /* should not trigger when initializing internalValue, but should do if it changes the inital value */
+        const canTrigger = (oldValue !== undefined || !this.hasGivenValue) && !areSimilar;
 
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;

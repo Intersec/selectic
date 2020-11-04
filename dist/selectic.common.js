@@ -2005,6 +2005,14 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                 'selectic--overflow-collapsed': state.selectionOverflow === 'collapsed',
             }];
     }
+    get hasGivenValue() {
+        const value = this.value;
+        return value !== null && value !== undefined;
+    }
+    get defaultValue() {
+        var _a;
+        return (_a = this.params.emptyValue) !== null && _a !== void 0 ? _a : null;
+    }
     /* }}} */
     /* {{{ methods */
     /* {{{ public methods */
@@ -2122,17 +2130,21 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
                 && oldValue.length === newValue.length
                 && oldValue.every((val) => newValue.includes(val));
         }
+        if (oldValue === undefined && newValue === this.defaultValue) {
+            return true;
+        }
         return oldValue === newValue;
     }
     /* }}} */
     /* }}} */
     /* {{{ watch */
     onValueChange() {
+        var _a;
         const currentValue = this.store.value;
         const newValue = this.value;
         const areSimilar = this.compareValues(currentValue, newValue);
         if (!areSimilar) {
-            this.store.value = this.value;
+            this.store.commit('internalValue', (_a = this.value) !== null && _a !== void 0 ? _a : null);
         }
     }
     onExcludedChange() {
@@ -2167,7 +2179,8 @@ let Selectic$1 = class Selectic extends vtyx.Vue {
         const oldValue = this._oldValue;
         const value = this.getValue();
         const areSimilar = this.compareValues(oldValue, value);
-        const canTrigger = oldValue !== undefined && !areSimilar;
+        /* should not trigger when initializing internalValue, but should do if it changes the inital value */
+        const canTrigger = (oldValue !== undefined || !this.hasGivenValue) && !areSimilar;
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
             this.$emit('input', value, selectionIsExcluded, this);

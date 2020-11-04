@@ -76,6 +76,8 @@ export default class Selectic extends Vue<Props> {
         'selectic--overflow-multiline': boolean;
         'selectic--overflow-collapsed': boolean;
     })[];
+    get hasGivenValue(): boolean;
+    get defaultValue(): SelectedValue;
     clearCache(forceReset?: boolean): void;
     changeTexts(texts: PartialMessages): void;
     getValue(): SelectedValue;

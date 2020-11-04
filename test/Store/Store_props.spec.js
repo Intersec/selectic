@@ -8,31 +8,33 @@ const StoreFile = require('../dist/Store.js');
 const Store = StoreFile.default;
 
 tape.test('change props', (subT) => {
-    subT.test('"value" should change internalValue but not hasChanged', async (t) => {
-        const propOptions = getOptions(15, 'alpha');
-        propOptions[12].disabled = true;
+    subT.test('"value"', (sTest) => {
+        sTest.test('should change internalValue but not hasChanged', async (t) => {
+            const propOptions = getOptions(15, 'alpha');
+            propOptions[12].disabled = true;
 
-        const store = new Store({
-            propsData: {
-                options: propOptions,
-                value: 1,
-            },
+            const store = new Store({
+                propsData: {
+                    options: propOptions,
+                    value: 1,
+                },
+            });
+
+            await _.nextVueTick(store);
+            store.value = 23;
+
+            await _.nextVueTick(store);
+            t.is(store.state.internalValue, 23);
+            t.is(store.state.status.hasChanged, false);
+
+            store.value = 12;
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 12);
+            t.is(store.state.status.hasChanged, false);
+
+            t.end();
         });
-
-        await _.nextVueTick(store);
-        store.value = 23;
-
-        await _.nextVueTick(store);
-        t.is(store.state.internalValue, 23);
-        t.is(store.state.status.hasChanged, false);
-
-        store.value = 12;
-        await _.nextVueTick(store);
-
-        t.is(store.state.internalValue, 12);
-        t.is(store.state.status.hasChanged, false);
-
-        t.end();
     });
 
     subT.test('"options"', (sTest) => {
@@ -123,6 +125,59 @@ tape.test('change props', (subT) => {
 
             await _.nextVueTick(store);
             t.is(store.state.internalValue, 3);
+            t.end();
+        });
+
+        sTest.test('should accept new selection in strictValue', async (t) => {
+            const propOptions = getOptions(5, 'alpha');
+            const store = new Store({
+                propsData: {
+                    options: propOptions,
+                    value: 3,
+                    params: {
+                        autoSelect: false,
+                        strictValue: true,
+                    },
+                },
+            });
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+            store.options = getOptions(10, 'beta');
+            await _.nextVueTick(store);
+
+            store.value = 7;
+
+            await _.nextVueTick(store);
+            t.is(store.state.internalValue, 7);
+            t.end();
+        });
+
+        sTest.test('should update selection in strictValue and multiple', async (t) => {
+            const propOptions = getOptions(15, 'alpha');
+            const store = new Store({
+                propsData: {
+                    options: propOptions,
+                    value: [3, 7, 11],
+                    params: {
+                        autoSelect: false,
+                        strictValue: true,
+                        multiple: true,
+                    },
+                },
+            });
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.deepEqual(store.state.internalValue, [3, 7, 11]);
+
+            store.options = getOptions(10, 'beta');
+            await _.nextVueTick(store);
+            t.deepEqual(store.state.internalValue, [3, 7]);
+
+            store.options = getOptions(5, 'gamma');
+
+            await _.nextVueTick(store);
+            t.deepEqual(store.state.internalValue, [3]);
             t.end();
         });
 

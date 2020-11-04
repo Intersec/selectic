@@ -814,7 +814,7 @@ export default class SelecticStore extends Vue<Props> {
 
             if (isMultiple) {
                 filteredValue = (newValue as StrictOptionId[])
-                .filter((value) => this.hasItemInStore(value));
+                    .filter((value) => this.hasItemInStore(value));
                 isDifferent = filteredValue.length !== (newValue as StrictOptionId[]).length;
 
                 if (isDifferent && isPartial && !forceStrict) {
