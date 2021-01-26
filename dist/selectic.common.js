@@ -397,7 +397,6 @@ let SelecticStore = class SelecticStore extends vtyx.Vue {
     /* }}} */
     /* {{{ private methods */
     hasValue(id) {
-        const allOptions = this.state.allOptions;
         if (id === null) {
             return true;
         }

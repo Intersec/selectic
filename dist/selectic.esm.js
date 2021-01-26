@@ -393,7 +393,6 @@ let SelecticStore = class SelecticStore extends Vue {
     /* }}} */
     /* {{{ private methods */
     hasValue(id) {
-        const allOptions = this.state.allOptions;
         if (id === null) {
             return true;
         }

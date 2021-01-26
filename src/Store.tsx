@@ -753,8 +753,6 @@ export default class SelecticStore extends Vue<Props> {
     /* {{{ private methods */
 
     private hasValue(id: OptionId): boolean {
-        const allOptions = this.state.allOptions;
-
         if (id === null) {
             return true;
         }
