@@ -1438,7 +1438,7 @@ export default class SelecticStore extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('options')
-    protected onOptionsChange(options?: OptionValue[], oldOptions?: OptionValue[]) {
+    protected onOptionsChange(options: OptionValue[] = [], oldOptions: OptionValue[] = []) {
         if (JSON.stringify(options) === JSON.stringify(oldOptions)) {
             /* There is no real difference, only a change of reference */
             return;
@@ -1451,7 +1451,7 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     @Watch('childOptions')
-    protected onChildOptionsChange(childOptions?: OptionValue[], oldChildOptions?: OptionValue[]) {
+    protected onChildOptionsChange(childOptions: OptionValue[] = [], oldChildOptions: OptionValue[] = []) {
         if (JSON.stringify(childOptions) === JSON.stringify(oldChildOptions)) {
             /* There is no real difference, only a change of reference */
             return;
