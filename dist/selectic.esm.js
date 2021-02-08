@@ -2135,11 +2135,11 @@ let Selectic$1 = class Selectic extends Vue {
     /* {{{ watch */
     onValueChange() {
         var _a;
-        const currentValue = this.store.value;
-        const newValue = this.value;
+        const currentValue = this.store.state.internalValue;
+        const newValue = (_a = this.value) !== null && _a !== void 0 ? _a : null;
         const areSimilar = this.compareValues(currentValue, newValue);
         if (!areSimilar) {
-            this.store.commit('internalValue', (_a = this.value) !== null && _a !== void 0 ? _a : null);
+            this.store.commit('internalValue', newValue);
         }
     }
     onExcludedChange() {

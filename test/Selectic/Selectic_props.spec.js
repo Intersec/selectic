@@ -33,6 +33,9 @@ tape.test('change props', (subT) => {
             const selectic = new Selectic({
                 propsData: {
                     options: propOptions,
+                    params: {
+                        allowClearSelection: true,
+                    },
                 },
             });
             let hasChanged = false;
@@ -48,6 +51,18 @@ tape.test('change props', (subT) => {
             selectic.value = 2;
             await _.nextVueTick(selectic, _.sleep(0));
             t.is(selectic.getValue(), 2);
+            t.is(hasChanged, true);
+
+            hasChanged = false;
+            selectic.value = 3;
+            await _.nextVueTick(selectic, _.sleep(0));
+            t.is(selectic.getValue(), 3);
+            t.is(hasChanged, true);
+
+            hasChanged = false;
+            selectic.value = null;
+            await _.nextVueTick(selectic, _.sleep(0));
+            t.is(selectic.getValue(), null);
             t.is(hasChanged, true);
 
             t.end();

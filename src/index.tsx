@@ -481,15 +481,15 @@ export default class Selectic extends Vue<Props> {
 
     @Watch('value')
     protected onValueChange() {
-        const currentValue = this.store.value;
-        const newValue = this.value;
+        const currentValue = this.store.state.internalValue;
+        const newValue = this.value ?? null;
         const areSimilar = this.compareValues(
             currentValue as SelectedValue,
             newValue as SelectedValue
         );
 
         if (!areSimilar) {
-            this.store.commit('internalValue', this.value ?? null);
+            this.store.commit('internalValue', newValue);
         }
     }
 
