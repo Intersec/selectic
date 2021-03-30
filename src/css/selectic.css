@@ -46,7 +46,7 @@
 /* }}} */
 /* {{{ Bootstrap equivalent style */
 
-.form-control {
+.selectic .form-control {
     display: block;
     width: 100%;
     height: calc(var(--selectic-input-height) - 2px);
@@ -60,11 +60,11 @@
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
-.has-feedback {
+.selectic .has-feedback {
     position: relative;
 }
-.form-control-feedback.fa,
-.form-control-feedback {
+.selectic .form-control-feedback.fa,
+.selectic .form-control-feedback {
     position: absolute;
     top: 0;
     right: 0;
@@ -77,12 +77,12 @@
     pointer-events: none;
 }
 
-.alert-info {
+.selectic .alert-info {
     background-color: var(--selectic-info-bg);
     color: var(--selectic-info-color);
 }
 
-.alert-danger {
+.selectic .alert-danger {
     background-color: var(--selectic-error-bg);
     color: var(--selectic-error-color);
 }
@@ -244,7 +244,7 @@
     padding: 3px;
 }
 
-.filter-panel {
+.selectic .filter-panel {
     padding: 3px;
     margin-left: 0px;
     margin-right: 0px;
@@ -252,7 +252,7 @@
     border-bottom: 1px solid var(--selectic-separator-bordercolor);
 }
 
-.panelclosed {
+.selectic .panelclosed {
     max-height: 0px;
     transition: max-height 0.3s ease-out;
     overflow: hidden;
@@ -264,42 +264,42 @@
     overflow: hidden;
 }
 
-.filter-panel__input {
+.selectic .filter-panel__input {
     padding-left: 0px;
     padding-right: 0px;
     padding-bottom: 10px;
     margin-bottom: 0px;
 }
-.filter-input {
+.selectic .filter-input {
     height: calc(var(--selectic-input-height) * 0.75);
 }
 
-.checkbox-filter {
+.selectic .checkbox-filter {
     padding: 5px;
     text-align: center;
 }
 
-.curtain-handler {
+.selectic .curtain-handler {
     text-align: center;
 }
 
-.toggle-selectic {
+.selectic .toggle-selectic {
     margin: 5px;
     padding-left: 0px;
     padding-right: 0px;
 }
 
-.toggle-boolean-select-all-toggle {
+.selectic .toggle-boolean-select-all-toggle {
     display: inline;
     margin-right: 15px;
 }
 
-.toggle-boolean-excluding-toggle {
+.selectic .toggle-boolean-excluding-toggle {
     display: inline;
     margin-right: 15px;
 }
 
-.single-value {
+.selectic .single-value {
     display: grid;
     grid-template: "value icon" 1fr / max-content max-content;
 
@@ -323,7 +323,7 @@
     vertical-align: middle;
 }
 
-.more-items {
+.selectic .more-items {
     display: inline-block;
 
     padding-left: 5px;

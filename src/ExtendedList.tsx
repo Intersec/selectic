@@ -247,7 +247,7 @@ export default class ExtendedList extends Vue<Props> {
         return (
             <div
                 style={this.positionStyle}
-                class="selectic__extended-list"
+                class="selectic selectic__extended-list"
             >
               {!state.hideFilter && (
                 <Filter
