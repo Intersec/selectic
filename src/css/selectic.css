@@ -204,6 +204,13 @@
     white-space: nowrap;
     cursor: pointer;
 }
+
+.selectic-item_text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .selectic-item:not(.selected) .selectic-item_icon {
     opacity: 0;
 }

@@ -295,9 +295,21 @@ export default class Selectic extends Vue<Props> {
                             disabled: this.store.state.disabled,
                         }]}
             >
+            { this.hasValue && !this.store.state.multiple && (
+                <div class="selectic-item_text"
+                     style={this.singleStyle}
+                >
+                    {this.singleSelectedItem}
+                </div>
+            )}
+            {this.displayPlaceholder && (
+                <span class="selectic-input__selected-items__placeholder">
+                    {this.store.state.placeholder}
+                </span>
+            )}
+            {this.store.state.multiple && (
                 <div
                     class="selectic-input__selected-items"
-                    style={this.singleStyle}
                     ref="selectedItems"
                 >
                     {this.isSelectionReversed && (
@@ -306,12 +318,6 @@ export default class Selectic extends Vue<Props> {
                             title={this.reverseSelectionLabel}
                         />
                     )}
-                    {this.displayPlaceholder && (
-                        <span class="selectic-input__selected-items__placeholder">
-                            {this.store.state.placeholder}
-                        </span>
-                    )}
-                    {this.singleSelectedItem}
                     {this.showSelectedOptions.map(
                         (item) => (
                             <div
@@ -347,6 +353,7 @@ export default class Selectic extends Vue<Props> {
                         </div>
                     )}
                 </div>
+            )}
                 {this.showClearAll && (
                     <span
                         class="fa fa-times selectic-input__clear-icon"
