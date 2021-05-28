@@ -2,7 +2,7 @@
  * It manages all controls which can filter the data.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 
 import Store from './Store';
 
@@ -30,7 +30,7 @@ export default class FilterPanel extends Vue<Props> {
     /* {{{ computed */
 
     get searchPlaceholder() {
-        return this.store.labels.searchPlaceholder;
+        return this.store.data.labels.searchPlaceholder;
     }
 
     get selectionIsExcluded() {
@@ -42,7 +42,7 @@ export default class FilterPanel extends Vue<Props> {
         const state = store.state;
         const isMultiple = state.multiple;
         const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !store.hasAllItems;
+        const canNotSelect = !!state.searchText && !store.hasAllItems.value;
 
         return !isMultiple || hasItems || canNotSelect;
     }
@@ -50,7 +50,7 @@ export default class FilterPanel extends Vue<Props> {
     get disableRevert() {
         const store = this.store;
 
-        return !store.state.multiple || !store.hasFetchedAllItems;
+        return !store.state.multiple || !store.hasFetchedAllItems.value;
     }
 
     get enableRevert() {
@@ -77,11 +77,11 @@ export default class FilterPanel extends Vue<Props> {
             }
 
             this.closed = false;
-            el.value += key;
-            this.store.commit('searchText', el.value);
-            setTimeout(() => {
-                el.focus();
-            }, 0);
+            if (el) {
+                el.value += key;
+                this.store.commit('searchText', el.value);
+            }
+            this.getFocus();
         }
     }
 
@@ -103,8 +103,9 @@ export default class FilterPanel extends Vue<Props> {
     }
 
     private getFocus() {
-        if (!this.closed) {
-            setTimeout(() => this.$refs.filterInput.focus(), 0);
+        const el = this.$refs.filterInput;
+        if (!this.closed && el) {
+            setTimeout(() => el.focus(), 0);
         }
     }
 
@@ -112,29 +113,27 @@ export default class FilterPanel extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('closed')
-    protected onClosed() {
+    public onClosed() {
         this.getFocus();
     }
 
     /* }}} */
     /* {{{ Life cycle */
 
-    protected mounted() {
+    public mounted() {
         this.closed = !this.store.state.searchText;
         document.addEventListener('keypress', this.onKeyPressed);
 
         this.getFocus();
     }
 
-    protected destroyed() {
+    public destroyed() {
         document.removeEventListener('keypress', this.onKeyPressed);
     }
 
     /* }}} */
 
-    protected render() {
-        const h = this.renderWrapper();
-
+    public render() {
         return (
             <div class="filter-panel">
                 <div
@@ -173,7 +172,7 @@ export default class FilterPanel extends Vue<Props> {
                                         change: this.onSelectAll,
                                     }}
                                 />
-                                {this.store.labels.selectAll}
+                                {this.store.data.labels.selectAll}
                             </label>
                         </div>
                     )}
@@ -192,7 +191,7 @@ export default class FilterPanel extends Vue<Props> {
                                         change: this.onExclude,
                                     }}
                                 />
-                                {this.store.labels.excludeResult}
+                                {this.store.data.labels.excludeResult}
                             </label>
                         </div>
                     )}

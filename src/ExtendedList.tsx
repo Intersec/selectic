@@ -3,7 +3,7 @@
  * Content of inner elements are related to dedicated files.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 
 import Store, { OptionId } from './Store';
 import Filter from './Filter';
@@ -53,7 +53,7 @@ export default class ExtendedList extends Vue<Props> {
     /* {{{ computed */
 
     get searchingLabel() {
-        return this.store.labels.searching;
+        return this.store.data.labels.searching;
     }
 
     get searching() {
@@ -73,9 +73,9 @@ export default class ExtendedList extends Vue<Props> {
 
         if (store.state.filteredOptions.length === 0) {
             if (store.state.searchText) {
-                return store.labels.noResult;
+                return store.data.labels.noResult;
             }
-            return store.labels.noData;
+            return store.data.labels.noData;
         }
         return '';
     }
@@ -193,13 +193,13 @@ export default class ExtendedList extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('store.state.filteredOptions')
-    protected onFilteredOptionsChange() {
-        Vue.nextTick(this.computeListSize, this);
+    public onFilteredOptionsChange() {
+        this.$nextTick(this.computeListSize);
     }
 
     @Watch('store.state.hideFilter')
-    protected onHideFilterChange() {
-        Vue.nextTick(this.computeListSize, this);
+    public onHideFilterChange() {
+        this.$nextTick(this.computeListSize);
     }
 
     /* }}} */
@@ -222,13 +222,13 @@ export default class ExtendedList extends Vue<Props> {
     /* }}} */
     /* {{{ Life cycles */
 
-    protected mounted() {
+    public mounted() {
         document.body.appendChild(this.$el);
         document.body.addEventListener('keydown', this.onKeyDown);
         this.computeListSize();
     }
 
-    protected destroyed() {
+    public destroyed() {
         document.body.removeEventListener('keydown', this.onKeyDown);
 
         /* force the element to be removed from DOM */
@@ -239,10 +239,11 @@ export default class ExtendedList extends Vue<Props> {
 
     /* }}} */
 
-    protected render() {
-        const h = this.renderWrapper();
+    public render() {
         const store = this.store;
         const state = store.state;
+        const isGroup = state.groups.size > 0 &&
+            state.totalFilteredOptions > store.data.itemsPerPage;
 
         return (
             <div
@@ -254,7 +255,7 @@ export default class ExtendedList extends Vue<Props> {
                     store={this.store}
                 />
               )}
-              {state.groups.size > 0 && state.totalFilteredOptions > store.itemsPerPage && (
+              {isGroup && (
                 <span
                     class="selectic-item selectic-item--header selectic-item__is-group"
                 >

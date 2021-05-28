@@ -12,12 +12,10 @@ tape.test('state', (subT) => {
     subT.test('"selectedOptions"', (sTest) => {
         sTest.test('should be updated with static option', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(20),
-                    value: [12, 5],
-                    params: {
-                        multiple: true,
-                    },
+                options: getOptions(20),
+                value: [12, 5],
+                params: {
+                    multiple: true,
                 },
             });
 
@@ -71,14 +69,12 @@ tape.test('state', (subT) => {
             const spyGet = {};
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 200, spy: spyFetch }),
-                    getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
-                    params: {
-                        pageSize: 10,
-                    },
-                    value: 55,
+                fetchCallback: buildFetchCb({ total: 200, spy: spyFetch }),
+                getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
+                params: {
+                    pageSize: 10,
                 },
+                value: 55,
             });
 
             /* }}} */

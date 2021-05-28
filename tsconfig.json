@@ -22,6 +22,11 @@
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
 
+        "lib": [
+            "dom",
+            "esnext"
+        ],
+
         "jsx": "react",
         "jsxFactory": "h"
     },

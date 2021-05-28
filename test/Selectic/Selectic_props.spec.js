@@ -4,24 +4,40 @@ const {
     buildFetchCb,
 } = require('../helper.js');
 const _ = require('../tools.js');
+const Vue = require('vue');
+// require('jsdom-global')();
+// const { JSDOM } = require('jsdom');
+
+const createApp = Vue.createApp;
+
 const SelecticFile = require('../../dist/selectic.common.js');
 const Selectic = SelecticFile.default;
 
-tape.test('change props', (subT) => {
+function buildDom() {
+    return document.createElement('div');
+}
+
+tape.skip('change props', (subT) => {
     subT.test('"value"', (sTest) => {
         sTest.test('should change automatically internalValue', async (t) => {
             const propOptions = getOptions(10);
 
-            const selectic = new Selectic({
-                propsData: {
-                    options: propOptions,
-                },
-            });
             let hasChanged = false;
-            selectic.$on('change', () => hasChanged = true);
+            let SelecticGetValue;
+            const selectic = createApp(Selectic, {
+                options: propOptions,
+                _on: (event) => {
+                    if (event ==='change') {
+                        hasChanged = true;
+                    }
+                },
+                _getMethods: ({getValue}) => SelecticGetValue = getValue,
+            });
+            const el = buildDom();
+            selectic.mount(el);
 
             await _.nextVueTick(selectic, _.sleep(0));
-            t.is(selectic.getValue(), 0);
+            t.is(getValue(), 0);
             t.is(hasChanged, true);
 
             t.end();
@@ -30,17 +46,20 @@ tape.test('change props', (subT) => {
         sTest.test('should change internalValue but not hasChanged at start', async (t) => {
             const propOptions = getOptions(10);
 
+            let hasChanged = false;
             const selectic = new Selectic({
                 propsData: {
                     options: propOptions,
                     params: {
                         allowClearSelection: true,
                     },
+                    $on: (event) => {
+                        if (event ==='change') {
+                            hasChanged = true;
+                        }
+                    },
                 },
             });
-            let hasChanged = false;
-            selectic.$on('change', () => hasChanged = true);
-
             selectic.value = 5;
 
             await _.nextVueTick(selectic, _.sleep(0));

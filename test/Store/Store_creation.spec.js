@@ -31,18 +31,18 @@ tape.test('Store creation', (subT) => {
     subT.test('should handle initial properties', (t) => {
         const defaultStore = new Store();
 
-        t.deepEqual(defaultStore.state, getInitialState());
+        t.deepEqual(defaultStore.state, getInitialState({
+            disabled: true,
+        }));
 
         const store = new Store({
-            propsData: {
-                params: {
-                    multiple: true,
-                    pageSize: 10,
-                    hideFilter: true,
-                    allowClearSelection: true,
-                    groups: getGroups(2),
-                    autoSelect: false,
-                },
+            params: {
+                multiple: true,
+                pageSize: 10,
+                hideFilter: true,
+                allowClearSelection: true,
+                groups: getGroups(2),
+                autoSelect: false,
             },
         });
 
@@ -61,15 +61,18 @@ tape.test('Store creation', (subT) => {
                 text: 'group id 2',
             }],
             autoSelect: false,
+            disabled: true,
         }));
 
         t.end();
     });
 
     subT.test('"options" property', (sTest) => {
-        sTest.test('should handle short options list', (t) => {
+        sTest.test('should handle short options list', async (t) => {
             const propOptions = getOptions(5);
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions } );
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -91,9 +94,11 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle long options list', (t) => {
+        sTest.test('should handle long options list', async (t) => {
             const propOptions = getOptions(15000);
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -115,9 +120,11 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle string options list', (t) => {
+        sTest.test('should handle string options list', async (t) => {
             const propOptions = ['alpha', 'bravo', 'charlie', 'delta'];
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -139,10 +146,12 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle disabled option', (t) => {
+        sTest.test('should handle disabled option', async (t) => {
             const propOptions = getOptions(5);
             propOptions[0].disabled = true;
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -160,12 +169,14 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle group option', (t) => {
+        sTest.test('should handle group option', async (t) => {
             const propOptions1 = getOptions(5, '', 0, 'group1');
             const propOptions2 = getOptions(5, '', 5, 'group2');
             const propOptions = propOptions1.concat(propOptions2);
 
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -199,7 +210,7 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle inner group option', (t) => {
+        sTest.test('should handle inner group option', async (t) => {
             const propOptions1 = getOptions(5);
             const propOptions2 = getOptions(5, '', 5);
             const propOptions = [{
@@ -212,7 +223,9 @@ tape.test('Store creation', (subT) => {
                 options: propOptions2,
             }];
 
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
             const state = store.state;
 
@@ -245,9 +258,11 @@ tape.test('Store creation', (subT) => {
     });
 
     subT.test('"childOptions" property', (sTest) => {
-        sTest.test('should handle simple options list', (t) => {
+        sTest.test('should handle simple options list', async (t) => {
             const propOptions = getOptions(5);
-            const store = new Store({ propsData: { childOptions: propOptions } });
+            const store = new Store({ childOptions: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -269,10 +284,12 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should handle disabled option', (t) => {
+        sTest.test('should handle disabled option', async (t) => {
             const propOptions = getOptions(5);
             propOptions[0].disabled = true;
-            const store = new Store({ propsData: { childOptions: propOptions } });
+            const store = new Store({ childOptions: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
 
             const state = store.state;
@@ -303,7 +320,9 @@ tape.test('Store creation', (subT) => {
                 options: propOptions2,
             }];
 
-            const store = new Store({ propsData: { childOptions: propOptions } });
+            const store = new Store({ childOptions: propOptions });
+
+            await sleep(0);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
             const state = store.state;
@@ -341,13 +360,11 @@ tape.test('Store creation', (subT) => {
     subT.test('"value" property', (sTest) => {
         sTest.test('should handle single value', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(5),
-                    params: {
-                        multiple: false,
-                    },
-                    value: 3,
+                options: getOptions(5),
+                params: {
+                    multiple: false,
                 },
+                value: 3,
             });
 
             await _.nextVueTick(store);
@@ -359,13 +376,11 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should handle multiple value', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(5),
-                    params: {
-                        multiple: true,
-                    },
-                    value: [3, 2],
+                options: getOptions(5),
+                params: {
+                    multiple: true,
                 },
+                value: [3, 2],
             });
 
             await _.nextVueTick(store);
@@ -377,18 +392,32 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should handle unknown value', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    params: {
-                        multiple: false,
-                    },
-                    value: 42,
+                options: getOptions(1),
+                params: {
+                    multiple: false,
                 },
+                value: 42,
             });
 
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 42);
+            t.is(store.state.status.hasChanged, false);
+            t.end();
+        });
+
+        sTest.test('should convert to multiple value', async (t) => {
+            const store = new Store({
+                options: getOptions(5),
+                params: {
+                    multiple: true,
+                },
+                value: 2,
+            });
+
+            await _.nextVueTick(store);
+
+            t.deepEqual(store.state.internalValue, [2]);
             t.is(store.state.status.hasChanged, false);
             t.end();
         });
@@ -399,7 +428,7 @@ tape.test('Store creation', (subT) => {
             let response = false;
             const fetchCallback = () => reponse = true;
 
-            const store = new Store({ propsData: { fetchCallback: fetchCallback } });
+            const store = new Store({ fetchCallback: fetchCallback });
 
             t.is(response, false);
             t.is(store.state.allOptions.length, 0);
@@ -410,12 +439,10 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should handle "value"', (t) => {
             const store = new Store({
-                propsData: {
-                    fetchCallback: function () {},
-                    value: [189, 45, 'hello'],
-                    params: {
-                        multiple: true,
-                    },
+                fetchCallback: function () {},
+                value: [189, 45, 'hello'],
+                params: {
+                    multiple: true,
                 },
             });
 
@@ -427,13 +454,11 @@ tape.test('Store creation', (subT) => {
     subT.test('"selectionIsExcluded" property', (sTest) => {
         sTest.test('should set the selectionIsExcluded state', (t) => {
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 5 }),
-                    value: [1],
-                    selectionIsExcluded: true,
-                    params: {
-                        multiple: true,
-                    },
+                fetchCallback: buildFetchCb({ total: 5 }),
+                value: [1],
+                selectionIsExcluded: true,
+                params: {
+                    multiple: true,
                 },
             });
 
@@ -442,17 +467,17 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
-        sTest.test('should not applied for single value', (t) => {
+        sTest.test('should not applied for single value', async (t) => {
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 5 }),
-                    value: 1,
-                    selectionIsExcluded: true,
-                    params: {
-                        multiple: false,
-                    },
+                fetchCallback: buildFetchCb({ total: 5 }),
+                value: 1,
+                selectionIsExcluded: true,
+                params: {
+                    multiple: false,
                 },
             });
+
+            await sleep(0);
 
             t.deepEqual(store.state.internalValue, 1);
             t.is(store.state.selectionIsExcluded, false);
@@ -462,10 +487,8 @@ tape.test('Store creation', (subT) => {
 
     subT.test('"disabled" property should set the state', (t) => {
         const store = new Store({
-            propsData: {
-                options: getOptions(3),
-                disabled: true,
-            },
+            options: getOptions(3),
+            disabled: true,
         });
 
         t.is(store.state.disabled, true);
@@ -475,12 +498,10 @@ tape.test('Store creation', (subT) => {
     subT.test('"autoSelect" property', (sTest) => {
         sTest.test('should select the first option', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: true,
-                    },
-                    options: getOptions(2),
+                params: {
+                    autoSelect: true,
                 },
+                options: getOptions(2),
             });
 
             await sleep(0);
@@ -493,12 +514,10 @@ tape.test('Store creation', (subT) => {
             options[0].disabled = true;
             options[1].disabled = true;
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: true,
-                    },
-                    options: options,
+                params: {
+                    autoSelect: true,
                 },
+                options: options,
             });
 
             await sleep(0);
@@ -508,12 +527,10 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should select the only option', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: true,
-                    },
-                    options: getOptions(1),
+                params: {
+                    autoSelect: true,
                 },
+                options: getOptions(1),
             });
 
             await sleep(0);
@@ -523,13 +540,11 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not select option when it can be removed', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: true,
-                        allowClearSelection: true,
-                    },
-                    options: getOptions(1),
+                params: {
+                    autoSelect: true,
+                    allowClearSelection: true,
                 },
+                options: getOptions(1),
             });
 
             t.is(store.state.internalValue, null);
@@ -540,13 +555,11 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not select the only option when false', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: false,
-                        allowClearSelection: false,
-                    },
-                    options: getOptions(1),
+                params: {
+                    autoSelect: false,
+                    allowClearSelection: false,
                 },
+                options: getOptions(1),
             });
 
             t.is(store.state.internalValue, null);
@@ -560,13 +573,11 @@ tape.test('Store creation', (subT) => {
             options[0].disabled = true;
             options[2].disabled = true;
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: false,
-                        allowClearSelection: false,
-                    },
-                    options: options,
+                params: {
+                    autoSelect: false,
+                    allowClearSelection: false,
                 },
+                options: options,
             });
 
             t.is(store.state.internalValue, null);
@@ -577,13 +588,11 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not select option in multiple', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        autoSelect: true,
-                        multiple: true,
-                    },
-                    options: getOptions(1),
+                params: {
+                    autoSelect: true,
+                    multiple: true,
                 },
+                options: getOptions(1),
             });
 
             await sleep(0);
@@ -595,12 +604,10 @@ tape.test('Store creation', (subT) => {
     subT.test('"autoDisabled" property', (sTest) => {
         sTest.test('should disable empty select', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: [],
-                    disabled: false,
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: [],
+                disabled: false,
+                params: {
+                    autoDisabled: true,
                 },
             });
 
@@ -613,12 +620,10 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should disable select with only one option', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                params: {
+                    autoDisabled: true,
                 },
             });
 
@@ -631,12 +636,10 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not disable select with several options', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(2),
-                    disabled: false,
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: getOptions(2),
+                disabled: false,
+                params: {
+                    autoDisabled: true,
                 },
             });
 
@@ -650,14 +653,12 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not disable select when it is possible to remove selection', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    value: 0,
-                    params: {
-                        autoDisabled: true,
-                        allowClearSelection: true,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                value: 0,
+                params: {
+                    autoDisabled: true,
+                    allowClearSelection: true,
                 },
             });
 
@@ -670,12 +671,10 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not disable select without autoDisabled', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    params: {
-                        autoDisabled: false,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                params: {
+                    autoDisabled: false,
                 },
             });
 
@@ -688,13 +687,11 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not disable select without autoSelect', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    params: {
-                        autoDisabled: true,
-                        autoSelect: false,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                params: {
+                    autoDisabled: true,
+                    autoSelect: false,
                 },
             });
 
@@ -708,14 +705,12 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should disable select without autoSelect which have a selected value', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    value: 0,
-                    params: {
-                        autoDisabled: true,
-                        autoSelect: false,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                value: 0,
+                params: {
+                    autoDisabled: true,
+                    autoSelect: false,
                 },
             });
 
@@ -729,14 +724,12 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not disable select when allowClearSelection', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1),
-                    disabled: false,
-                    params: {
-                        allowClearSelection: true,
-                        autoDisabled: true,
-                        autoSelect: true,
-                    },
+                options: getOptions(1),
+                disabled: false,
+                params: {
+                    allowClearSelection: true,
+                    autoDisabled: true,
+                    autoSelect: true,
                 },
             });
 
@@ -749,22 +742,23 @@ tape.test('Store creation', (subT) => {
         });
 
         sTest.test('should not disable select in dynamic mode', async (t) => {
+            const spy = {};
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 1 }),
-                    disabled: false,
-                    params: {
-                        autoDisabled: true,
-                    },
+                fetchCallback: buildFetchCb({ total: 1, spy: spy }),
+                disabled: false,
+                params: {
+                    autoDisabled: true,
                 },
             });
+
+            await sleep(0);
 
             t.is(store.state.disabled, false);
             t.is(store.state.internalValue, null);
 
             /* Load data */
             store.commit('isOpen', true);
-            await sleep(0);
+            await _.nextVueTick(store, spy.promise);
             store.commit('isOpen', false);
             await sleep(0);
 
@@ -779,14 +773,12 @@ tape.test('Store creation', (subT) => {
         st.test('in static mode', (sTest) => {
             sTest.test('should not keep single selection', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            strictValue: true,
-                            autoSelect: false,
-                        },
-                        options: getOptions(2),
-                        value: 'hello',
+                    params: {
+                        strictValue: true,
+                        autoSelect: false,
                     },
+                    options: getOptions(2),
+                    value: 'hello',
                 });
 
                 await sleep(0);
@@ -796,14 +788,12 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should not keep invalid values in multiple selection', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            multiple: true,
-                            strictValue: true,
-                        },
-                        options: getOptions(5),
-                        value: [2, 'hello', 1, true],
+                    params: {
+                        multiple: true,
+                        strictValue: true,
                     },
+                    options: getOptions(5),
+                    value: [2, 'hello', 1, true],
                 });
 
                 await sleep(0);
@@ -813,14 +803,12 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should keep single incoherent selection when disabled', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            strictValue: false,
-                            autoSelect: false,
-                        },
-                        options: getOptions(2),
-                        value: 'hello',
+                    params: {
+                        strictValue: false,
+                        autoSelect: false,
                     },
+                    options: getOptions(2),
+                    value: 'hello',
                 });
 
                 await sleep(0);
@@ -830,14 +818,12 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should keep incoherent values in multiple selection when disabled', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            multiple: true,
-                            strictValue: false,
-                        },
-                        options: getOptions(5),
-                        value: [2, 'hello', 1, true],
+                    params: {
+                        multiple: true,
+                        strictValue: false,
                     },
+                    options: getOptions(5),
+                    value: [2, 'hello', 1, true],
                 });
 
                 await sleep(0);
@@ -850,18 +836,16 @@ tape.test('Store creation', (subT) => {
             sTest.test('should set the internal value to null with invalid selection on single mode', async (t) => {
                 const spyGetItems = {};
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 3 }),
-                        getItemsCallback: buildGetItemsCb({ someIds: [], spy: spyGetItems}),
-                        params: {
-                            strictValue: true,
-                        },
-                        value: 0,
+                    fetchCallback: buildFetchCb({ total: 3 }),
+                    getItemsCallback: buildGetItemsCb({ someIds: [], spy: spyGetItems}),
+                    params: {
+                        strictValue: true,
                     },
+                    value: 0,
                 });
 
                 await sleep(0);
-                t.is(spyGetItems.nbCall, 1);
+                t.true(spyGetItems.nbCall >= 1, 'fetch callback should be called at least once');
                 t.deepEqual(store.state.internalValue, null);
                 t.end();
             });
@@ -869,18 +853,16 @@ tape.test('Store creation', (subT) => {
             sTest.test('should keep the internal value with valid selection on single mode', async (t) => {
                 const spyGetItems = {};
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 3 }),
-                        getItemsCallback: buildGetItemsCb({ someIds: [0], spy: spyGetItems }),
-                        params: {
-                            strictValue: true,
-                        },
-                        value: 0,
+                    fetchCallback: buildFetchCb({ total: 3 }),
+                    getItemsCallback: buildGetItemsCb({ someIds: [0], spy: spyGetItems }),
+                    params: {
+                        strictValue: true,
                     },
+                    value: 0,
                 });
 
                 await sleep(0);
-                t.is(spyGetItems.nbCall, 1);
+                t.is(spyGetItems.nbCall, 1, 'fetch callback should be called only once when items have been found');
                 t.deepEqual(store.state.internalValue, 0);
                 t.end();
             });
@@ -888,19 +870,17 @@ tape.test('Store creation', (subT) => {
             sTest.test('should remove the invalid options from internal value on multiple mode', async (t) => {
                 const spyGetItems = {};
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 3 }),
-                        getItemsCallback: buildGetItemsCb({ someIds: [2], spy: spyGetItems }),
-                        params: {
-                            multiple: true,
-                            strictValue: true,
-                        },
-                        value: [2, 3, 4],
+                    fetchCallback: buildFetchCb({ total: 3 }),
+                    getItemsCallback: buildGetItemsCb({ someIds: [2], spy: spyGetItems }),
+                    params: {
+                        multiple: true,
+                        strictValue: true,
                     },
+                    value: [2, 3, 4],
                 });
 
                 await sleep(0);
-                t.is(spyGetItems.nbCall, 1);
+                t.true(spyGetItems.nbCall >= 1, 'fetch callback should be called at least once');
                 t.deepEqual(store.state.internalValue, [2]);
                 t.end();
             });
@@ -911,11 +891,9 @@ tape.test('Store creation', (subT) => {
         st.test('having value "auto"', (sTest) => {
             sTest.test('should hide filter with few options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            hideFilter: 'auto',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        hideFilter: 'auto',
                     },
                 });
 
@@ -927,11 +905,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should show filter with many options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(11),
-                        params: {
-                            hideFilter: 'auto',
-                        },
+                    options: getOptions(11),
+                    params: {
+                        hideFilter: 'auto',
                     },
                 });
                 await sleep(0);
@@ -942,12 +918,10 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should show filter with multiple', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            hideFilter: 'auto',
-                            multiple: true,
-                        },
+                    options: getOptions(3),
+                    params: {
+                        hideFilter: 'auto',
+                        multiple: true,
                     },
                 });
                 await sleep(0);
@@ -958,11 +932,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should show filter with dynamic options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 5 }),
-                        params: {
-                            hideFilter: 'auto',
-                        },
+                    fetchCallback: buildFetchCb({ total: 5 }),
+                    params: {
+                        hideFilter: 'auto',
                     },
                 });
                 await sleep(0);
@@ -986,11 +958,9 @@ tape.test('Store creation', (subT) => {
         st.test('having value "false"', (sTest) => {
             sTest.test('should show filter with few options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            hideFilter: false,
-                        },
+                    options: getOptions(3),
+                    params: {
+                        hideFilter: false,
                     },
                 });
                 await sleep(0);
@@ -1001,11 +971,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should show filter with dynamic options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 5 }),
-                        params: {
-                            hideFilter: false,
-                        },
+                    fetchCallback: buildFetchCb({ total: 5 }),
+                    params: {
+                        hideFilter: false,
                     },
                 });
                 await sleep(0);
@@ -1029,11 +997,9 @@ tape.test('Store creation', (subT) => {
         st.test('having value "true"', (sTest) => {
             sTest.test('should hide filter with many options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(11),
-                        params: {
-                            hideFilter: true,
-                        },
+                    options: getOptions(11),
+                    params: {
+                        hideFilter: true,
                     },
                 });
                 await sleep(0);
@@ -1044,12 +1010,10 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should hide filter with multiple', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            hideFilter: true,
-                            multiple: true,
-                        },
+                    options: getOptions(3),
+                    params: {
+                        hideFilter: true,
+                        multiple: true,
                     },
                 });
                 await sleep(0);
@@ -1060,11 +1024,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should hide filter with dynamic options', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 15 }),
-                        params: {
-                            hideFilter: true,
-                        },
+                    fetchCallback: buildFetchCb({ total: 15 }),
+                    params: {
+                        hideFilter: true,
                     },
                 });
                 await sleep(0);
@@ -1090,11 +1052,9 @@ tape.test('Store creation', (subT) => {
         st.test('changing "operation"', (sTest) => {
             sTest.test('should update the state to sort', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-ODE',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-ODE',
                     },
                 });
 
@@ -1107,11 +1067,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should update the state to force', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'force-ODE',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'force-ODE',
                     },
                 });
 
@@ -1124,18 +1082,16 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should not update the state with unknown property', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'unknown-ODE',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'unknown-ODE',
                     },
                 });
 
                 await sleep(0);
 
                 t.is(store.state.optionBehaviorOperation, 'sort');
-                t.is(store.state.status.errorMessage, store.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+                t.is(store.state.status.errorMessage, store.data.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
                 t.end();
             });
         });
@@ -1143,11 +1099,9 @@ tape.test('Store creation', (subT) => {
         st.test('changing "order"', (sTest) => {
             sTest.test('should update the state', async (t) => {
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-ODE',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-ODE',
                     },
                 });
 
@@ -1157,11 +1111,9 @@ tape.test('Store creation', (subT) => {
                 t.is(store1.state.status.errorMessage, '');
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-EDO',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-EDO',
                     },
                 });
 
@@ -1171,11 +1123,9 @@ tape.test('Store creation', (subT) => {
                 t.is(store2.state.status.errorMessage, '');
 
                 const store3 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-DEO',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-DEO',
                     },
                 });
 
@@ -1188,11 +1138,9 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should update the state with shorter list', async (t) => {
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-DE',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-DE',
                     },
                 });
 
@@ -1202,11 +1150,9 @@ tape.test('Store creation', (subT) => {
                 t.is(store1.state.status.errorMessage, '');
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-D',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-D',
                     },
                 });
 
@@ -1219,42 +1165,36 @@ tape.test('Store creation', (subT) => {
 
             sTest.test('should not update state with unknown values', async (t) => {
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-DEOA',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-DEOA',
                     },
                 });
 
                 await sleep(0);
 
                 t.deepEqual(store1.state.optionBehaviorOrder, ['O', 'D', 'E']);
-                t.is(store1.state.status.errorMessage, store1.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+                t.is(store1.state.status.errorMessage, store1.data.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-EOS',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-EOS',
                     },
                 });
 
                 await sleep(0);
 
                 t.deepEqual(store2.state.optionBehaviorOrder, ['O', 'D', 'E']);
-                t.is(store2.state.status.errorMessage, store2.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
+                t.is(store2.state.status.errorMessage, store2.data.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior'));
                 t.end();
             });
 
             sTest.test('should keep the first value with repeated values', async (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        params: {
-                            optionBehavior: 'sort-EDEED',
-                        },
+                    options: getOptions(3),
+                    params: {
+                        optionBehavior: 'sort-EDEED',
                     },
                 });
 
@@ -1272,16 +1212,15 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'force-DOE',
-                        },
+                    options: getOptions(3),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'force-DOE',
                     },
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 0);
@@ -1294,15 +1233,14 @@ tape.test('Store creation', (subT) => {
                 const spy2 = {};
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
-                        params: {
-                            optionBehavior: 'force-ODE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                    params: {
+                        optionBehavior: 'force-ODE',
                     },
                 });
 
+                await sleep(0);
                 store2.commit('isOpen', true);
                 await sleep(0);
 
@@ -1317,16 +1255,15 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'force-DOE',
-                        },
+                    options: getOptions(3),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'force-DOE',
                     },
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
                 command1.fetch();
@@ -1338,16 +1275,15 @@ tape.test('Store creation', (subT) => {
                 const spy2 = {};
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(0),
-                        childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
-                        params: {
-                            optionBehavior: 'force-ODE',
-                        },
+                    options: getOptions(0),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                    params: {
+                        optionBehavior: 'force-ODE',
                     },
                 });
 
+                await sleep(0);
                 store2.commit('isOpen', true);
                 await sleep(0);
                 command2.fetch();
@@ -1359,16 +1295,15 @@ tape.test('Store creation', (subT) => {
                 const spy3 = {};
 
                 const store3 = new Store({
-                    propsData: {
-                        options: getOptions(0),
-                        childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 4, command: command3, spy: spy3 }),
-                        params: {
-                            optionBehavior: 'force-OED',
-                        },
+                    options: getOptions(0),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command: command3, spy: spy3 }),
+                    params: {
+                        optionBehavior: 'force-OED',
                     },
                 });
 
+                await sleep(0);
                 store3.commit('isOpen', true);
                 await sleep(0);
                 command3.fetch();
@@ -1383,17 +1318,16 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(0),
-                        childOptions: getOptions(3, '', 10),
-                        fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'force-DOE',
-                        },
-                        keepOpenWithOtherSelectic: true,
+                    options: getOptions(0),
+                    childOptions: getOptions(3, '', 10),
+                    fetchCallback: buildFetchCb({ total: 0, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'force-DOE',
                     },
+                    keepOpenWithOtherSelectic: true,
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
                 command1.fetch();
@@ -1405,17 +1339,16 @@ tape.test('Store creation', (subT) => {
                 const spy2 = {};
 
                 const store2 = new Store({
-                    propsData: {
-                        options: getOptions(0),
-                        childOptions: getOptions(0),
-                        fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
-                        params: {
-                            optionBehavior: 'force-OED',
-                        },
-                        keepOpenWithOtherSelectic: true,
+                    options: getOptions(0),
+                    childOptions: getOptions(0),
+                    fetchCallback: buildFetchCb({ total: 4, command: command2, spy: spy2 }),
+                    params: {
+                        optionBehavior: 'force-OED',
                     },
+                    keepOpenWithOtherSelectic: true,
                 });
 
+                await sleep(0);
                 store2.commit('isOpen', true);
                 await sleep(0);
                 command2.fetch();
@@ -1427,17 +1360,16 @@ tape.test('Store creation', (subT) => {
                 const spy3 = {};
 
                 const store3 = new Store({
-                    propsData: {
-                        options: getOptions(0),
-                        childOptions: getOptions(2),
-                        fetchCallback: buildFetchCb({ total: 0, command: command3, spy: spy3 }),
-                        params: {
-                            optionBehavior: 'force-EDO',
-                        },
-                        keepOpenWithOtherSelectic: true,
+                    options: getOptions(0),
+                    childOptions: getOptions(2),
+                    fetchCallback: buildFetchCb({ total: 0, command: command3, spy: spy3 }),
+                    params: {
+                        optionBehavior: 'force-EDO',
                     },
+                    keepOpenWithOtherSelectic: true,
                 });
 
+                await sleep(0);
                 store3.commit('isOpen', true);
                 await sleep(0);
                 command3.fetch();
@@ -1452,15 +1384,14 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'force-DOE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'force-DOE',
                     },
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
 
@@ -1478,16 +1409,15 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        childOptions: getOptions(2, '', 10),
-                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'sort-DOE',
-                        },
+                    options: getOptions(3),
+                    childOptions: getOptions(2, '', 10),
+                    fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'sort-DOE',
                     },
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 0);
@@ -1503,16 +1433,15 @@ tape.test('Store creation', (subT) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        childOptions: getOptions(2),
-                        fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
-                        params: {
-                            optionBehavior: 'sort-EOD',
-                        },
+                    options: getOptions(3),
+                    childOptions: getOptions(2),
+                    fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
+                    params: {
+                        optionBehavior: 'sort-EOD',
                     },
                 });
 
+                await sleep(0);
                 store.commit('isOpen', true);
                 await sleep(0);
                 t.is(store.state.filteredOptions.length, 5); // previous options should be displayed
@@ -1529,15 +1458,14 @@ tape.test('Store creation', (subT) => {
                 const spy1 = {};
 
                 const store1 = new Store({
-                    propsData: {
-                        options: getOptions(100),
-                        fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
-                        params: {
-                            optionBehavior: 'sort-OED',
-                        },
+                    options: getOptions(100),
+                    fetchCallback: buildFetchCb({ total: 4, command: command1, spy: spy1 }),
+                    params: {
+                        optionBehavior: 'sort-OED',
                     },
                 });
 
+                await sleep(0);
                 store1.commit('isOpen', true);
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 100);
@@ -1564,16 +1492,14 @@ tape.test('Store creation', (subT) => {
                 const spyGetItems = {};
 
                 new Store({
-                    propsData: {
-                        options: getOptions(10, '', 10),
-                        childOptions: getOptions(10, '', 20),
-                        fetchCallback: buildFetchCb({ total: 10 }),
-                        getItemsCallback: buildGetItemsCb({ spy: spyGetItems}),
-                        value: [15, 1, 25, 35],
-                        params: {
-                            multiple: true,
-                            optionBehavior: 'sort-DEO',
-                        },
+                    options: getOptions(10, '', 10),
+                    childOptions: getOptions(10, '', 20),
+                    fetchCallback: buildFetchCb({ total: 10 }),
+                    getItemsCallback: buildGetItemsCb({ spy: spyGetItems}),
+                    value: [15, 1, 25, 35],
+                    params: {
+                        multiple: true,
+                        optionBehavior: 'sort-DEO',
                     },
                 });
 
@@ -1588,11 +1514,9 @@ tape.test('Store creation', (subT) => {
     subT.test('"isOpen" property', (sTest) => {
         sTest.test('should open the component', (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(3),
-                    params: {
-                        isOpen: true,
-                    },
+                options: getOptions(3),
+                params: {
+                    isOpen: true,
                 },
             });
 
@@ -1604,10 +1528,8 @@ tape.test('Store creation', (subT) => {
 
         sTest.test('should not open the component', async (t) => {
             const store = new Store({
-                propsData: {
-                    params: {
-                        isOpen: true,
-                    },
+                params: {
+                    isOpen: true,
                 },
             });
 
@@ -1624,11 +1546,9 @@ tape.test('Store creation', (subT) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
-                    params: {
-                        isOpen: true,
-                    },
+                fetchCallback: buildFetchCb({ total: 4, command: command, spy: spy }),
+                params: {
+                    isOpen: true,
                 },
             });
 

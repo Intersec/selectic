@@ -1,6 +1,6 @@
 # Selectic
 
-> VueJS 2.X + Typescript + JSX + Select
+> VueJS 3.X + Typescript + JSX + Select
 
 
 ## Introduction
@@ -55,7 +55,7 @@ There are very few dependencies and code stays very small (~90kB).
 * List of items (either string array or object array).
 * Can load dynamically list from a server and the list can be paginate (with a
   cache system to avoid reloading previous requests).
-* Slots: options may be added from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way.
+* Slots: options may be added from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way _(currently disabled in 3.0.0)_.
 * Multi-sources: Possibility to combine options from different sources (static, dynamic or slots) or to use the other as fallback (if the list is empty).
 * Supports basic Select properties like `multiple`, `disabled`, `title`
 * Supports group element (equivalent of optGroup), even for dynamic list.
@@ -64,7 +64,7 @@ There are very few dependencies and code stays very small (~90kB).
 * Possibility to search for any string in options.
 * Scroll bar always indicates the size of the list (even for dynamic list),
   next pages to fetch are already computed the size of the list.
-* Performance optimisation for list containing large number of items.
+* Performance optimization for list containing large number of items.
 * Emits `input`, `change`, `open`, and `close` events.
 * Supports a reverse selection system (for very long list where only some
   elements are not selected).
@@ -73,7 +73,7 @@ There are very few dependencies and code stays very small (~90kB).
 * Options to auto-disable the component when there is no options or only one
   mandatory option.
 * Handle selection overflow either by displaying a tag "+x more" either by adding several lines and show all selected options.
-* Possibility to open the component programatically.
+* Possibility to open the component programmatically.
 * CSS styles can be easily changed to fit your theme.
 * Strong typing: all Typescript types are provided.
 
@@ -94,4 +94,3 @@ Run unitary tests:
 ```console
 $ npm run test
 ```
-

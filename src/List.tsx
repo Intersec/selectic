@@ -3,7 +3,7 @@
  * It handles interactions with these items.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 
 import Store, {
     OptionItem,
@@ -47,8 +47,9 @@ export default class List extends Vue<Props> {
         return this.store.state.multiple;
     }
 
-    get itemsMargin() {
-        return this.store.marginSize;
+    get itemsMargin(): number {
+        /* XXX: I don't really know when we should use value or not... */
+        return this.store.marginSize.value ?? this.store.marginSize;
     }
 
     get shortOptions(): OptionItem[] {
@@ -91,7 +92,7 @@ export default class List extends Vue<Props> {
 
     get startIndex() {
         const endIndex = this.endIndex;
-        const idx = endIndex - this.store.itemsPerPage - 3 * this.itemsMargin;
+        const idx = endIndex - this.store.data.itemsPerPage - 3 * this.itemsMargin;
 
         return Math.max(0, idx);
     }
@@ -150,7 +151,8 @@ export default class List extends Vue<Props> {
         const scrollTop = this.$refs.elList.scrollTop;
         const topIndex = Math.floor(scrollTop / this.itemHeight);
         const total = this.totalItems;
-        const bottomIndex = Math.min(topIndex + this.store.itemsPerPage, total);
+        const itemsPerPage = this.store.data.itemsPerPage;
+        const bottomIndex = Math.min(topIndex + itemsPerPage, total);
 
         this.debounce(() => this.store.commit('offsetItem', bottomIndex));
         this.computeGroupId(topIndex);
@@ -181,7 +183,7 @@ export default class List extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('store.state.activeItemIdx')
-    protected onIndexChange() {
+    public onIndexChange() {
         if (this.doNotScroll) {
             this.doNotScroll = false;
             return;
@@ -213,32 +215,30 @@ export default class List extends Vue<Props> {
     }
 
     @Watch('store.state.offsetItem')
-    protected onOffsetChange() {
+    public onOffsetChange() {
         this.checkOffset();
     }
 
     @Watch('filteredOptions')
-    protected onFilteredOptionsChange() {
+    public onFilteredOptionsChange() {
         this.checkOffset();
     }
 
     @Watch('groupId')
-    protected onGroupIdChange() {
+    public onGroupIdChange() {
         this.$emit('groupId', this.groupId);
     }
 
     /* }}} */
     /* {{{ Life cycle */
 
-    protected mounted() {
+    public mounted() {
         this.checkOffset();
     }
 
     /* }}} */
 
-    protected render() {
-        const h = this.renderWrapper();
-
+    public render() {
         return (
             <ul
                 on={{

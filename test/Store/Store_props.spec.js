@@ -14,20 +14,18 @@ tape.test('change props', (subT) => {
             propOptions[12].disabled = true;
 
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: 1,
-                },
+                options: propOptions,
+                value: 1,
             });
 
             await _.nextVueTick(store);
-            store.value = 23;
+            store.props.value = 23;
 
             await _.nextVueTick(store);
             t.is(store.state.internalValue, 23);
             t.is(store.state.status.hasChanged, false);
 
-            store.value = 12;
+            store.props.value = 12;
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 12);
@@ -40,7 +38,7 @@ tape.test('change props', (subT) => {
     subT.test('"options"', (sTest) => {
         sTest.test('should change options', async (t) => {
             const propOptions = getOptions(15, 'alpha', 2);
-            const store = new Store({ propsData: { options: propOptions } });
+            const store = new Store({ options: propOptions });
             await _.nextVueTick(store);
 
             store.commit('isOpen', true);
@@ -49,7 +47,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.allOptions.length, 15);
 
             /* change options */
-            store.options = getOptions(5, 'beta');
+            store.props.options = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.isOpen, false, 'should close the component');
@@ -85,20 +83,18 @@ tape.test('change props', (subT) => {
         sTest.test('should invalid selection in strictValue', async (t) => {
             const propOptions = getOptions(15, 'alpha');
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: 7,
-                    params: {
-                        autoSelect: false,
-                        strictValue: true,
-                    },
+                options: propOptions,
+                value: 7,
+                params: {
+                    autoSelect: false,
+                    strictValue: true,
                 },
             });
             store.commit('isOpen', true);
 
             t.is(store.state.internalValue, 7);
 
-            store.options = getOptions(5, 'beta');
+            store.props.options = getOptions(5, 'beta');
 
             await _.nextVueTick(store);
             t.is(store.state.internalValue, null);
@@ -108,20 +104,18 @@ tape.test('change props', (subT) => {
         sTest.test('should keep valid selection in strictValue', async (t) => {
             const propOptions = getOptions(15, 'alpha');
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: 3,
-                    params: {
-                        autoSelect: false,
-                        strictValue: true,
-                    },
+                options: propOptions,
+                value: 3,
+                params: {
+                    autoSelect: false,
+                    strictValue: true,
                 },
             });
             store.commit('isOpen', true);
 
             t.is(store.state.internalValue, 3);
 
-            store.options = getOptions(5, 'beta');
+            store.props.options = getOptions(5, 'beta');
 
             await _.nextVueTick(store);
             t.is(store.state.internalValue, 3);
@@ -131,21 +125,19 @@ tape.test('change props', (subT) => {
         sTest.test('should accept new selection in strictValue', async (t) => {
             const propOptions = getOptions(5, 'alpha');
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: 3,
-                    params: {
-                        autoSelect: false,
-                        strictValue: true,
-                    },
+                options: propOptions,
+                value: 3,
+                params: {
+                    autoSelect: false,
+                    strictValue: true,
                 },
             });
             store.commit('isOpen', true);
             await _.nextVueTick(store);
-            store.options = getOptions(10, 'beta');
+            store.props.options = getOptions(10, 'beta');
             await _.nextVueTick(store);
 
-            store.value = 7;
+            store.props.value = 7;
 
             await _.nextVueTick(store);
             t.is(store.state.internalValue, 7);
@@ -155,14 +147,12 @@ tape.test('change props', (subT) => {
         sTest.test('should update selection in strictValue and multiple', async (t) => {
             const propOptions = getOptions(15, 'alpha');
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: [3, 7, 11],
-                    params: {
-                        autoSelect: false,
-                        strictValue: true,
-                        multiple: true,
-                    },
+                options: propOptions,
+                value: [3, 7, 11],
+                params: {
+                    autoSelect: false,
+                    strictValue: true,
+                    multiple: true,
                 },
             });
             store.commit('isOpen', true);
@@ -170,11 +160,11 @@ tape.test('change props', (subT) => {
 
             t.deepEqual(store.state.internalValue, [3, 7, 11]);
 
-            store.options = getOptions(10, 'beta');
+            store.props.options = getOptions(10, 'beta');
             await _.nextVueTick(store);
             t.deepEqual(store.state.internalValue, [3, 7]);
 
-            store.options = getOptions(5, 'gamma');
+            store.props.options = getOptions(5, 'gamma');
 
             await _.nextVueTick(store);
             t.deepEqual(store.state.internalValue, [3]);
@@ -184,13 +174,11 @@ tape.test('change props', (subT) => {
         sTest.test('should update selection', async (t) => {
             const propOptions = getOptions(15, 'alpha');
             const store = new Store({
-                propsData: {
-                    options: propOptions,
-                    value: 7,
-                    params: {
-                        autoSelect: false,
-                        strictValue: false,
-                    },
+                options: propOptions,
+                value: 7,
+                params: {
+                    autoSelect: false,
+                    strictValue: false,
                 },
             });
             await _.nextVueTick(store);
@@ -199,7 +187,7 @@ tape.test('change props', (subT) => {
             await _.nextVueTick(store);
             t.is(store.state.selectedOptions.text, 'alpha7');
 
-            store.options = getOptions(10, 'beta');
+            store.props.options = getOptions(10, 'beta');
             await _.deferPromise(_.nextVueTick(store));
 
             t.is(store.state.selectedOptions.text, 'beta7');
@@ -208,11 +196,9 @@ tape.test('change props', (subT) => {
 
         sTest.test('should disable the select when only one option is given', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(5, 'alpha'),
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: getOptions(5, 'alpha'),
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -224,7 +210,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, false);
             t.is(store.state.isOpen, true);
 
-            store.options = getOptions(1, 'beta');
+            store.props.options = getOptions(1, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 0, 'should keep the correct value selected');
@@ -235,12 +221,10 @@ tape.test('change props', (subT) => {
 
         sTest.test('should not disable the select with an invalid value', async (t) => {
             const store = new Store({
-                propsData: {
-                    value: 2,
-                    options: getOptions(5, 'alpha'),
-                    params: {
-                        autoDisabled: true,
-                    },
+                value: 2,
+                options: getOptions(5, 'alpha'),
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -252,7 +236,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, false);
             t.is(store.state.isOpen, true);
 
-            store.options = getOptions(1, 'beta', 6);
+            store.props.options = getOptions(1, 'beta', 6);
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 2, 'should keep the invalid value');
@@ -263,14 +247,12 @@ tape.test('change props', (subT) => {
 
         sTest.test('should disable the select with an invalid value in strict mode', async (t) => {
             const store = new Store({
-                propsData: {
-                    value: 2,
-                    options: getOptions(5, 'alpha'),
-                    params: {
-                        autoDisabled: true,
-                        strictValue: true,
-                        autoSelect: true,
-                    },
+                value: 2,
+                options: getOptions(5, 'alpha'),
+                params: {
+                    autoDisabled: true,
+                    strictValue: true,
+                    autoSelect: true,
                 },
             });
             await _.nextVueTick(store);
@@ -282,7 +264,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, false);
             t.is(store.state.isOpen, true);
 
-            store.options = getOptions(1, 'beta', 6);
+            store.props.options = getOptions(1, 'beta', 6);
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 6, 'should have auto-selected the first value');
@@ -293,11 +275,9 @@ tape.test('change props', (subT) => {
 
         sTest.test('should enable the select when more options are given', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1, 'alpha', 1),
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: getOptions(1, 'alpha', 1),
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -309,7 +289,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.options = getOptions(5, 'beta');
+            store.props.options = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 1, 'should keep selected value');
@@ -320,12 +300,10 @@ tape.test('change props', (subT) => {
 
         sTest.test('should not re-enable the select if disable is set', async (t) => {
             const store = new Store({
-                propsData: {
-                    options: getOptions(1, 'alpha'),
-                    disabled: true,
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: getOptions(1, 'alpha'),
+                disabled: true,
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -337,7 +315,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.options = getOptions(5, 'beta');
+            store.props.options = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 0);
@@ -351,20 +329,18 @@ tape.test('change props', (subT) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    options: getOptions(10),
-                    childOptions: getOptions(2, '', 10),
-                    fetchCallback: buildFetchCb({ total: 4, command, spy }),
-                    params: {
-                        optionBehavior: 'force-ODE',
-                    },
+                options: getOptions(10),
+                childOptions: getOptions(2, '', 10),
+                fetchCallback: buildFetchCb({ total: 4, command, spy }),
+                params: {
+                    optionBehavior: 'force-ODE',
                 },
             });
             store.commit('isOpen', true);
             await _.nextVueTick(store);
             t.is(store.state.filteredOptions.length, 10);
 
-            store.options = [];
+            store.props.options = [];
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.sleep(0);
@@ -373,7 +349,7 @@ tape.test('change props', (subT) => {
 
             t.is(store.state.filteredOptions.length, 4, 'should fallback to dynamic options');
 
-            store.options = getOptions(3);
+            store.props.options = getOptions(3);
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
@@ -386,7 +362,7 @@ tape.test('change props', (subT) => {
     subT.test('"childOptions"', (sTest) => {
         sTest.test('should change childOptions', async (t) => {
             const propOptions = getOptions(15, 'alpha', 1);
-            const store = new Store({ propsData: { childOptions: propOptions } });
+            const store = new Store({ childOptions: propOptions });
             await _.nextVueTick(store);
 
             store.commit('isOpen', true);
@@ -394,7 +370,7 @@ tape.test('change props', (subT) => {
 
             t.is(store.state.allOptions.length, 15);
 
-            store.childOptions = getOptions(5, 'beta');
+            store.props.childOptions = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.isOpen, false, 'should close component');
@@ -422,13 +398,11 @@ tape.test('change props', (subT) => {
         sTest.test('should update selection', async (t) => {
             const propOptions = getOptions(15, 'alpha');
             const store = new Store({
-                propsData: {
-                    childOptions: propOptions,
-                    value: 7,
-                    params: {
-                        autoSelect: false,
-                        strictValue: false,
-                    },
+                childOptions: propOptions,
+                value: 7,
+                params: {
+                    autoSelect: false,
+                    strictValue: false,
                 },
             });
             await _.nextVueTick(store);
@@ -437,7 +411,7 @@ tape.test('change props', (subT) => {
             await _.nextVueTick(store);
             t.is(store.state.selectedOptions.text, 'alpha7');
 
-            store.childOptions = getOptions(10, 'beta');
+            store.props.childOptions = getOptions(10, 'beta');
             await _.deferPromise(_.nextVueTick(store));
 
             t.is(store.state.selectedOptions.text, 'beta7');
@@ -446,11 +420,9 @@ tape.test('change props', (subT) => {
 
         sTest.test('should disable the select when only one option is given', async (t) => {
             const store = new Store({
-                propsData: {
-                    childOptions: getOptions(5, 'alpha'),
-                    params: {
-                        autoDisabled: true,
-                    },
+                childOptions: getOptions(5, 'alpha'),
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -462,7 +434,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, false);
             t.is(store.state.isOpen, true);
 
-            store.childOptions = getOptions(1, 'beta');
+            store.props.childOptions = getOptions(1, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 0);
@@ -473,11 +445,9 @@ tape.test('change props', (subT) => {
 
         sTest.test('should enable the select when more options are given', async (t) => {
             const store = new Store({
-                propsData: {
-                    childOptions: getOptions(1, 'alpha'),
-                    params: {
-                        autoDisabled: true,
-                    },
+                childOptions: getOptions(1, 'alpha'),
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -489,7 +459,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.childOptions = getOptions(5, 'beta');
+            store.props.childOptions = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 0);
@@ -502,12 +472,10 @@ tape.test('change props', (subT) => {
             const alphaOptions = getOptions(1, 'alpha');
             const bravoOptions = getOptions(1, 'bravo');
             const store = new Store({
-                propsData: {
-                    options: alphaOptions,
-                    childOptions: bravoOptions,
-                    params: {
-                        autoDisabled: true,
-                    },
+                options: alphaOptions,
+                childOptions: bravoOptions,
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -526,13 +494,13 @@ tape.test('change props', (subT) => {
              */
             const charlyOptions = getOptions(1, 'charly');
             charlyOptions[0].disabled = true;
-            store.options = charlyOptions;
+            store.props.options = charlyOptions;
             await _.nextVueTick(store);
 
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.options = alphaOptions;
+            store.props.options = alphaOptions;
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
@@ -540,13 +508,13 @@ tape.test('change props', (subT) => {
             /* options 0
              * child 1
              */
-            store.options = getOptions(0, 'delta');
+            store.props.options = getOptions(0, 'delta');
             await _.nextVueTick(store);
 
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.options = alphaOptions;
+            store.props.options = alphaOptions;
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
@@ -556,13 +524,13 @@ tape.test('change props', (subT) => {
              */
             const echoOptions = getOptions(1, 'echo');
             echoOptions[0].disabled = true;
-            store.childOptions = echoOptions;
+            store.props.childOptions = echoOptions;
             await _.nextVueTick(store);
 
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.childOptions = bravoOptions;
+            store.props.childOptions = bravoOptions;
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
@@ -570,7 +538,7 @@ tape.test('change props', (subT) => {
             /* options 1
              * child 0
              */
-            store.childOptions = getOptions(0, 'fox');
+            store.props.childOptions = getOptions(0, 'fox');
             await _.nextVueTick(store);
 
             t.is(store.state.disabled, true);
@@ -581,12 +549,10 @@ tape.test('change props', (subT) => {
 
         sTest.test('should not re-enable the select if disable is set', async (t) => {
             const store = new Store({
-                propsData: {
-                    childOptions: getOptions(1, 'alpha'),
-                    disabled: true,
-                    params: {
-                        autoDisabled: true,
-                    },
+                childOptions: getOptions(1, 'alpha'),
+                disabled: true,
+                params: {
+                    autoDisabled: true,
                 },
             });
             await _.nextVueTick(store);
@@ -598,7 +564,7 @@ tape.test('change props', (subT) => {
             t.is(store.state.disabled, true);
             t.is(store.state.isOpen, false);
 
-            store.childOptions = getOptions(5, 'beta');
+            store.props.childOptions = getOptions(5, 'beta');
             await _.nextVueTick(store);
 
             t.is(store.state.internalValue, 0);
@@ -612,20 +578,18 @@ tape.test('change props', (subT) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    options: getOptions(10),
-                    childOptions: getOptions(2, '', 10),
-                    fetchCallback: buildFetchCb({ total: 4, command, spy }),
-                    params: {
-                        optionBehavior: 'force-EDO',
-                    },
+                options: getOptions(10),
+                childOptions: getOptions(2, '', 10),
+                fetchCallback: buildFetchCb({ total: 4, command, spy }),
+                params: {
+                    optionBehavior: 'force-EDO',
                 },
             });
             store.commit('isOpen', true);
             await _.nextVueTick(store);
             t.is(store.state.filteredOptions.length, 2);
 
-            store.childOptions = [];
+            store.props.childOptions = [];
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.sleep(0);
@@ -634,7 +598,7 @@ tape.test('change props', (subT) => {
 
             t.is(store.state.filteredOptions.length, 4, 'should fallback to dynamic options');
 
-            store.childOptions = getOptions(2);
+            store.props.childOptions = getOptions(2);
             await _.nextVueTick(store);
             store.commit('isOpen', true);
             await _.nextVueTick(store);
@@ -646,20 +610,18 @@ tape.test('change props', (subT) => {
 
     subT.test('should change "selectionIsExcluded"', async (t) => {
         const store = new Store({
-            propsData: {
-                fetchCallback: buildFetchCb({ total: 5 }),
-                selectionIsExcluded: false,
-                params: {
-                    multiple: true,
-                },
+            fetchCallback: buildFetchCb({ total: 5 }),
+            selectionIsExcluded: false,
+            params: {
+                multiple: true,
             },
         });
-        store.selectionIsExcluded = true;
+        store.props.selectionIsExcluded = true;
 
         await _.nextVueTick(store);
         t.is(store.state.selectionIsExcluded, true);
 
-        store.selectionIsExcluded = false;
+        store.props.selectionIsExcluded = false;
 
         await _.nextVueTick(store);
         t.is(store.state.selectionIsExcluded, false);
@@ -668,17 +630,15 @@ tape.test('change props', (subT) => {
 
     subT.test('should change "disabled"', async (t) => {
         const store = new Store({
-            propsData: {
-                options: getOptions(2),
-            },
+            options: getOptions(2),
         });
 
-        store.disabled = true;
+        store.props.disabled = true;
         await _.nextVueTick(store);
 
         t.is(store.state.disabled, true);
 
-        store.disabled = false;
+        store.props.disabled = false;
         await _.nextVueTick(store);
 
         t.is(store.state.disabled, false);

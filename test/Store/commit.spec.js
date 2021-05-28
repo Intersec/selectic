@@ -44,6 +44,7 @@ tape.test('commit()', (st) => {
             pageSize: 201,
             hideFilter: true,
             allowClearSelection: true,
+            disabled: true,
         }));
 
         store.commit('searchText', 'hello2');
@@ -60,9 +61,7 @@ tape.test('commit()', (st) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({total: 300, command, spy}),
-                },
+                fetchCallback: buildFetchCb({total: 300, command, spy}),
             });
 
             t.false(toHaveBeenCalled(spy));
@@ -119,11 +118,9 @@ tape.test('commit()', (st) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 300, command, spy }),
-                    params: {
-                        pageSize: 500,
-                    },
+                fetchCallback: buildFetchCb({ total: 300, command, spy }),
+                params: {
+                    pageSize: 500,
                 },
             });
 
@@ -167,9 +164,7 @@ tape.test('commit()', (st) => {
         subT.test('given static options', (sTest) => {
             sTest.test('should found some items', (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(20),
-                    },
+                    options: getOptions(20),
                 });
                 store.commit('isOpen', true);
                 store.commit('searchText', '1');
@@ -192,9 +187,7 @@ tape.test('commit()', (st) => {
 
             sTest.test('should not found items', (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(20),
-                    },
+                    options: getOptions(20),
                 });
                 store.commit('isOpen', true);
                 store.commit('searchText', 'coucou');
@@ -209,9 +202,7 @@ tape.test('commit()', (st) => {
 
             sTest.test('should found items from wildcard in text', (t) => {
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(20),
-                    },
+                    options: getOptions(20),
                 });
                 store.commit('isOpen', true);
                 store.commit('searchText', 'te*4');
@@ -237,13 +228,13 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
                 });
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
+
+                await sleep(0);
 
                 const search = 'search';
                 store.commit('searchText', search);
@@ -300,9 +291,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
                 });
                 store.commit('isOpen', true);
                 command.fetch();
@@ -368,9 +357,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
                 });
                 store.commit('isOpen', true);
                 command.fetch();
@@ -416,9 +403,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
                 });
                 store.commit('isOpen', true);
                 command.fetch();
@@ -493,17 +478,16 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
-                        params: {
-                            optionBehavior: 'sort-ODE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                    params: {
+                        optionBehavior: 'sort-ODE',
                     },
                 });
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
+                await sleep(0);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -531,17 +515,16 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
-                        params: {
-                            optionBehavior: 'sort-DOE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                    params: {
+                        optionBehavior: 'sort-DOE',
                     },
                 });
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
+                await sleep(0);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -569,18 +552,17 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 30, searchTotal: 5, addPrefix: true, command, spy }),
-                        params: {
-                            optionBehavior: 'sort-DOE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 30, searchTotal: 5, addPrefix: true, command, spy }),
+                    params: {
+                        optionBehavior: 'sort-DOE',
                     },
                 });
                 store.commit('isOpen', true);
                 command.fetch();
                 await _.nextVueTick(store, spy.promise);
                 resetCall(spy);
+                await sleep(0);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -598,17 +580,16 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 0, addPrefix: true, command, spy }),
-                        params: {
-                            optionBehavior: 'force-DOE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 0, addPrefix: true, command, spy }),
+                    params: {
+                        optionBehavior: 'force-DOE',
                     },
                 });
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
+                await sleep(0);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -635,16 +616,15 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        options: getOptions(3),
-                        fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
-                        params: {
-                            optionBehavior: 'sort-ODE',
-                        },
+                    options: getOptions(3),
+                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 50, addPrefix: true, command, spy }),
+                    params: {
+                        optionBehavior: 'sort-ODE',
                     },
                 });
                 store.commit('isOpen', true);
                 command.fetch();
+                await sleep(0);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -679,9 +659,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 500, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 500, command, spy }),
                 });
                 store.commit('isOpen', true);
 
@@ -708,9 +686,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 500, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 500, command, spy }),
                 });
                 store.commit('isOpen', true);
 
@@ -734,9 +710,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 500, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 500, command, spy }),
                 });
                 store.commit('isOpen', true);
 
@@ -769,9 +743,7 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        fetchCallback: buildFetchCb({ total: 500, command, spy }),
-                    },
+                    fetchCallback: buildFetchCb({ total: 500, command, spy }),
                 });
                 store.commit('isOpen', true);
 
@@ -797,13 +769,11 @@ tape.test('commit()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        groups: getGroups(2),
-                        fetchCallback: buildFetchCb({ total: 500, group: [
-                            { offset: 100, name: 'group1' },
-                            { offset: 200, name: 'group2' },
-                        ], command, spy }),
-                    },
+                    groups: getGroups(2),
+                    fetchCallback: buildFetchCb({ total: 500, group: [
+                        { offset: 100, name: 'group1' },
+                        { offset: 200, name: 'group2' },
+                    ], command, spy }),
                 });
                 store.commit('isOpen', true);
 
@@ -912,12 +882,12 @@ tape.test('commit()', (st) => {
             const command = {};
             const spy = {};
 
-            const store = new Store({propsData: {
+            const store = new Store({
                 fetchCallback: buildFetchCb({ total: 300, addPrefix: true, command, spy }),
                 params: {
                     pageSize: 50,
                 },
-            }});
+            });
 
             t.false(toHaveBeenCalled(spy));
             store.commit('isOpen', true);
@@ -959,9 +929,9 @@ tape.test('commit()', (st) => {
 
     st.test('when changing "disabled"', (sTest) => {
         sTest.test('should avoid opening the select list', (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(5),
-            }});
+            });
 
             store.commit('disabled', true);
             store.commit('isOpen', true);
@@ -976,9 +946,9 @@ tape.test('commit()', (st) => {
         });
 
         sTest.test('should close the select list', (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(5),
-            }});
+            });
 
             store.commit('isOpen', true);
             store.commit('disabled', true);
@@ -990,7 +960,7 @@ tape.test('commit()', (st) => {
 
     st.test('when changing "selectionIsExcluded"', (sTest) => {
         sTest.test('should reverse the selection', async (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(5),
                 params: {
                     multiple: true,
@@ -998,7 +968,7 @@ tape.test('commit()', (st) => {
                 allowRevert: true,
                 value: [1, 3, 4],
                 selectionIsExcluded: false,
-            }});
+            });
             store.commit('isOpen', true);
             await sleep(0);
 
@@ -1012,7 +982,7 @@ tape.test('commit()', (st) => {
         });
 
         sTest.test('should keep selection but revert selectionIsExcluded', async (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 params: {
                     multiple: true,
                 },
@@ -1020,7 +990,7 @@ tape.test('commit()', (st) => {
                 value: [1, 3, 4],
                 selectionIsExcluded: false,
                 fetchCallback: buildFetchCb({total: 2000}),
-            }});
+            });
             store.commit('isOpen', true);
             await sleep(0);
 
@@ -1036,12 +1006,12 @@ tape.test('commit()', (st) => {
 
     st.test('when changing "isOpen"', (sTest) => {
         sTest.test('should close other selectic components', async (t) => {
-            const store1 = new Store({propsData: {
+            const store1 = new Store({
                 options: getOptions(5),
-            }});
-            const store2 = new Store({propsData: {
+            });
+            const store2 = new Store({
                 options: getOptions(5),
-            }});
+            });
 
             store1.commit('isOpen', true);
             await _.nextVueTick(store1);
@@ -1052,20 +1022,20 @@ tape.test('commit()', (st) => {
             store2.commit('isOpen', true);
             await _.nextVueTick(store2);
 
-            t.is(store1.state.isOpen, false); // store1 should have been closed
-            t.is(store2.state.isOpen, true);
+            t.is(store1.state.isOpen, false, 'should have closed store1');
+            t.is(store2.state.isOpen, true, 'should have keep store2 open');
 
             t.end();
         });
 
         sTest.test('should keep selectic component open', async (t) => {
-            const store1 = new Store({propsData: {
+            const store1 = new Store({
                 options: getOptions(5),
                 keepOpenWithOtherSelectic: true,
-            }});
-            const store2 = new Store({propsData: {
+            });
+            const store2 = new Store({
                 options: getOptions(5),
-            }});
+            });
 
             store1.commit('isOpen', true);
             await _.nextVueTick(store1);

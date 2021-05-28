@@ -1,12 +1,16 @@
 /* File Purpose:
  * It keeps and computes all states at a single place.
- * Every inner components of Selectic should comunicate with this file to
+ * Every inner components of Selectic should communicate with this file to
  * change or to get states.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import { reactive, watch, computed, ComputedRef } from 'vue';
 
 /* {{{ Types definitions */
+
+type MandateProps<T extends {}> = {
+    [TK in keyof T]-?: T[TK];
+}
 
 type voidCaller = () => void;
 
@@ -65,7 +69,7 @@ export type ListPosition =
     'bottom'
     /* Display the list at bottom */
   | 'top'
-    /* Display the list at bootom but if there is not enough space, display it at top */
+    /* Display the list at bottom but if there is not enough space, display it at top */
   | 'auto';
 
 export interface SelecticStoreStateParams {
@@ -124,31 +128,34 @@ export interface SelecticStoreStateParams {
      */
     optionBehavior?: string;
 
+    /* Indicate where the list should be deployed */
+    listPosition?: ListPosition;
+
     /* If true, the component is open at start */
     isOpen?: boolean;
 }
 
 export interface Props {
     /* Selected value */
-    value?: SelectedValue;
+    value?: SelectedValue | null;
 
     /* If true, the value represents the ones we don't want to select */
     selectionIsExcluded?: boolean;
 
-    /* Equivalent of "disabled" select's attribute */
+    /* Equivalent of "disabled" Select's attribute */
     disabled?: boolean;
 
     /* List of options to display */
-    options?: OptionProp[];
+    options?: OptionProp[] | null;
 
     /* List of options to display from child elements */
-    childOptions?: OptionProp[];
+    childOptions?: OptionValue[];
 
     /* Define groups which will be used by items */
     groups?: GroupValue[];
 
     /* Overwrite default texts */
-    texts?: PartialMessages;
+    texts?: PartialMessages | null;
 
     /* Keep this component open if another Selectic component opens */
     keepOpenWithOtherSelectic?: boolean;
@@ -157,10 +164,24 @@ export interface Props {
     params?: SelecticStoreStateParams;
 
     /* Method to call to fetch extra data */
-    fetchCallback?: FetchCallback;
+    fetchCallback?: FetchCallback | null;
 
     /* Method to call to get specific item */
-    getItemsCallback?: GetCallback;
+    getItemsCallback?: GetCallback | null;
+}
+
+type InternalProps = MandateProps<Props>;
+
+export interface Data {
+    /* Number of items displayed in a page (before scrolling) */
+    itemsPerPage: number;
+
+    labels: Messages;
+    /* used to avoid checking and updating table while doing batch stuff */
+    doNotUpdate: boolean;
+    cacheItem: Map<OptionId, OptionValue>;
+    activeOrder: OptionBehaviorOrder;
+    dynOffset: number;
 }
 
 export interface SelecticStoreState {
@@ -191,7 +212,7 @@ export interface SelecticStoreState {
     allowRevert?: boolean;
 
     /* If true, user can clear current selection
-     * (if false, it is still possible to clear it programatically) */
+     * (if false, it is still possible to clear it programmatically) */
     allowClearSelection: boolean;
 
     /* If false, do not select the first available option even if value is mandatory */
@@ -298,6 +319,7 @@ interface Messages {
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
 
 /* }}} */
+/* {{{ Helper */
 
 /**
  * Escape search string to consider regexp special characters as they
@@ -316,6 +338,30 @@ function convertToRegExp(name: string, flag = 'i'): RegExp {
 
     return new RegExp(pattern, flag);
 }
+
+/** Does the same as Object.assign but does not replace if value is undefined */
+function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array<Partial<T>>): T {
+    const result = obj;
+    for (const source of sourceObjects) {
+        for (const key of Object.keys(source)) {
+            const value = source[key as keyof T];
+            if (value === undefined) {
+                continue;
+            }
+            result[key as keyof T] = value;
+        }
+    }
+    return result as T;
+}
+
+/* }}} */
+/* {{{ Static */
+
+export function changeTexts(texts: PartialMessages) {
+    messages = Object.assign(messages, texts);
+}
+
+/* }}} */
 
 let messages: Messages = {
     noFetchMethod: 'Fetch callback is missing: it is not possible to retrieve data.',
@@ -338,58 +384,16 @@ let messages: Messages = {
 
 let closePreviousSelectic: undefined | voidCaller;
 
-/* {{{ Static */
-
-export function changeTexts(texts: PartialMessages) {
-    messages = Object.assign(messages, texts);
-}
-
 /* }}} */
 
-@Component
-export default class SelecticStore extends Vue<Props> {
-    /* {{{ props */
+let uid = 0;
 
-    @Prop()
-    public value?: SelectedValue;
+export default class SelecticStore {
+    public props: InternalProps;
 
-    @Prop({default: false})
-    public selectionIsExcluded: boolean;
-
-    @Prop({default: false})
-    public disabled: boolean;
-
-    @Prop()
-    public options?: OptionProp[];
-
-    @Prop()
-    public childOptions?: OptionValue[];
-
-    @Prop({default: () => []})
-    public groups: GroupValue[];
-
-    @Prop()
-    public texts?: PartialMessages;
-
-    @Prop()
-    private params?: SelecticStoreStateParams;
-
-    @Prop()
-    private fetchCallback?: FetchCallback;
-
-    @Prop()
-    private getItemsCallback?: GetCallback;
-
-    @Prop({ default: false })
-    private keepOpenWithOtherSelectic: boolean;
-
-    /* }}} */
     /* {{{ data */
 
-    /* Number of items displayed in a page (before scrolling) */
-    public itemsPerPage = 10;
-
-    public state: SelecticStoreState = {
+    public state = reactive<SelecticStoreState>({
         multiple: false,
         disabled: false,
         placeholder: '',
@@ -427,58 +431,197 @@ export default class SelecticStore extends Vue<Props> {
             areAllSelected: false,
             hasChanged: false,
         },
-    };
-    public labels = Object.assign({}, messages);
-    /* used to avoid checking and updating table while doing batch stuff */
-    private doNotUpdate = false;
-    private cacheItem: Map<OptionId, OptionValue> = new Map();
-    private activeOrder: OptionBehaviorOrder = 'D';
-    private dynOffset: number = 0;
+    });
+    public data: Data;
 
     /* Do not need reactivity */
-    private requestId: number;
+    private requestId: number = 0;
     private cacheRequest: Map<string, Promise<OptionValue[]>>;
+    private closeSelectic: () => void;
 
     /* }}} */
     /* {{{ computed */
 
     /* Number of item to pre-display */
-    get marginSize() {
-        return this.state.pageSize / 2;
-    }
+    public marginSize: ComputedRef<number>;
 
-    get isPartial(): boolean {
-        const state = this.state;
-        let isPartial =  typeof this.fetchCallback === 'function';
-
-        if (isPartial && state.optionBehaviorOperation === 'force' && this.activeOrder !== 'D') {
-            isPartial = false;
-        }
-
-        return isPartial;
-    }
-
-    get hasAllItems() {
-        const nbItems = this.state.totalFilteredOptions + this.state.groups.size;
-
-        return this.state.filteredOptions.length >= nbItems;
-    }
-
-    get hasFetchedAllItems() {
-        const state = this.state;
-
-        if (!this.isPartial) {
-            return true;
-        }
-
-        return state.dynOptions.length === state.totalDynOptions;
-    }
-
-    get closeSelectic() {
-        return () => this.commit('isOpen', false);
-    }
+    public isPartial: ComputedRef<boolean>;
+    public hasAllItems: ComputedRef<boolean>;
+    public hasFetchedAllItems: ComputedRef<boolean>;
 
     /* }}} */
+
+    public _uid: number; /* Mainly for debugging */
+
+    constructor(props: Props = {}) {
+        this._uid = ++uid;
+
+        /* {{{ Props */
+
+        const defaultProps: InternalProps = {
+            value: null,
+            selectionIsExcluded: false,
+            disabled: false,
+            options: null,
+            childOptions: [],
+            groups: [],
+            texts: null,
+            params: {},
+            fetchCallback: null,
+            getItemsCallback: null,
+            keepOpenWithOtherSelectic: false,
+        };
+        const propsVal: InternalProps = assignObject(defaultProps, props);
+        this.props = reactive(propsVal);
+
+        /* }}} */
+        /* {{{ data */
+
+        this.data = reactive({
+            labels: Object.assign({}, messages),
+            itemsPerPage: 10,
+            doNotUpdate: false,
+            cacheItem: new Map(),
+            activeOrder: 'D',
+            dynOffset: 0,
+        });
+
+        /* }}} */
+        /* {{{ computed */
+
+        this.marginSize = computed(() => {
+            return this.state.pageSize / 2;
+        });
+
+        this.isPartial = computed(() => {
+            const state = this.state;
+            let isPartial =  typeof this.props.fetchCallback === 'function';
+
+            if (isPartial &&
+                state.optionBehaviorOperation === 'force' &&
+                this.data.activeOrder !== 'D'
+            ) {
+                isPartial = false;
+            }
+
+            return isPartial;
+        });
+
+        this.hasAllItems = computed(() => {
+            const state = this.state;
+            const nbItems = state.totalFilteredOptions + state.groups.size;
+
+            return this.state.filteredOptions.length >= nbItems;
+        });
+
+        this.hasFetchedAllItems = computed(() => {
+            const isPartial = this.isPartial.value ?? this.isPartial;
+
+            if (!isPartial) {
+                return true;
+            }
+            const state = this.state;
+
+            return state.dynOptions.length === state.totalDynOptions;
+        });
+
+        /* }}} */
+        /* {{{ watch */
+
+        watch(() => [this.props.options, this.props.childOptions], () => {
+            this.data.cacheItem.clear();
+            this.commit('isOpen', false);
+            this.buildAllOptions(true);
+            this.buildSelectedOptions();
+        });
+
+        watch(() => this.props.value, () => {
+            const value = this.props.value ?? null;
+            this.commit('internalValue', value);
+        });
+
+        watch(() => this.props.selectionIsExcluded, () => {
+            this.commit('selectionIsExcluded', this.props.selectionIsExcluded);
+        });
+
+        watch(() => this.props.disabled, () => {
+            this.commit('disabled', this.props.disabled);
+        });
+
+        watch(() => this.state.filteredOptions, () => {
+            let areAllSelected = false;
+            const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
+
+            if (hasAllItems) {
+                const selectionIsExcluded = +this.state.selectionIsExcluded;
+                /* eslint-disable-next-line no-bitwise */
+                areAllSelected = this.state.filteredOptions.every((item) =>
+                    !!(+item.selected ^ selectionIsExcluded));
+            }
+
+            this.state.status.areAllSelected = areAllSelected;
+        });
+
+        watch(() => this.state.internalValue, () => {
+            this.buildSelectedOptions();
+        });
+
+        watch(() => this.state.allOptions, () => {
+            this.checkAutoSelect();
+            this.checkAutoDisabled();
+        });
+
+        watch(() => this.state.totalAllOptions, () => {
+            this.checkHideFilter();
+        });
+
+        /* }}} */
+
+        this.closeSelectic = () => {
+            this.commit('isOpen', false);
+        }
+
+        const value = this.props.value;
+
+        /* set initial value for non reactive attribute */
+        this.cacheRequest = new Map();
+
+        const stateParam: SelecticStoreStateParams | SelecticStoreState =
+            Object.assign({}, this.props.params);
+
+        if (stateParam.optionBehavior) {
+            this.buildOptionBehavior(
+                stateParam.optionBehavior,
+                stateParam as SelecticStoreState
+            );
+            delete stateParam.optionBehavior;
+        }
+
+        if (stateParam.hideFilter === 'auto') {
+            delete stateParam.hideFilter;
+        }
+
+        /* Update state */
+        assignObject(this.state, stateParam as SelecticStoreState, {
+            internalValue: value,
+            selectionIsExcluded: props.selectionIsExcluded,
+            disabled: props.disabled,
+        });
+
+        this.checkHideFilter();
+
+        if (this.props.texts) {
+            this.changeTexts(this.props.texts);
+        }
+
+        this.addGroups(this.props.groups);
+        this.assertValueType();
+        this.buildAllOptions();
+
+        this.buildSelectedOptions();
+        this.checkAutoDisabled();
+    }
+
     /* {{{ methods */
     /* {{{ public methods */
 
@@ -524,7 +667,7 @@ export default class SelecticStore extends Vue<Props> {
                 if (typeof closePreviousSelectic === 'function') {
                     closePreviousSelectic();
                 }
-                if (!this.keepOpenWithOtherSelectic) {
+                if (!this.props.keepOpenWithOtherSelectic) {
                     closePreviousSelectic = this.closeSelectic;
                 }
             }
@@ -553,7 +696,7 @@ export default class SelecticStore extends Vue<Props> {
         let item: OptionValue;
 
         if (this.hasItemInStore(id)) {
-            item = this.cacheItem.get(id) as OptionValue;
+            item = this.data.cacheItem.get(id) as OptionValue;
         } else {
             this.getItems([id]);
             item = {
@@ -567,8 +710,9 @@ export default class SelecticStore extends Vue<Props> {
 
     public async getItems(ids: OptionId[]): Promise<OptionItem[]> {
         const itemsToFetch: OptionId[] = ids.filter((id) => !this.hasItemInStore(id));
+        const getItemsCallback = this.props.getItemsCallback;
 
-        if (itemsToFetch.length && typeof this.getItemsCallback === 'function') {
+        if (itemsToFetch.length && typeof getItemsCallback === 'function') {
             const cacheRequest = this.cacheRequest;
             const requestId = itemsToFetch.toString();
             let promise: Promise<OptionValue[]>;
@@ -576,7 +720,7 @@ export default class SelecticStore extends Vue<Props> {
             if (cacheRequest.has(requestId)) {
                 promise = cacheRequest.get(requestId)!;
             } else {
-                promise = this.getItemsCallback(itemsToFetch);
+                promise = getItemsCallback(itemsToFetch);
                 cacheRequest.set(requestId, promise);
                 promise.then(() => {
                     cacheRequest.delete(requestId);
@@ -584,10 +728,11 @@ export default class SelecticStore extends Vue<Props> {
             }
 
             const items = await promise;
+            const cacheItem = this.data.cacheItem;
 
             for (const item of items) {
                 if (item) {
-                    this.cacheItem.set(item.id, item);
+                    cacheItem.set(item.id, item);
                 }
             }
         }
@@ -598,9 +743,10 @@ export default class SelecticStore extends Vue<Props> {
     public selectItem(id: OptionId, selected?: boolean, keepOpen = false) {
         const state = this.state;
         let hasChanged = false;
+        const isPartial = this.isPartial.value ?? this.isPartial;
 
         /* Check that item is not disabled */
-        if (!this.isPartial) {
+        if (!isPartial) {
             const item = state.allOptions.find((opt) => opt.id === id);
             if (item && item.disabled) {
                 return;
@@ -672,15 +818,18 @@ export default class SelecticStore extends Vue<Props> {
         if (!this.state.multiple) {
             return;
         }
+        const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
 
-        if (!this.hasAllItems) {
+        if (!hasAllItems) {
+            const labels = this.data.labels;
+
             if (this.state.searchText) {
-                this.state.status.errorMessage = this.labels.cannotSelectAllSearchedItems;
+                this.state.status.errorMessage = labels.cannotSelectAllSearchedItems;
                 return;
             }
 
             if (!this.state.allowRevert) {
-                this.state.status.errorMessage = this.labels.cannotSelectAllRevertItems;
+                this.state.status.errorMessage = labels.cannotSelectAllRevertItems;
                 return;
             }
 
@@ -695,9 +844,9 @@ export default class SelecticStore extends Vue<Props> {
 
         const selectAll = !this.state.status.areAllSelected;
         this.state.status.areAllSelected = selectAll;
-        this.doNotUpdate = true;
+        this.data.doNotUpdate = true;
         this.state.filteredOptions.forEach((item) => this.selectItem(item.id, selectAll));
-        this.doNotUpdate = false;
+        this.data.doNotUpdate = false;
         this.updateFilteredOptions();
     }
 
@@ -710,9 +859,10 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     public clearCache(forceReset = false) {
-        const total = this.isPartial ? Infinity : 0;
+        const isPartial = this.isPartial.value ?? this.isPartial;
+        const total = isPartial ? Infinity : 0;
 
-        this.cacheItem.clear();
+        this.data.cacheItem.clear();
 
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
@@ -746,7 +896,7 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     public changeTexts(texts: PartialMessages) {
-        this.labels = Object.assign({}, this.labels, texts);
+        this.data.labels = Object.assign({}, this.data.labels, texts);
     }
 
     /* }}} */
@@ -771,21 +921,39 @@ export default class SelecticStore extends Vue<Props> {
             this.getElementOptions().find(findId);
     }
 
-    private assertCorrectValue(forceStrict = false) {
+    private assertValueType() {
+        const state = this.state;
+        const internalValue = state.internalValue;
+        const isMultiple = state.multiple;
+        let newValue = internalValue;
+
+        if (isMultiple) {
+            if (!Array.isArray(internalValue)) {
+                newValue = internalValue === null ? [] : [internalValue];
+            }
+        } else {
+            if (Array.isArray(internalValue)) {
+                const value = internalValue[0];
+                newValue = typeof value === 'undefined' ? null : value;
+            }
+        }
+        state.internalValue = newValue;
+    }
+
+    private assertCorrectValue(applyStrict = false) {
         const state = this.state;
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
-        const isPartial = this.isPartial;
+        const isPartial = this.isPartial.value ?? this.isPartial;
 
+        this.assertValueType();
         if (isMultiple) {
-            if (!Array.isArray(internalValue)) {
-                newValue = internalValue === null ? [] : [internalValue];
-            }
+            const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
 
-            if (selectionIsExcluded && this.hasFetchedAllItems) {
+            if (selectionIsExcluded && hasFetchedAllItems) {
                 newValue = state.allOptions.reduce((values, option) => {
                     const id = option.id as StrictOptionId;
 
@@ -798,11 +966,6 @@ export default class SelecticStore extends Vue<Props> {
                 state.selectionIsExcluded = false;
             }
         } else {
-            if (Array.isArray(internalValue)) {
-                const value = internalValue[0];
-                newValue = typeof value === 'undefined' ? null : value;
-            }
-
             state.selectionIsExcluded = false;
         }
 
@@ -815,8 +978,9 @@ export default class SelecticStore extends Vue<Props> {
                     .filter((value) => this.hasItemInStore(value));
                 isDifferent = filteredValue.length !== (newValue as StrictOptionId[]).length;
 
-                if (isDifferent && isPartial && !forceStrict) {
-                    this.getItems(newValue as StrictOptionId[]).then(() => this.assertCorrectValue(true));
+                if (isDifferent && isPartial && !applyStrict) {
+                    this.getItems(newValue as StrictOptionId[])
+                        .then(() => this.assertCorrectValue(true));
                     return;
                 }
             } else
@@ -824,8 +988,9 @@ export default class SelecticStore extends Vue<Props> {
                 filteredValue = null;
                 isDifferent = true;
 
-                if (isPartial && !forceStrict) {
-                    this.getItems([newValue as OptionId]).then(() => this.assertCorrectValue(true));
+                if (isPartial && !applyStrict) {
+                    this.getItems([newValue as OptionId])
+                        .then(() => this.assertCorrectValue(true));
                     return;
                 }
             }
@@ -843,8 +1008,9 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     private updateFilteredOptions() {
-        if (!this.doNotUpdate) {
+        if (!this.data.doNotUpdate) {
             this.state.filteredOptions = this.buildItems(this.state.filteredOptions);
+            this.buildSelectedOptions();
         }
     }
 
@@ -856,7 +1022,7 @@ export default class SelecticStore extends Vue<Props> {
 
     /* XXX: This is not a computed property to avoid consuming more memory */
     private getListOptions(): OptionValue[] {
-        const options = this.options;
+        const options = this.props.options;
         const listOptions: OptionValue[] = [];
 
         if (!Array.isArray(options)) {
@@ -901,10 +1067,10 @@ export default class SelecticStore extends Vue<Props> {
 
     /* XXX: This is not a computed property to avoid consuming more memory */
     private getElementOptions(): OptionValue[] {
-        const options = this.childOptions;
+        const options = this.props.childOptions;
         const childOptions: OptionValue[] = [];
 
-        if (!Array.isArray(options)) {
+        if (!Array.isArray(options) || options.length === 0) {
             return childOptions;
         }
 
@@ -943,6 +1109,7 @@ export default class SelecticStore extends Vue<Props> {
         let elementOptions: OptionValue[] = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length: number = Infinity;
+        const isPartial = this.isPartial.value ?? this.isPartial;
 
         const arrayFromOrder = (orderValue: OptionBehaviorOrder): OptionValue[] => {
             switch(orderValue) {
@@ -963,7 +1130,7 @@ export default class SelecticStore extends Vue<Props> {
         };
 
         if (!keepFetched) {
-            if (this.isPartial) {
+            if (isPartial) {
                 this.state.totalAllOptions = Infinity;
                 this.state.totalDynOptions = Infinity;
             } else {
@@ -978,8 +1145,8 @@ export default class SelecticStore extends Vue<Props> {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0)!;
             allOptions.push(...arrayFromOrder(orderValue));
             length = lengthFromOrder(orderValue);
-            this.activeOrder = orderValue;
-            this.dynOffset = 0;
+            this.data.activeOrder = orderValue;
+            this.data.dynOffset = 0;
         } else {
             /* sort */
             let offset = 0;
@@ -988,7 +1155,7 @@ export default class SelecticStore extends Vue<Props> {
                 const lngth = lengthFromOrder(orderValue);
 
                 if (orderValue === 'D') {
-                    this.dynOffset = offset;
+                    this.data.dynOffset = offset;
                 } else {
                     offset += lngth;
                 }
@@ -999,7 +1166,7 @@ export default class SelecticStore extends Vue<Props> {
                     break;
                 }
             }
-            this.activeOrder = 'D';
+            this.data.activeOrder = 'D';
             length = optionBehaviorOrder.reduce((total, orderValue) => total + lengthFromOrder(orderValue), 0);
         }
 
@@ -1008,7 +1175,7 @@ export default class SelecticStore extends Vue<Props> {
         if (keepFetched) {
             this.state.totalAllOptions = length;
         } else {
-            if (!this.isPartial) {
+            if (!isPartial) {
                 this.state.totalAllOptions = allOptions.length;
             }
         }
@@ -1016,7 +1183,10 @@ export default class SelecticStore extends Vue<Props> {
         this.state.filteredOptions = [];
         this.state.totalFilteredOptions = Infinity;
 
-        this.buildFilteredOptions();
+        this.buildFilteredOptions().then(() => {
+            /* XXX: To recompute for strict mode and auto-select */
+            this.assertCorrectValue();
+        });
     }
 
     private async buildFilteredOptions() {
@@ -1030,14 +1200,16 @@ export default class SelecticStore extends Vue<Props> {
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = this.state.filteredOptions.length;
+        const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
 
-        if (this.hasAllItems) {
+        if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
 
+        const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
         /* Check if all options have been fetched */
-        if (this.hasFetchedAllItems) {
+        if (hasFetchedAllItems) {
             if (!search) {
                 this.state.filteredOptions = this.buildGroupItems(allOptions);
                 this.state.totalFilteredOptions = this.state.filteredOptions.length;
@@ -1053,7 +1225,7 @@ export default class SelecticStore extends Vue<Props> {
         /* When we only have partial options */
 
         const offsetItem = this.state.offsetItem;
-        const marginSize = this.marginSize;
+        const marginSize = this.marginSize.value ?? this.marginSize;
         const endIndex = offsetItem + marginSize;
 
         if (endIndex <= filteredOptionsLength) {
@@ -1063,7 +1235,8 @@ export default class SelecticStore extends Vue<Props> {
         if (!search && endIndex <= allOptionsLength) {
             this.state.filteredOptions = this.buildGroupItems(allOptions);
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
-            if (this.isPartial && this.state.totalDynOptions === Infinity) {
+            const isPartial = this.isPartial.value ?? this.isPartial;
+            if (isPartial && this.state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
             return;
@@ -1073,7 +1246,7 @@ export default class SelecticStore extends Vue<Props> {
             this.addStaticFilteredOptions();
 
             filteredOptionsLength = this.state.filteredOptions.length;
-            this.dynOffset = filteredOptionsLength;
+            this.data.dynOffset = filteredOptionsLength;
             if (endIndex <= filteredOptionsLength) {
                 return;
             }
@@ -1141,9 +1314,11 @@ export default class SelecticStore extends Vue<Props> {
 
     private async fetchData() {
         const state = this.state;
+        const labels = this.data.labels;
+        const fetchCallback = this.props.fetchCallback;
 
-        if (!this.fetchCallback) {
-            state.status.errorMessage = this.labels.noFetchMethod;
+        if (!fetchCallback) {
+            state.status.errorMessage = labels.noFetchMethod;
             return;
         }
 
@@ -1151,25 +1326,26 @@ export default class SelecticStore extends Vue<Props> {
         const filteredOptionsLength = state.filteredOptions.length;
         const offsetItem = state.offsetItem;
         const pageSize = state.pageSize;
-        const marginSize = this.marginSize;
+        const marginSize = this.marginSize.value ?? this.marginSize;
         const endIndex = offsetItem + marginSize;
+        const dynOffset = this.data.dynOffset;
 
         /* Run the query */
         this.state.status.searching = true;
 
         /* Manage cases where offsetItem is not equal to the last item received */
-        const offset = filteredOptionsLength - this.nbGroups(state.filteredOptions) - this.dynOffset;
+        const offset = filteredOptionsLength - this.nbGroups(state.filteredOptions) - dynOffset;
         const nbItems = endIndex - offset;
         const limit = Math.ceil(nbItems / pageSize) * pageSize;
 
         try {
             const requestId = ++this.requestId;
-            const {total: rTotal, result} = await this.fetchCallback(search, offset, limit);
+            const {total: rTotal, result} = await fetchCallback(search, offset, limit);
             let total = rTotal;
 
             /* Assert result is correctly formatted */
             if (!Array.isArray(result)) {
-                throw new Error(this.labels.wrongFormattedData);
+                throw new Error(labels.wrongFormattedData);
             }
 
             /* Handle case where total is not returned */
@@ -1186,7 +1362,7 @@ export default class SelecticStore extends Vue<Props> {
                 /* update cache */
                 state.totalDynOptions = total;
                 state.dynOptions.splice(offset, limit, ...result);
-                this.$nextTick(() => this.buildAllOptions(true));
+                setTimeout(() => this.buildAllOptions(true), 0);
             }
 
             /* Check request is not obsolete */
@@ -1201,7 +1377,7 @@ export default class SelecticStore extends Vue<Props> {
                 const options = this.buildGroupItems(result, previousItem);
                 const nbGroups1 = this.nbGroups(options);
 
-                state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
+                state.filteredOptions.splice(offset + dynOffset, limit + nbGroups1, ...options);
             }
 
             let nbGroups = state.groups.size;
@@ -1209,7 +1385,7 @@ export default class SelecticStore extends Vue<Props> {
                 nbGroups = this.nbGroups(state.filteredOptions);
             }
 
-            state.totalFilteredOptions = total + nbGroups + this.dynOffset;
+            state.totalFilteredOptions = total + nbGroups + dynOffset;
 
             if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
                 this.addStaticFilteredOptions(true);
@@ -1217,7 +1393,7 @@ export default class SelecticStore extends Vue<Props> {
 
             state.status.errorMessage = '';
         } catch (e) {
-            state.status.errorMessage = e.message;
+            state.status.errorMessage = (e as Error).message;
             if (!search) {
                 state.totalDynOptions = 0;
                 this.buildAllOptions(true);
@@ -1274,7 +1450,8 @@ export default class SelecticStore extends Vue<Props> {
 
     private buildSelectedItems(ids: OptionId[]): OptionItem[] {
         return this.buildItems(ids.map((id) => {
-            const item = this.cacheItem.get(id);
+            const cacheItem = this.data.cacheItem;
+            const item = cacheItem.get(id);
 
             return item || {
                 id,
@@ -1284,13 +1461,14 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     private hasItemInStore(id: OptionId): boolean {
-        let item: OptionValue | undefined = this.cacheItem.get(id);
+        const cacheItem = this.data.cacheItem;
+        let item: OptionValue | undefined = cacheItem.get(id);
 
         if (!item) {
             item = this.getValue(id);
 
             if (item) {
-                this.cacheItem.set(item.id, item);
+                cacheItem.set(item.id, item);
             }
         }
 
@@ -1311,7 +1489,7 @@ export default class SelecticStore extends Vue<Props> {
                 disabled: false,
                 isGroup: false,
             }, option, {
-                // tslint:disable-next-line:no-bitwise
+                /* eslint-disable-next-line no-bitwise */
                 selected: !!(+selected.includes(id) ^ selectionIsExcluded),
             });
         });
@@ -1355,7 +1533,8 @@ export default class SelecticStore extends Vue<Props> {
         isValid = isValid && /^[ODE]+$/.test(order);
 
         if (!isValid) {
-            this.state.status.errorMessage = this.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
+            const labels = this.data.labels;
+            this.state.status.errorMessage = labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
             operation = 'sort';
             orderArray = ['O', 'D', 'E'];
         } else {
@@ -1387,6 +1566,7 @@ export default class SelecticStore extends Vue<Props> {
         for (const option of options) {
             if (!option.disabled) {
                 this.selectItem(option.id, true, true);
+                this.checkAutoDisabled();
                 return;
             }
         }
@@ -1394,9 +1574,11 @@ export default class SelecticStore extends Vue<Props> {
 
     private checkAutoDisabled() {
         const state = this.state;
-        const doNotCheck = this.disabled || this.isPartial || !state.autoDisabled;
+        const isPartial = this.isPartial.value ?? this.isPartial;
+        const doNotCheck = isPartial || this.props.disabled || !state.autoDisabled;
+        const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
 
-        if (doNotCheck || !this.hasFetchedAllItems) {
+        if (doNotCheck || !hasFetchedAllItems) {
             return;
         }
 
@@ -1420,128 +1602,22 @@ export default class SelecticStore extends Vue<Props> {
     }
 
     private checkHideFilter() {
-        if (this.params && this.params.hideFilter !== 'auto') {
+        const params = this.props.params;
+        if (params && params.hideFilter !== 'auto') {
             return;
         }
 
         const state = this.state;
+        const isPartial = this.isPartial.value ?? this.isPartial;
 
-        if (state.multiple || this.isPartial) {
+        if (state.multiple || isPartial) {
             state.hideFilter = false;
         } else {
-            state.hideFilter = state.totalAllOptions <= this.itemsPerPage;
+            state.hideFilter = state.totalAllOptions <= this.data.itemsPerPage;
         }
     }
 
     /* }}} */
     /* }}} */
-    /* {{{ watch */
 
-    @Watch('options')
-    protected onOptionsChange(options: OptionValue[] = [], oldOptions: OptionValue[] = []) {
-        if (JSON.stringify(options) === JSON.stringify(oldOptions)) {
-            /* There is no real difference, only a change of reference */
-            return;
-        }
-        this.cacheItem.clear();
-        this.commit('isOpen', false);
-        this.buildAllOptions(true);
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-
-    @Watch('childOptions')
-    protected onChildOptionsChange(childOptions: OptionValue[] = [], oldChildOptions: OptionValue[] = []) {
-        if (JSON.stringify(childOptions) === JSON.stringify(oldChildOptions)) {
-            /* There is no real difference, only a change of reference */
-            return;
-        }
-        this.cacheItem.clear();
-        this.commit('isOpen', false);
-        this.buildAllOptions(true);
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-
-    @Watch('value')
-    protected onValueChange() {
-        const value = typeof this.value === 'undefined' ? null : this.value;
-        this.commit('internalValue', value);
-    }
-
-    @Watch('selectionIsExcluded')
-    protected onSelectionExcludedChange() {
-        this.commit('selectionIsExcluded', this.selectionIsExcluded);
-    }
-
-    @Watch('disabled')
-    protected onDisabledChange() {
-        this.commit('disabled', this.disabled);
-    }
-
-    @Watch('state.filteredOptions')
-    protected onFilteredChange() {
-        let areAllSelected = false;
-
-        if (this.hasAllItems) {
-            const selectionIsExcluded = +this.state.selectionIsExcluded;
-            // tslint:disable-next-line:no-bitwise
-            areAllSelected = this.state.filteredOptions.every((item) => !!(+item.selected ^ selectionIsExcluded));
-        }
-
-        this.state.status.areAllSelected = areAllSelected;
-    }
-
-    @Watch('state.internalValue')
-    protected onInternalValueChange() {
-        this.buildSelectedOptions();
-    }
-
-    @Watch('state.allOptions')
-    protected onAllOptionChange() {
-        this.checkAutoSelect();
-        this.checkAutoDisabled();
-    }
-
-    @Watch('state.totalAllOptions')
-    protected onTotalAllOptionsChange() {
-        this.checkHideFilter();
-    }
-
-    /* }}} */
-    /* {{{ life cycles methods */
-
-    protected created() {
-        const value = typeof this.value === 'undefined' ? null : this.value;
-
-        /* set initial value for non reactive attribute */
-        this.requestId = 0;
-        this.cacheRequest = new Map();
-
-        const stateParam = Object.assign({}, this.params);
-
-        if (stateParam.optionBehavior) {
-            this.buildOptionBehavior(stateParam.optionBehavior, stateParam as SelecticStoreState);
-            delete stateParam.optionBehavior;
-        }
-
-        this.state = Object.assign(this.state, stateParam, {
-            internalValue: value,
-            selectionIsExcluded: this.selectionIsExcluded,
-            disabled: this.disabled,
-        });
-
-        this.checkHideFilter();
-
-        if (this.texts) {
-            this.changeTexts(this.texts);
-        }
-
-        this.addGroups(this.groups);
-        this.buildAllOptions();
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-
-    /* }}} */
-}
+};

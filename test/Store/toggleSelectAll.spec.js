@@ -23,13 +23,14 @@ const Store = StoreFile.default;
 
 tape.test('toggleSelectAll()', (st) => {
     st.test('should select all static options', async (t) => {
-        const store = new Store({propsData: {
+        const store = new Store({
             options: getOptions(5),
             params: {
                 multiple: true,
             },
             value: [1, 3],
-        }});
+        });
+        await sleep(0);
         store.commit('isOpen', true);
 
         t.is(store.state.status.areAllSelected, false);
@@ -53,26 +54,27 @@ tape.test('toggleSelectAll()', (st) => {
     });
 
     st.test('should invert selection when selectionIsExcluded is true', async (t) => {
-        const store = new Store({propsData: {
+        const store = new Store({
             options: getOptions(5),
             params: {
                 multiple: true,
             },
             value: [1, 3],
             selectionIsExcluded: true,
-        }});
+        });
+        await sleep(0);
         store.commit('isOpen', true);
 
         await sleep(0);
 
-        t.deepEqual(store.state.internalValue, [0, 2, 4]);
+        t.deepEqual(store.state.internalValue.sort(), [0, 2, 4]);
         t.is(store.state.selectionIsExcluded, false);
         t.is(store.state.status.areAllSelected, false);
 
         store.toggleSelectAll();
         await _.nextVueTick(store);
 
-        t.deepEqual(store.state.internalValue, [0, 2, 4, 1, 3]);
+        t.deepEqual(store.state.internalValue.sort(), [0, 1, 2, 3, 4]);
         t.is(store.state.selectionIsExcluded, false);
         t.is(store.state.status.areAllSelected, true);
         t.is(store.state.status.hasChanged, true);
@@ -93,16 +95,15 @@ tape.test('toggleSelectAll()', (st) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    params: {
-                        multiple: true,
-                        pageSize: 10,
-                        allowRevert: true,
-                    },
-                    value: [1, 3],
-                    fetchCallback: buildFetchCb({total: 20, command, spy}),
+                params: {
+                    multiple: true,
+                    pageSize: 10,
+                    allowRevert: true,
                 },
+                value: [1, 3],
+                fetchCallback: buildFetchCb({total: 20, command, spy}),
             });
+            await sleep(0);
             store.commit('isOpen', true);
 
             command.fetch();
@@ -130,16 +131,15 @@ tape.test('toggleSelectAll()', (st) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    params: {
-                        multiple: true,
-                        pageSize: 10,
-                        allowRevert: true,
-                    },
-                    value: [1, 3],
-                    fetchCallback: buildFetchCb({total: 20, command, spy}),
+                params: {
+                    multiple: true,
+                    pageSize: 10,
+                    allowRevert: true,
                 },
+                value: [1, 3],
+                fetchCallback: buildFetchCb({total: 20, command, spy}),
             });
+            await sleep(0);
             store.commit('isOpen', true);
 
             command.fetch();
@@ -174,16 +174,15 @@ tape.test('toggleSelectAll()', (st) => {
             const spy = {};
 
             const store = new Store({
-                propsData: {
-                    params: {
-                        multiple: true,
-                        pageSize: 10,
-                        allowRevert: false
-                    },
-                    value: [1, 15],
-                    fetchCallback: buildFetchCb({total: 20, command, spy}),
+                params: {
+                    multiple: true,
+                    pageSize: 10,
+                    allowRevert: false
                 },
+                value: [1, 15],
+                fetchCallback: buildFetchCb({total: 20, command, spy}),
             });
+            await sleep(0);
             store.commit('isOpen', true);
 
             command.fetch();
@@ -196,20 +195,20 @@ tape.test('toggleSelectAll()', (st) => {
             t.deepEqual(store.state.internalValue, [1, 15]);
             t.is(store.state.selectionIsExcluded, false);
             t.is(store.state.status.hasChanged, false);
-            t.is(store.state.status.errorMessage, store.labels.cannotSelectAllRevertItems);
+            t.is(store.state.status.errorMessage, store.data.labels.cannotSelectAllRevertItems);
 
             t.end();
         });
     });
 
     st.test('should do nothing when "multiple" is false', async (t) => {
-        const store = new Store({propsData: {
+        const store = new Store({
             options: getOptions(5),
             params: {
                 multiple: false,
             },
             value: 2,
-        }});
+        });
 
         store.toggleSelectAll();
         await _.nextVueTick(store);
@@ -223,13 +222,14 @@ tape.test('toggleSelectAll()', (st) => {
 
     st.test('given searched text', (subT) => {
         subT.test('should select all filtered static options', async (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(15),
                 params: {
                     multiple: true,
                 },
                 value: [1, 3],
-            }});
+            });
+            await sleep(0);
             store.commit('isOpen', true);
             store.commit('searchText', '1');
 
@@ -259,16 +259,15 @@ tape.test('toggleSelectAll()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            multiple: true,
-                            pageSize: 10,
-                            allowRevert: true,
-                        },
-                        value: [1, 15],
-                        fetchCallback: buildFetchCb({total: 20, searchTotal: 20, command, spy}),
+                    params: {
+                        multiple: true,
+                        pageSize: 10,
+                        allowRevert: true,
                     },
+                    value: [1, 15],
+                    fetchCallback: buildFetchCb({total: 20, searchTotal: 20, command, spy}),
                 });
+                await sleep(0);
                 store.commit('isOpen', true);
                 store.commit('searchText', '1');
 
@@ -282,7 +281,7 @@ tape.test('toggleSelectAll()', (st) => {
                 t.deepEqual(store.state.internalValue, [1, 15]);
                 t.is(store.state.selectionIsExcluded, false);
                 t.is(store.state.status.hasChanged, false);
-                t.is(store.state.status.errorMessage, store.labels.cannotSelectAllSearchedItems);
+                t.is(store.state.status.errorMessage, store.data.labels.cannotSelectAllSearchedItems);
 
                 t.end();
             });
@@ -292,16 +291,15 @@ tape.test('toggleSelectAll()', (st) => {
                 const spy = {};
 
                 const store = new Store({
-                    propsData: {
-                        params: {
-                            multiple: true,
-                            pageSize: 10,
-                            allowRevert: true,
-                        },
-                        value: [1, 15],
-                        fetchCallback: buildFetchCb({total: 20, searchTotal: 20, command, spy}),
+                    params: {
+                        multiple: true,
+                        pageSize: 10,
+                        allowRevert: true,
                     },
+                    value: [1, 15],
+                    fetchCallback: buildFetchCb({total: 20, searchTotal: 20, command, spy}),
                 });
+                await sleep(0);
                 store.commit('isOpen', true);
                 store.commit('searchText', '1');
 

@@ -56,12 +56,14 @@ async function deferPromise(promise, waitAtStart = false) {
     return result;
 }
 
-function nextVueTick(vueComponent, afterPromise) {
+function nextVueTick(_vueComponent, afterPromise) {
     const promise = new Promise(async (resolve) => {
         if (afterPromise) {
             await afterPromise;
         }
-        vueComponent.$nextTick(resolve);
+        // next tick is now deprecated
+        await sleep(0);
+        resolve();
     });
 
     return promise;

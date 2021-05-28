@@ -28,10 +28,10 @@ const Store = StoreFile.default;
 tape.test('getItem()', (st) => {
     st.test('with static options', (sTest) => {
         sTest.test('should retrieve the given item', (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(15),
                 value: 5,
-            }});
+            });
             const item = store.getItem(12);
 
             t.deepEqual(item, {
@@ -45,10 +45,10 @@ tape.test('getItem()', (st) => {
         });
 
         sTest.test('should retrieve selected item', (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(15),
                 value: 5,
-            }});
+            });
             const item = store.getItem(5);
 
             t.deepEqual(item, {
@@ -62,10 +62,10 @@ tape.test('getItem()', (st) => {
         });
 
         sTest.test('should fallback for unknown item', (t) => {
-            const store = new Store({propsData: {
+            const store = new Store({
                 options: getOptions(15),
                 value: 5,
-            }});
+            });
             const item = store.getItem(1024);
 
             t.deepEqual(item, {
@@ -86,14 +86,12 @@ tape.test('getItem()', (st) => {
             const spyGet = {};
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 300, searchTotal: 100, spy: spyFetch }),
-                    getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
-                    params: {
-                        pageSize: 50,
-                    },
-                    value: 55,
-                }
+                fetchCallback: buildFetchCb({ total: 300, searchTotal: 100, spy: spyFetch }),
+                getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
+                params: {
+                    pageSize: 50,
+                },
+                value: 55,
             });
             store.commit('isOpen', true);
 
@@ -124,14 +122,12 @@ tape.test('getItem()', (st) => {
             });
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
-                    getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
-                    params: {
-                        pageSize: 50,
-                    },
-                    value: 55,
-                }
+                fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
+                getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
+                params: {
+                    pageSize: 50,
+                },
+                value: 55,
             });
             store.commit('isOpen', true);
 
@@ -164,14 +160,12 @@ tape.test('getItem()', (st) => {
             });
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
-                    getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
-                    params: {
-                        pageSize: 50,
-                    },
-                    value: 55,
-                }
+                fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
+                getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
+                params: {
+                    pageSize: 50,
+                },
+                value: 55,
             });
             store.commit('isOpen', true);
 
@@ -205,14 +199,12 @@ tape.test('getItem()', (st) => {
             });
 
             const store = new Store({
-                propsData: {
-                    fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
-                    getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
-                    params: {
-                        pageSize: 50,
-                    },
-                    value: 55,
-                }
+                fetchCallback: buildFetchCb({ total: 300, searchCb, spy: spyFetch }),
+                getItemsCallback: buildGetItemsCb({ command, spy: spyGet }),
+                params: {
+                    pageSize: 50,
+                },
+                value: 55,
             });
             store.commit('isOpen', true);
 

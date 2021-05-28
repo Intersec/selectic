@@ -1,10 +1,10 @@
-import { Vue } from 'vtyx';
+import { Vue, h } from 'vtyx';
 import Store, { OptionItem } from './Store';
 export interface Props {
     store: Store;
     id?: string;
 }
-export default class Selectic extends Vue<Props> {
+export default class MainInput extends Vue<Props> {
     $refs: {
         selectedItems: HTMLDivElement;
     };
@@ -31,7 +31,7 @@ export default class Selectic extends Vue<Props> {
     private selectItem;
     private clearSelection;
     private computeSize;
-    protected onInternalChange(): void;
-    protected updated(): void;
-    protected render(): JSX.Element;
+    onInternalChange(): void;
+    updated(): void;
+    render(): h.JSX.Element;
 }

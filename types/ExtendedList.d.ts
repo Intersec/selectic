@@ -1,4 +1,4 @@
-import { Vue } from 'vtyx';
+import { Vue, h } from 'vtyx';
 import Store from './Store';
 export interface Props {
     store: Store;
@@ -26,11 +26,11 @@ export default class ExtendedList extends Vue<Props> {
     get bestPosition(): 'top' | 'bottom';
     get horizontalStyle(): string;
     get positionStyle(): string;
-    protected onFilteredOptionsChange(): void;
-    protected onHideFilterChange(): void;
+    onFilteredOptionsChange(): void;
+    onHideFilterChange(): void;
     private getGroup;
     private computeListSize;
-    protected mounted(): void;
-    protected destroyed(): void;
-    protected render(): JSX.Element;
+    mounted(): void;
+    destroyed(): void;
+    render(): h.JSX.Element;
 }

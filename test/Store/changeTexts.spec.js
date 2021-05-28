@@ -7,35 +7,33 @@ tape.test('changeTexts()', (sTest) => {
     sTest.test('should have default texts', (t) => {
         const store = new Store();
 
-        t.is(typeof store.labels, 'object');
+        t.is(typeof store.data.labels, 'object');
 
         /* Test some values */
-        t.is(store.labels.searching, 'Searching');
-        t.is(store.labels.searchPlaceholder, 'Search');
-        t.is(store.labels.noResult, 'No results');
+        t.is(store.data.labels.searching, 'Searching');
+        t.is(store.data.labels.searchPlaceholder, 'Search');
+        t.is(store.data.labels.noResult, 'No results');
         t.end();
     });
 
     sTest.test('should change texts for an instance', (t) => {
         const store = new Store({
-            propsData: {
-                texts: {
-                    searching: 'please wait',
-                    noResult: 'nada',
-                },
+            texts: {
+                searching: 'please wait',
+                noResult: 'nada',
             },
         });
         const storeRef = new Store();
 
         /* Test some values */
-        t.is(store.labels.searching, 'please wait');
-        t.is(store.labels.searchPlaceholder, 'Search');
-        t.is(store.labels.noResult, 'nada');
+        t.is(store.data.labels.searching, 'please wait');
+        t.is(store.data.labels.searchPlaceholder, 'Search');
+        t.is(store.data.labels.noResult, 'nada');
 
         /* Assert it has not change other instances */
-        t.is(storeRef.labels.searching, 'Searching');
-        t.is(storeRef.labels.searchPlaceholder, 'Search');
-        t.is(storeRef.labels.noResult, 'No results');
+        t.is(storeRef.data.labels.searching, 'Searching');
+        t.is(storeRef.data.labels.searchPlaceholder, 'Search');
+        t.is(storeRef.data.labels.noResult, 'No results');
         t.end();
     });
 
@@ -49,20 +47,20 @@ tape.test('changeTexts()', (sTest) => {
         });
 
         /* Test some values */
-        t.is(store.labels.searching, 'please wait');
-        t.is(store.labels.searchPlaceholder, 'Search');
-        t.is(store.labels.noResult, 'nada');
+        t.is(store.data.labels.searching, 'please wait');
+        t.is(store.data.labels.searchPlaceholder, 'Search');
+        t.is(store.data.labels.noResult, 'nada');
 
         /* Assert it has not change other instances */
-        t.is(storeExistingRef.labels.searching, 'Searching');
-        t.is(storeExistingRef.labels.searchPlaceholder, 'Search');
-        t.is(storeExistingRef.labels.noResult, 'No results');
+        t.is(storeExistingRef.data.labels.searching, 'Searching');
+        t.is(storeExistingRef.data.labels.searchPlaceholder, 'Search');
+        t.is(storeExistingRef.data.labels.noResult, 'No results');
 
         const storeNewRef = new Store();
         /* Assert it has not change newly created instances */
-        t.is(storeNewRef.labels.searching, 'Searching');
-        t.is(storeNewRef.labels.searchPlaceholder, 'Search');
-        t.is(storeNewRef.labels.noResult, 'No results');
+        t.is(storeNewRef.data.labels.searching, 'Searching');
+        t.is(storeNewRef.data.labels.searchPlaceholder, 'Search');
+        t.is(storeNewRef.data.labels.noResult, 'No results');
         t.end();
     });
 
@@ -77,14 +75,14 @@ tape.test('changeTexts()', (sTest) => {
         const store = new Store();
 
         /* Test some values */
-        t.is(store.labels.searching, 'please wait');
-        t.is(store.labels.searchPlaceholder, 'Search');
-        t.is(store.labels.noResult, 'nada');
+        t.is(store.data.labels.searching, 'please wait');
+        t.is(store.data.labels.searchPlaceholder, 'Search');
+        t.is(store.data.labels.noResult, 'nada');
 
         /* Existing instance keeps its values */
-        t.is(oldStore.labels.searching, 'Searching');
-        t.is(oldStore.labels.searchPlaceholder, 'Search');
-        t.is(oldStore.labels.noResult, 'No results');
+        t.is(oldStore.data.labels.searching, 'Searching');
+        t.is(oldStore.data.labels.searchPlaceholder, 'Search');
+        t.is(oldStore.data.labels.noResult, 'No results');
 
         /* restore default values */
         StoreFile.changeTexts({

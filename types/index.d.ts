@@ -1,4 +1,4 @@
-import { Vue } from 'vtyx';
+import { Vue, h } from 'vtyx';
 import './css/selectic.css';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition } from './Store';
 import MainInput from './MainInput';
@@ -22,6 +22,15 @@ export interface ParamProps {
     optionBehavior?: string;
     keepOpenWithOtherSelectic?: boolean;
 }
+export declare type OnCallback = (event: string, ...args: any[]) => void;
+export declare type GetMethodsCallback = (methods: {
+    clearCache: Selectic['clearCache'];
+    changeTexts: Selectic['changeTexts'];
+    getValue: Selectic['getValue'];
+    getSelectedItems: Selectic['getSelectedItems'];
+    isEmpty: Selectic['isEmpty'];
+    toggleOpen: Selectic['toggleOpen'];
+}) => void;
 export interface Props {
     value?: SelectedValue;
     selectionIsExcluded?: boolean;
@@ -37,6 +46,15 @@ export interface Props {
     noCache?: Boolean;
     open?: Boolean;
     params?: ParamProps;
+    /** _on is used mainly for tests.
+     * Its purpose is to propagate $emit event mainly
+     * for parents which are not in Vue environment.
+     */
+    _on?: OnCallback;
+    /** _getMethods is used mainly for tests.
+     * Its purpose is to provide public methods outside of a Vue environment.
+     */
+    _getMethods?: GetMethodsCallback;
 }
 export declare function changeTexts(texts: PartialMessages): void;
 export default class Selectic extends Vue<Props> {
@@ -58,11 +76,15 @@ export default class Selectic extends Vue<Props> {
     noCache: boolean;
     open?: boolean;
     params: ParamProps;
+    /** For tests */
+    _on?: OnCallback;
+    _getMethods?: GetMethodsCallback;
     elementBottom: number;
     elementTop: number;
     elementLeft: number;
     elementRight: number;
     width: number;
+    private hasBeenRendered;
     private store;
     private _elementsListeners;
     private _oldValue;
@@ -70,14 +92,14 @@ export default class Selectic extends Vue<Props> {
     get scrollListener(): () => void;
     get outsideListener(): (evt: MouseEvent) => void;
     get windowResize(): (_evt: any) => void;
-    get inputValue(): string | number;
+    get inputValue(): StrictOptionId;
     get selecticClass(): (string | {
         disabled: boolean;
         'selectic--overflow-multiline': boolean;
         'selectic--overflow-collapsed': boolean;
     })[];
     get hasGivenValue(): boolean;
-    get defaultValue(): SelectedValue;
+    get defaultValue(): string | number | StrictOptionId[] | null;
     clearCache(forceReset?: boolean): void;
     changeTexts(texts: PartialMessages): void;
     getValue(): SelectedValue;
@@ -89,23 +111,21 @@ export default class Selectic extends Vue<Props> {
     private removeListeners;
     private focusToggled;
     private compareValues;
-    protected onValueChange(): void;
-    protected onExcludedChange(): void;
-    protected onOptionsChange(): void;
-    protected onTextsChange(): void;
-    protected onDisabledChange(): void;
-    protected onGroupsChanged(): void;
-    protected onPlaceholderChanged(): void;
-    protected onOpenChanged(): void;
-    protected onFocusChanged(): void;
-    protected onInternalValueChange(): void;
+    onValueChange(): void;
+    onExcludedChange(): void;
+    onOptionsChange(): void;
+    onTextsChange(): void;
+    onDisabledChange(): void;
+    onGroupsChanged(): void;
+    onPlaceholderChanged(): void;
+    onOpenChanged(): void;
+    onFocusChanged(): void;
+    onInternalValueChange(): void;
     private checkFocus;
-    private extractFromNode;
-    private extractOptionFromNode;
-    private extractOptgroupFromNode;
-    protected created(): void;
-    protected mounted(): void;
-    protected beforeUpdate(): void;
-    protected beforeDestroy(): void;
-    protected render(): JSX.Element;
+    private emit;
+    created(): void;
+    mounted(): void;
+    beforeUpdate(): void;
+    beforeDestroy(): void;
+    render(): h.JSX.Element | undefined;
 }

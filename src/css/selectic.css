@@ -220,6 +220,12 @@
     opacity: 0;
 }
 
+.selectic-item_text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .selectic-item__active {
     background-color: var(--selectic-active-item-bg);
     color: var(--selectic-active-item-color);

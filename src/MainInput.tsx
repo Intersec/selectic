@@ -3,7 +3,7 @@
  * displayed) and handles all interaction with it.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
 
 export interface Props {
@@ -14,7 +14,7 @@ export interface Props {
 }
 
 @Component
-export default class Selectic extends Vue<Props> {
+export default class MainInput extends Vue<Props> {
     public $refs: {
         selectedItems: HTMLDivElement;
     };
@@ -83,7 +83,7 @@ export default class Selectic extends Vue<Props> {
         const isMultiple = this.store.state.multiple;
         const labelKey = isMultiple ? 'clearSelections' : 'clearSelection';
 
-        return this.store.labels[labelKey];
+        return this.store.data.labels[labelKey];
     }
 
     get singleSelectedItem() {
@@ -119,7 +119,7 @@ export default class Selectic extends Vue<Props> {
     get reverseSelectionLabel() {
         const labelKey = 'reverseSelection';
 
-        return this.store.labels[labelKey];
+        return this.store.data.labels[labelKey];
     }
 
     get formatItem() {
@@ -168,8 +168,9 @@ export default class Selectic extends Vue<Props> {
         if (!store.state.multiple || nbHiddenItems === 0) {
             return '';
         }
-        const text = nbHiddenItems === 1 ? store.labels.moreSelectedItem
-                                         : store.labels.moreSelectedItems;
+        const labels = store.data.labels;
+        const text = nbHiddenItems === 1 ? labels.moreSelectedItem
+                                         : labels.moreSelectedItems;
 
         return text.replace(/%d/, nbHiddenItems.toString());
     }
@@ -264,22 +265,20 @@ export default class Selectic extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('store.state.internalValue')
-    protected onInternalChange() {
+    public onInternalChange() {
         this.nbHiddenItems = 0;
     }
 
     /* }}} */
     /* {{{ life cycles methods */
 
-    protected updated() {
+    public updated() {
         this.computeSize();
     }
 
     /* }}} */
 
-    protected render() {
-        const h = this.renderWrapper();
-
+    public render() {
         return (
         <div
             class="has-feedback"
@@ -351,24 +350,24 @@ export default class Selectic extends Vue<Props> {
                                 )}
                             </div>
                         )
-                    )}
-                    {this.moreSelectedNb && (
-                        <div
-                            class="single-value more-items"
-                            title={this.moreSelectedTitle}
-                        >
-                            {this.moreSelectedNb}
-                        </div>
-                    )}
+                  )}
+                  {this.moreSelectedNb && (
+                    <div
+                        class="single-value more-items"
+                        title={this.moreSelectedTitle}
+                    >
+                        {this.moreSelectedNb}
+                    </div>
+                  )}
                 </div>
             )}
-                {this.showClearAll && (
-                    <span
-                        class="fa fa-times selectic-input__clear-icon"
-                        title={this.clearedLabel}
-                        on={{ 'click.prevent.stop': this.clearSelection }}
-                    ></span>
-                )}
+            {this.showClearAll && (
+                <span
+                    class="fa fa-times selectic-input__clear-icon"
+                    title={this.clearedLabel}
+                    on={{ 'click.prevent.stop': this.clearSelection }}
+                ></span>
+            )}
             </div>
             <div
                 class={[

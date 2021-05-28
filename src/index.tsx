@@ -18,7 +18,7 @@
  *   close [component]: triggered when the list closes.
  */
 
-import {Vue, Component, Prop, Watch} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import './css/selectic.css';
 
 import Store, {
@@ -126,6 +126,17 @@ export interface ParamProps {
     keepOpenWithOtherSelectic?: boolean;
 }
 
+export type OnCallback = (event: string, ...args: any[]) => void;
+export type GetMethodsCallback = (methods: {
+    clearCache: Selectic['clearCache'];
+    changeTexts: Selectic['changeTexts'];
+    getValue: Selectic['getValue'];
+    getSelectedItems: Selectic['getSelectedItems'];
+    isEmpty: Selectic['isEmpty'];
+    toggleOpen: Selectic['toggleOpen'];
+}) => void;
+
+
 export interface Props {
     /* Selectic's initial value */
     value?: SelectedValue;
@@ -173,6 +184,17 @@ export interface Props {
      * attributes of select.
      */
     params?: ParamProps;
+
+    /** _on is used mainly for tests.
+     * Its purpose is to propagate $emit event mainly
+     * for parents which are not in Vue environment.
+     */
+    _on?: OnCallback;
+
+    /** _getMethods is used mainly for tests.
+     * Its purpose is to provide public methods outside of a Vue environment.
+     */
+    _getMethods?: GetMethodsCallback;
 }
 
 export function changeTexts(texts: PartialMessages) {
@@ -234,6 +256,13 @@ export default class Selectic extends Vue<Props> {
     })})
     public params: ParamProps;
 
+    /** For tests */
+    @Prop()
+    public _on?: OnCallback;
+
+    @Prop()
+    public _getMethods?: GetMethodsCallback;
+
     /* }}} */
     /* {{{ data */
 
@@ -242,6 +271,7 @@ export default class Selectic extends Vue<Props> {
     public elementLeft = 0;
     public elementRight = 0;
     public width = 0;
+    private hasBeenRendered = false;
 
     private store: Store = {} as Store;
 
@@ -253,10 +283,10 @@ export default class Selectic extends Vue<Props> {
     /* {{{ computed */
 
     get isFocused() {
-        if (!this.store || !this.store.state) {
+        if (!this.hasBeenRendered) {
             return false;
         }
-        return this.store.state.isOpen;
+        return !!this.store.state.isOpen;
     }
 
     get scrollListener() {
@@ -393,17 +423,18 @@ export default class Selectic extends Vue<Props> {
     private computeOffset(doNotAddListener = false) {
         const mainInput = this.$refs.mainInput;
 
-        if (!mainInput || !mainInput.$el) {
+        const mainEl = mainInput?.$el as HTMLElement;
+
+        if (!mainEl) {
             /* This method has been called too soon (before render function) */
             return;
         }
 
-        const mainEl = mainInput.$el as HTMLElement;
         const _elementsListeners = this._elementsListeners;
 
         /* add listeners */
         if (!doNotAddListener) {
-            let el = mainInput.$el as HTMLElement;
+            let el = mainEl;
             while (el) {
                 el.addEventListener('scroll', this.scrollListener, { passive: true });
                 _elementsListeners.push(el);
@@ -480,7 +511,7 @@ export default class Selectic extends Vue<Props> {
     /* {{{ watch */
 
     @Watch('value')
-    protected onValueChange() {
+    public onValueChange() {
         const currentValue = this.store.state.internalValue;
         const newValue = this.value ?? null;
         const areSimilar = this.compareValues(
@@ -494,17 +525,17 @@ export default class Selectic extends Vue<Props> {
     }
 
     @Watch('selectionIsExcluded')
-    protected onExcludedChange() {
-        this.store.selectionIsExcluded = this.selectionIsExcluded;
+    public onExcludedChange() {
+        this.store.props.selectionIsExcluded = this.selectionIsExcluded;
     }
 
     @Watch('options')
-    protected onOptionsChange() {
-        this.store.options = this.options;
+    public onOptionsChange() {
+        this.store.props.options = this.options;
     }
 
     @Watch('texts')
-    protected onTextsChange() {
+    public onTextsChange() {
         const texts = this.texts;
 
         if (texts) {
@@ -513,36 +544,37 @@ export default class Selectic extends Vue<Props> {
     }
 
     @Watch('disabled')
-    protected onDisabledChange() {
-        this.store.disabled = this.disabled;
+    public onDisabledChange() {
+        this.store.props.disabled = this.disabled;
     }
 
     @Watch('groups')
-    protected onGroupsChanged() {
+    public onGroupsChanged() {
         this.store.changeGroups(this.groups);
     }
 
     @Watch('placeholder')
-    protected onPlaceholderChanged() {
+    public onPlaceholderChanged() {
         this.store.commit('placeholder', this.placeholder);
     }
 
     @Watch('open')
-    protected onOpenChanged() {
+    public onOpenChanged() {
         this.store.commit('isOpen', this.open ?? false);
     }
 
     @Watch('isFocused')
-    protected onFocusChanged() {
+    public onFocusChanged() {
         this.focusToggled();
     }
 
     @Watch('store.state.internalValue')
-    protected onInternalValueChange() {
+    public onInternalValueChange() {
         const oldValue = this._oldValue;
         const value = this.getValue();
         const areSimilar = this.compareValues(oldValue, value);
-        /* should not trigger when initializing internalValue, but should do if it changes the inital value */
+        /* should not trigger when initializing internalValue, but should do
+         * if it changes the initial value */
         const canTrigger = (oldValue !== undefined || !this.hasGivenValue) && !areSimilar;
 
         if (canTrigger) {
@@ -581,99 +613,107 @@ export default class Selectic extends Vue<Props> {
         }, 0);
     }
 
-    private extractFromNode(node: Vue.VNode, text = ''): OptionValue {
-        function styleToString(staticStyle?: {[key: string]: string}): string | undefined {
-            if (!staticStyle) {
-                return;
-            }
-            let styles = [];
-            for (const [key, value] of Object.entries(staticStyle)) {
-                styles.push(`${key}: ${value}`);
-            }
-            return styles.join(';');
+    private emit(event: string, ...args: any[]) {
+        this.$emit(event, ...args);
+
+        if (typeof this._on === 'function') {
+            this._on(event, ...args);
         }
-
-        const domProps = node.data?.domProps;
-        const attrs = node.data?.attrs;
-        const id = domProps?.value ?? attrs?.value ?? attrs?.id ?? text;
-        const className = node.data?.staticClass;
-        const style = styleToString(node.data?.staticStyle);
-
-        const optVal: OptionValue = {
-            id,
-            text,
-            className,
-            style,
-        };
-
-        if (attrs) {
-            for (const [key, val] of Object.entries(attrs)) {
-                switch(key) {
-                    case 'title':
-                        optVal.title = val;
-                        break;
-                    case 'disabled':
-                        if (val === false) {
-                            optVal.disabled = false;
-                        } else {
-                            optVal.disabled = true;
-                        }
-                        break;
-                    case 'group':
-                        optVal.group = val;
-                        break;
-                    case 'icon':
-                        optVal.icon = val;
-                        break;
-                    case 'data':
-                        optVal.data = val;
-                        break;
-                    default:
-                        if (key.startsWith('data')) {
-                            if (typeof optVal.data !== 'object') {
-                                optVal.data = {};
-                            }
-                            optVal.data[key.slice(5)] = val;
-                        }
-                }
-            }
-        }
-
-        return optVal;
     }
 
-    private extractOptionFromNode(node: Vue.VNode): OptionValue {
-        const children = node.children;
-        const text = (children && children[0].text || '').trim();
+    // private extractFromNode(node: Vue.VNode, text = ''): OptionValue {
+    //     function styleToString(staticStyle?: {[key: string]: string}): string | undefined {
+    //         if (!staticStyle) {
+    //             return;
+    //         }
+    //         let styles = [];
+    //         for (const [key, value] of Object.entries(staticStyle)) {
+    //             styles.push(`${key}: ${value}`);
+    //         }
+    //         return styles.join(';');
+    //     }
 
-        return this.extractFromNode(node, text);
-    }
+    //     const domProps = node.data?.domProps;
+    //     const attrs = node.data?.attrs;
+    //     const id = domProps?.value ?? attrs?.value ?? attrs?.id ?? text;
+    //     const className = node.data?.staticClass;
+    //     const style = styleToString(node.data?.staticStyle);
 
-    private extractOptgroupFromNode(node: Vue.VNode): OptionValue {
-        const attrs = node.data?.attrs;
-        const children = node.children || [];
-        const text = attrs?.label || '';
-        const options: OptionValue[] = [];
+    //     const optVal: OptionValue = {
+    //         id,
+    //         text,
+    //         className,
+    //         style,
+    //     };
 
-        for (const child of children) {
-            if (child.tag === 'option') {
-                options.push(this.extractOptionFromNode(child));
-            }
-        }
+    //     if (attrs) {
+    //         for (const [key, val] of Object.entries(attrs)) {
+    //             switch(key) {
+    //                 case 'title':
+    //                     optVal.title = val;
+    //                     break;
+    //                 case 'disabled':
+    //                     if (val === false) {
+    //                         optVal.disabled = false;
+    //                     } else {
+    //                         optVal.disabled = true;
+    //                     }
+    //                     break;
+    //                 case 'group':
+    //                     optVal.group = val;
+    //                     break;
+    //                 case 'icon':
+    //                     optVal.icon = val;
+    //                     break;
+    //                 case 'data':
+    //                     optVal.data = val;
+    //                     break;
+    //                 default:
+    //                     if (key.startsWith('data')) {
+    //                         if (typeof optVal.data !== 'object') {
+    //                             optVal.data = {};
+    //                         }
+    //                         optVal.data[key.slice(5)] = val;
+    //                     }
+    //             }
+    //         }
+    //     }
 
-        const opt = this.extractFromNode(node, text);
-        opt.options = options;
+    //     return optVal;
+    // }
 
-        return opt;
-    }
+    // private extractOptionFromNode(node: Vue.VNode): OptionValue {
+    //     const children = node.children;
+    //     const text = (children && children[0].text || '').trim();
+
+    //     return this.extractFromNode(node, text);
+    // }
+
+    // private extractOptgroupFromNode(node: Vue.VNode): OptionValue {
+    //     const attrs = node.data?.attrs;
+    //     const children = node.children || [];
+    //     const text = attrs?.label || '';
+    //     const options: OptionValue[] = [];
+
+    //     for (const child of children) {
+    //         if (child.tag === 'option') {
+    //             options.push(this.extractOptionFromNode(child));
+    //         }
+    //     }
+
+    //     const opt = this.extractFromNode(node, text);
+    //     opt.options = options;
+
+    //     return opt;
+    // }
 
     /* }}} */
     /* {{{ Life cycle */
 
-    protected created() {
+    public created() {
         this._elementsListeners = [];
 
-        this.store = new Store({ propsData: {
+        this.store = new Store({
             options: this.options,
             value: this.value,
             selectionIsExcluded: this.selectionIsExcluded,
@@ -682,7 +722,7 @@ export default class Selectic extends Vue<Props> {
             groups: this.groups,
             keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
-                multiple: this.multiple,
+                multiple: (this.multiple ?? false) !== false,
                 pageSize: this.params.pageSize || 100,
                 hideFilter: this.params.hideFilter !== undefined
                           ? this.params.hideFilter : 'auto',
@@ -700,48 +740,66 @@ export default class Selectic extends Vue<Props> {
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior, /* it can be undefined */
-                isOpen: !!this.open,
+                isOpen: (this.open ?? false) !== false,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
-        }});
-    }
+        });
 
-    protected mounted() {
-        setTimeout(() => this.computeOffset(), 0);
-    }
-
-    protected beforeUpdate() {
-        const elements = this.$slots.default;
-        if (!elements) {
-            this.store.childOptions = [];
-            return;
+        if (typeof this._getMethods === 'function') {
+            this._getMethods({
+                clearCache: this.clearCache.bind(this),
+                changeTexts: this.changeTexts.bind(this),
+                getValue: this.getValue.bind(this),
+                getSelectedItems: this.getSelectedItems.bind(this),
+                isEmpty: this.isEmpty.bind(this),
+                toggleOpen: this.toggleOpen.bind(this),
+            });
         }
-        const options = [];
-
-        for (const node of elements) {
-            if (node.tag === 'option') {
-                const prop = this.extractOptionFromNode(node);
-                options.push(prop);
-            } else
-            if (node.tag === 'optgroup') {
-                const prop = this.extractOptgroupFromNode(node);
-                options.push(prop);
-            }
-        }
-
-        this.store.childOptions = options;
     }
 
-    protected beforeDestroy() {
+    public mounted() {
+        setTimeout(() => {
+            this.hasBeenRendered = true;
+            this.computeOffset();
+        }, 100);
+    }
+
+    public beforeUpdate() {
+        // const elements = this.$slots.default;
+        // if (!elements) {
+        //     this.store.childOptions = [];
+        //     return;
+        // }
+        // const options = [];
+
+        // for (const node of elements) {
+        //     if (node.tag === 'option') {
+        //         const prop = this.extractOptionFromNode(node);
+        //         options.push(prop);
+        //     } else
+        //     if (node.tag === 'optgroup') {
+        //         const prop = this.extractOptgroupFromNode(node);
+        //         options.push(prop);
+        //     }
+        // }
+
+        // this.store.childOptions = options;
+    }
+
+    public beforeDestroy() {
         this.removeListeners();
     }
 
     /* }}} */
 
-    protected render() {
-        const h = this.renderWrapper();
+    public render() {
         const id = this.id || undefined;
+        const store = this.store;
+
+        if (!store.state) {
+            return; /* component is not ready yet */
+        }
 
         return (
             <div
@@ -749,7 +807,7 @@ export default class Selectic extends Vue<Props> {
                 title={this.title}
                 data-selectic="true"
                 on={{
-                    'click.prevent.stop': () => this.store.commit('isOpen', true),
+                    'click.prevent.stop': () => store.commit('isOpen', true),
                 }}
             >
                 {/* This input is for DOM submission */}
@@ -759,22 +817,22 @@ export default class Selectic extends Vue<Props> {
                     value={this.inputValue}
                     class="selectic__input-value"
                     on={{
-                        focus: () => this.store.commit('isOpen', true),
+                        focus: () => store.commit('isOpen', true),
                         blur: this.checkFocus,
                     }}
                 />
                 <MainInput
-                    store={this.store}
+                    store={store}
                     id={id}
                     on={{
-                        'item:click': (id: OptionId) => this.$emit('item:click', id, this),
+                        'item:click': (id: OptionId) => this.emit('item:click', id, this),
                     }}
                     ref="mainInput"
                 />
               {this.isFocused && (
                 <ExtendedList
                     class={this.className}
-                    store={this.store}
+                    store={store}
                     elementBottom={this.elementBottom}
                     elementTop={this.elementTop}
                     elementLeft={this.elementLeft}

@@ -9,12 +9,10 @@ const Store = StoreFile.default;
 tape.test('changeGroups()', (sTest) => {
     sTest.test('should update "groups"', (t) => {
         const store = new Store({
-            propsData: {
-                groups: [{
-                    id: '1st group',
-                    text: 'First group',
-                }],
-            },
+            groups: [{
+                id: '1st group',
+                text: 'First group',
+            }],
         });
 
         store.changeGroups(getGroups(5));

@@ -1,5 +1,5 @@
-import { Vue } from 'vtyx';
-import Store, { OptionItem } from './Store';
+import { Vue, h } from 'vtyx';
+import Store, { OptionItem, OptionId } from './Store';
 export interface Props {
     store: Store;
     options?: any[];
@@ -14,7 +14,31 @@ export default class List extends Vue<Props> {
     private itemHeight;
     private groupId;
     private doNotScroll;
-    get filteredOptions(): OptionItem[];
+    get filteredOptions(): {
+        selected: boolean;
+        disabled: boolean;
+        isGroup: boolean;
+        id: OptionId;
+        text: string;
+        title?: string | undefined;
+        group?: import("./Store").StrictOptionId | undefined;
+        className?: string | undefined;
+        style?: string | undefined;
+        icon?: string | undefined;
+        options?: {
+            id: OptionId;
+            text: string;
+            title?: string | undefined;
+            disabled?: boolean | undefined;
+            group?: import("./Store").StrictOptionId | undefined;
+            className?: string | undefined;
+            style?: string | undefined;
+            icon?: string | undefined;
+            options?: any[] | undefined;
+            data?: any;
+        }[] | undefined;
+        data?: any;
+    }[];
     get isMultiple(): boolean;
     get itemsMargin(): number;
     get shortOptions(): OptionItem[];
@@ -31,10 +55,10 @@ export default class List extends Vue<Props> {
     private checkOffset;
     private computeGroupId;
     private onMouseOver;
-    protected onIndexChange(): void;
-    protected onOffsetChange(): void;
-    protected onFilteredOptionsChange(): void;
-    protected onGroupIdChange(): void;
-    protected mounted(): void;
-    protected render(): JSX.Element;
+    onIndexChange(): void;
+    onOffsetChange(): void;
+    onFilteredOptionsChange(): void;
+    onGroupIdChange(): void;
+    mounted(): void;
+    render(): h.JSX.Element;
 }

@@ -8,10 +8,8 @@ const Store = StoreFile.default;
 tape.test('clearCache()', (sTest) => {
     sTest.test('should clear all options already loaded', (t) => {
         const store = new Store({
-            propsData: {
-                options: getOptions(10),
-                value: 2,
-            },
+            options: getOptions(10),
+            value: 2,
         });
         store.state.status.errorMessage = 'a message';
 
@@ -28,10 +26,8 @@ tape.test('clearCache()', (sTest) => {
     sTest.test('should rebuild all options', (t) => {
         const options = getOptions(10);
         const store = new Store({
-            propsData: {
-                options: options,
-                value: 2,
-            },
+            options: options,
+            value: 2,
         });
         store.state.status.errorMessage = 'a message';
 

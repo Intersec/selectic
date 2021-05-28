@@ -1,4 +1,4 @@
-import { Vue } from 'vtyx';
+import { Vue, h } from 'vtyx';
 import Store from './Store';
 export interface Props {
     store: Store;
@@ -21,8 +21,8 @@ export default class FilterPanel extends Vue<Props> {
     private onExclude;
     private togglePanel;
     private getFocus;
-    protected onClosed(): void;
-    protected mounted(): void;
-    protected destroyed(): void;
-    protected render(): JSX.Element;
+    onClosed(): void;
+    mounted(): void;
+    destroyed(): void;
+    render(): h.JSX.Element;
 }

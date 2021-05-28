@@ -25,14 +25,14 @@ tape.test('selectItem()', (st) => {
             const options = getOptions(6);
             options[4].disabled = true;
 
-            const store = new Store({ propsData: {
+            const store = new Store({
                 options: options,
                 params: {
                     multiple: false,
                     autoSelect: false,
                     strictValue: true,
                 },
-            }});
+            });
             return store;
         }
 
@@ -218,13 +218,13 @@ tape.test('selectItem()', (st) => {
             const options = getOptions(6);
             options[4].disabled = true;
 
-            const store = new Store({ propsData: {
+            const store = new Store({
                 options: options,
                 params: {
                     multiple: true,
                     strictValue: true,
                 },
-            }});
+            });
             return store;
         }
 
