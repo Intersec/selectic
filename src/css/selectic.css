@@ -63,6 +63,10 @@
 .selectic .has-feedback {
     position: relative;
 }
+.selectic .has-feedback .form-control {
+    padding-right: calc(var(--selectic-input-height) + 4px);
+}
+
 .selectic .form-control-feedback.fa,
 .selectic .form-control-feedback {
     position: absolute;

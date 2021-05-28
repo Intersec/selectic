@@ -296,14 +296,22 @@ export default class Selectic extends Vue<Props> {
                         }]}
             >
             { this.hasValue && !this.store.state.multiple && (
-                <div class="selectic-item_text"
-                     style={this.singleStyle}
+                <span
+                    class="selectic-item_text"
+                    style={this.singleStyle}
+                    title={this.singleSelectedItem || ''}
                 >
                     {this.singleSelectedItem}
-                </div>
+                </span>
             )}
             {this.displayPlaceholder && (
-                <span class="selectic-input__selected-items__placeholder">
+                <span
+                    class={[
+                        'selectic-input__selected-items__placeholder',
+                        'selectic-item_text',
+                    ]}
+                    title={this.store.state.placeholder}
+                >
                     {this.store.state.placeholder}
                 </span>
             )}
