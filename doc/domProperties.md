@@ -85,7 +85,9 @@ It is added to the main element, and it behaves like `title` attribute of any HT
 
 Type: `string`
 
-This is an alias of `class` for usage where it is not possible to use this reserved keyword.
+The given string will be applied as class to the main element and also to the list element.
+It can be used instead of class for when it is not possible to use the reserved keyword.
+Note that it will be applied to the inner list element too.
 
 ```html
 <selectic

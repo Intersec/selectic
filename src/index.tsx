@@ -773,6 +773,7 @@ export default class Selectic extends Vue<Props> {
                 />
               {this.isFocused && (
                 <ExtendedList
+                    class={this.className}
                     store={this.store}
                     elementBottom={this.elementBottom}
                     elementTop={this.elementTop}

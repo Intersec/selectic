@@ -2360,7 +2360,7 @@ let Selectic$1 = class Selectic extends Vue {
             h(MainInput, { store: this.store, id: id, on: {
                     'item:click': (id) => this.$emit('item:click', id, this),
                 }, ref: "mainInput" }),
-            this.isFocused && (h(ExtendedList$1, { store: this.store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
+            this.isFocused && (h(ExtendedList$1, { class: this.className, store: this.store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
     }
 };
 __decorate$5([
