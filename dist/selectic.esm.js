@@ -1,4 +1,5 @@
-import { Prop, Watch, Component, Vue } from 'vtyx';
+import { Prop, Watch, Component, Vue, h } from 'vtyx';
+import { reactive, computed, watch } from 'vue';
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -27,21 +28,16 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    z-index: 2000;\n    height: auto;\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    min-width: 200px;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    overflow: auto;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* }}} */\n";
+var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    z-index: 2000;\n    height: auto;\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    min-width: 200px;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    overflow: auto;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* }}} */\n";
 styleInject(css_248z);
 
 /* File Purpose:
  * It keeps and computes all states at a single place.
- * Every inner components of Selectic should comunicate with this file to
+ * Every inner components of Selectic should communicate with this file to
  * change or to get states.
  */
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 /* }}} */
+/* {{{ Helper */
 /**
  * Escape search string to consider regexp special characters as they
  * are and not like special characters.
@@ -58,6 +54,26 @@ function convertToRegExp(name, flag = 'i') {
         .replace(/\*/g, '.*');
     return new RegExp(pattern, flag);
 }
+/** Does the same as Object.assign but does not replace if value is undefined */
+function assignObject(obj, ...sourceObjects) {
+    const result = obj;
+    for (const source of sourceObjects) {
+        for (const key of Object.keys(source)) {
+            const value = source[key];
+            if (value === undefined) {
+                continue;
+            }
+            result[key] = value;
+        }
+    }
+    return result;
+}
+/* }}} */
+/* {{{ Static */
+function changeTexts$1(texts) {
+    messages = Object.assign(messages, texts);
+}
+/* }}} */
 let messages = {
     noFetchMethod: 'Fetch callback is missing: it is not possible to retrieve data.',
     searchPlaceholder: 'Search',
@@ -77,20 +93,12 @@ let messages = {
     unknownPropertyValue: 'property "%s" has incorrect values.',
 };
 let closePreviousSelectic;
-/* {{{ Static */
-function changeTexts(texts) {
-    messages = Object.assign(messages, texts);
-}
 /* }}} */
-let SelecticStore = class SelecticStore extends Vue {
-    constructor() {
-        /* {{{ props */
-        super(...arguments);
-        /* }}} */
+let uid = 0;
+class SelecticStore {
+    constructor(props = {}) {
         /* {{{ data */
-        /* Number of items displayed in a page (before scrolling) */
-        this.itemsPerPage = 10;
-        this.state = {
+        this.state = reactive({
             multiple: false,
             disabled: false,
             placeholder: '',
@@ -125,44 +133,136 @@ let SelecticStore = class SelecticStore extends Vue {
                 areAllSelected: false,
                 hasChanged: false,
             },
+        });
+        /* Do not need reactivity */
+        this.requestId = 0;
+        this._uid = ++uid;
+        /* {{{ Props */
+        const defaultProps = {
+            value: null,
+            selectionIsExcluded: false,
+            disabled: false,
+            options: null,
+            childOptions: [],
+            groups: [],
+            texts: null,
+            params: {},
+            fetchCallback: null,
+            getItemsCallback: null,
+            keepOpenWithOtherSelectic: false,
         };
-        this.labels = Object.assign({}, messages);
-        /* used to avoid checking and updating table while doing batch stuff */
-        this.doNotUpdate = false;
-        this.cacheItem = new Map();
-        this.activeOrder = 'D';
-        this.dynOffset = 0;
+        const propsVal = assignObject(defaultProps, props);
+        this.props = reactive(propsVal);
         /* }}} */
-    }
-    /* }}} */
-    /* {{{ computed */
-    /* Number of item to pre-display */
-    get marginSize() {
-        return this.state.pageSize / 2;
-    }
-    get isPartial() {
-        const state = this.state;
-        let isPartial = typeof this.fetchCallback === 'function';
-        if (isPartial && state.optionBehaviorOperation === 'force' && this.activeOrder !== 'D') {
-            isPartial = false;
+        /* {{{ data */
+        this.data = reactive({
+            labels: Object.assign({}, messages),
+            itemsPerPage: 10,
+            doNotUpdate: false,
+            cacheItem: new Map(),
+            activeOrder: 'D',
+            dynOffset: 0,
+        });
+        /* }}} */
+        /* {{{ computed */
+        this.marginSize = computed(() => {
+            return this.state.pageSize / 2;
+        });
+        this.isPartial = computed(() => {
+            const state = this.state;
+            let isPartial = typeof this.props.fetchCallback === 'function';
+            if (isPartial &&
+                state.optionBehaviorOperation === 'force' &&
+                this.data.activeOrder !== 'D') {
+                isPartial = false;
+            }
+            return isPartial;
+        });
+        this.hasAllItems = computed(() => {
+            const state = this.state;
+            const nbItems = state.totalFilteredOptions + state.groups.size;
+            return this.state.filteredOptions.length >= nbItems;
+        });
+        this.hasFetchedAllItems = computed(() => {
+            var _a;
+            const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+            if (!isPartial) {
+                return true;
+            }
+            const state = this.state;
+            return state.dynOptions.length === state.totalDynOptions;
+        });
+        /* }}} */
+        /* {{{ watch */
+        watch(() => [this.props.options, this.props.childOptions], () => {
+            this.data.cacheItem.clear();
+            this.commit('isOpen', false);
+            this.buildAllOptions(true);
+            this.buildSelectedOptions();
+        });
+        watch(() => this.props.value, () => {
+            var _a;
+            const value = (_a = this.props.value) !== null && _a !== void 0 ? _a : null;
+            this.commit('internalValue', value);
+        });
+        watch(() => this.props.selectionIsExcluded, () => {
+            this.commit('selectionIsExcluded', this.props.selectionIsExcluded);
+        });
+        watch(() => this.props.disabled, () => {
+            this.commit('disabled', this.props.disabled);
+        });
+        watch(() => this.state.filteredOptions, () => {
+            var _a;
+            let areAllSelected = false;
+            const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+            if (hasAllItems) {
+                const selectionIsExcluded = +this.state.selectionIsExcluded;
+                /* eslint-disable-next-line no-bitwise */
+                areAllSelected = this.state.filteredOptions.every((item) => !!(+item.selected ^ selectionIsExcluded));
+            }
+            this.state.status.areAllSelected = areAllSelected;
+        });
+        watch(() => this.state.internalValue, () => {
+            this.buildSelectedOptions();
+        });
+        watch(() => this.state.allOptions, () => {
+            this.checkAutoSelect();
+            this.checkAutoDisabled();
+        });
+        watch(() => this.state.totalAllOptions, () => {
+            this.checkHideFilter();
+        });
+        /* }}} */
+        this.closeSelectic = () => {
+            this.commit('isOpen', false);
+        };
+        const value = this.props.value;
+        /* set initial value for non reactive attribute */
+        this.cacheRequest = new Map();
+        const stateParam = Object.assign({}, this.props.params);
+        if (stateParam.optionBehavior) {
+            this.buildOptionBehavior(stateParam.optionBehavior, stateParam);
+            delete stateParam.optionBehavior;
         }
-        return isPartial;
-    }
-    get hasAllItems() {
-        const nbItems = this.state.totalFilteredOptions + this.state.groups.size;
-        return this.state.filteredOptions.length >= nbItems;
-    }
-    get hasFetchedAllItems() {
-        const state = this.state;
-        if (!this.isPartial) {
-            return true;
+        if (stateParam.hideFilter === 'auto') {
+            delete stateParam.hideFilter;
         }
-        return state.dynOptions.length === state.totalDynOptions;
+        /* Update state */
+        assignObject(this.state, stateParam, {
+            internalValue: value,
+            selectionIsExcluded: props.selectionIsExcluded,
+            disabled: props.disabled,
+        });
+        this.checkHideFilter();
+        if (this.props.texts) {
+            this.changeTexts(this.props.texts);
+        }
+        this.addGroups(this.props.groups);
+        this.assertValueType();
+        this.buildAllOptions();
+        this.buildSelectedOptions();
+        this.checkAutoDisabled();
     }
-    get closeSelectic() {
-        return () => this.commit('isOpen', false);
-    }
-    /* }}} */
     /* {{{ methods */
     /* {{{ public methods */
     commit(name, value) {
@@ -200,7 +300,7 @@ let SelecticStore = class SelecticStore extends Vue {
                     if (typeof closePreviousSelectic === 'function') {
                         closePreviousSelectic();
                     }
-                    if (!this.keepOpenWithOtherSelectic) {
+                    if (!this.props.keepOpenWithOtherSelectic) {
                         closePreviousSelectic = this.closeSelectic;
                     }
                 }
@@ -227,7 +327,7 @@ let SelecticStore = class SelecticStore extends Vue {
     getItem(id) {
         let item;
         if (this.hasItemInStore(id)) {
-            item = this.cacheItem.get(id);
+            item = this.data.cacheItem.get(id);
         }
         else {
             this.getItems([id]);
@@ -240,7 +340,8 @@ let SelecticStore = class SelecticStore extends Vue {
     }
     async getItems(ids) {
         const itemsToFetch = ids.filter((id) => !this.hasItemInStore(id));
-        if (itemsToFetch.length && typeof this.getItemsCallback === 'function') {
+        const getItemsCallback = this.props.getItemsCallback;
+        if (itemsToFetch.length && typeof getItemsCallback === 'function') {
             const cacheRequest = this.cacheRequest;
             const requestId = itemsToFetch.toString();
             let promise;
@@ -248,26 +349,29 @@ let SelecticStore = class SelecticStore extends Vue {
                 promise = cacheRequest.get(requestId);
             }
             else {
-                promise = this.getItemsCallback(itemsToFetch);
+                promise = getItemsCallback(itemsToFetch);
                 cacheRequest.set(requestId, promise);
                 promise.then(() => {
                     cacheRequest.delete(requestId);
                 });
             }
             const items = await promise;
+            const cacheItem = this.data.cacheItem;
             for (const item of items) {
                 if (item) {
-                    this.cacheItem.set(item.id, item);
+                    cacheItem.set(item.id, item);
                 }
             }
         }
         return this.buildSelectedItems(ids);
     }
     selectItem(id, selected, keepOpen = false) {
+        var _a;
         const state = this.state;
         let hasChanged = false;
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
         /* Check that item is not disabled */
-        if (!this.isPartial) {
+        if (!isPartial) {
             const item = state.allOptions.find((opt) => opt.id === id);
             if (item && item.disabled) {
                 return;
@@ -326,16 +430,19 @@ let SelecticStore = class SelecticStore extends Vue {
         }
     }
     toggleSelectAll() {
+        var _a;
         if (!this.state.multiple) {
             return;
         }
-        if (!this.hasAllItems) {
+        const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+        if (!hasAllItems) {
+            const labels = this.data.labels;
             if (this.state.searchText) {
-                this.state.status.errorMessage = this.labels.cannotSelectAllSearchedItems;
+                this.state.status.errorMessage = labels.cannotSelectAllSearchedItems;
                 return;
             }
             if (!this.state.allowRevert) {
-                this.state.status.errorMessage = this.labels.cannotSelectAllRevertItems;
+                this.state.status.errorMessage = labels.cannotSelectAllRevertItems;
                 return;
             }
             const value = this.state.internalValue;
@@ -348,9 +455,9 @@ let SelecticStore = class SelecticStore extends Vue {
         }
         const selectAll = !this.state.status.areAllSelected;
         this.state.status.areAllSelected = selectAll;
-        this.doNotUpdate = true;
+        this.data.doNotUpdate = true;
         this.state.filteredOptions.forEach((item) => this.selectItem(item.id, selectAll));
-        this.doNotUpdate = false;
+        this.data.doNotUpdate = false;
         this.updateFilteredOptions();
     }
     resetChange() {
@@ -360,8 +467,10 @@ let SelecticStore = class SelecticStore extends Vue {
         this.state.status.errorMessage = '';
     }
     clearCache(forceReset = false) {
-        const total = this.isPartial ? Infinity : 0;
-        this.cacheItem.clear();
+        var _a;
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const total = isPartial ? Infinity : 0;
+        this.data.cacheItem.clear();
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
         this.state.totalDynOptions = total;
@@ -388,7 +497,7 @@ let SelecticStore = class SelecticStore extends Vue {
         this.buildFilteredOptions();
     }
     changeTexts(texts) {
-        this.labels = Object.assign({}, this.labels, texts);
+        this.data.labels = Object.assign({}, this.data.labels, texts);
     }
     /* }}} */
     /* {{{ private methods */
@@ -407,19 +516,37 @@ let SelecticStore = class SelecticStore extends Vue {
             this.getListOptions().find(findId) ||
             this.getElementOptions().find(findId);
     }
-    assertCorrectValue(forceStrict = false) {
+    assertValueType() {
+        const state = this.state;
+        const internalValue = state.internalValue;
+        const isMultiple = state.multiple;
+        let newValue = internalValue;
+        if (isMultiple) {
+            if (!Array.isArray(internalValue)) {
+                newValue = internalValue === null ? [] : [internalValue];
+            }
+        }
+        else {
+            if (Array.isArray(internalValue)) {
+                const value = internalValue[0];
+                newValue = typeof value === 'undefined' ? null : value;
+            }
+        }
+        state.internalValue = newValue;
+    }
+    assertCorrectValue(applyStrict = false) {
+        var _a, _b;
         const state = this.state;
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
-        const isPartial = this.isPartial;
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        this.assertValueType();
         if (isMultiple) {
-            if (!Array.isArray(internalValue)) {
-                newValue = internalValue === null ? [] : [internalValue];
-            }
-            if (selectionIsExcluded && this.hasFetchedAllItems) {
+            const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
+            if (selectionIsExcluded && hasFetchedAllItems) {
                 newValue = state.allOptions.reduce((values, option) => {
                     const id = option.id;
                     if (!internalValue.includes(id)) {
@@ -431,10 +558,6 @@ let SelecticStore = class SelecticStore extends Vue {
             }
         }
         else {
-            if (Array.isArray(internalValue)) {
-                const value = internalValue[0];
-                newValue = typeof value === 'undefined' ? null : value;
-            }
             state.selectionIsExcluded = false;
         }
         if (checkStrict) {
@@ -444,16 +567,18 @@ let SelecticStore = class SelecticStore extends Vue {
                 filteredValue = newValue
                     .filter((value) => this.hasItemInStore(value));
                 isDifferent = filteredValue.length !== newValue.length;
-                if (isDifferent && isPartial && !forceStrict) {
-                    this.getItems(newValue).then(() => this.assertCorrectValue(true));
+                if (isDifferent && isPartial && !applyStrict) {
+                    this.getItems(newValue)
+                        .then(() => this.assertCorrectValue(true));
                     return;
                 }
             }
             else if (!this.hasItemInStore(newValue)) {
                 filteredValue = null;
                 isDifferent = true;
-                if (isPartial && !forceStrict) {
-                    this.getItems([newValue]).then(() => this.assertCorrectValue(true));
+                if (isPartial && !applyStrict) {
+                    this.getItems([newValue])
+                        .then(() => this.assertCorrectValue(true));
                     return;
                 }
             }
@@ -467,8 +592,9 @@ let SelecticStore = class SelecticStore extends Vue {
         }
     }
     updateFilteredOptions() {
-        if (!this.doNotUpdate) {
+        if (!this.data.doNotUpdate) {
             this.state.filteredOptions = this.buildItems(this.state.filteredOptions);
+            this.buildSelectedOptions();
         }
     }
     addGroups(groups) {
@@ -478,7 +604,7 @@ let SelecticStore = class SelecticStore extends Vue {
     }
     /* XXX: This is not a computed property to avoid consuming more memory */
     getListOptions() {
-        const options = this.options;
+        const options = this.props.options;
         const listOptions = [];
         if (!Array.isArray(options)) {
             return listOptions;
@@ -514,9 +640,9 @@ let SelecticStore = class SelecticStore extends Vue {
     }
     /* XXX: This is not a computed property to avoid consuming more memory */
     getElementOptions() {
-        const options = this.childOptions;
+        const options = this.props.childOptions;
         const childOptions = [];
-        if (!Array.isArray(options)) {
+        if (!Array.isArray(options) || options.length === 0) {
             return childOptions;
         }
         options.forEach((option) => {
@@ -543,11 +669,13 @@ let SelecticStore = class SelecticStore extends Vue {
         return childOptions;
     }
     buildAllOptions(keepFetched = false) {
+        var _a;
         const allOptions = [];
         let listOptions = [];
         let elementOptions = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length = Infinity;
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
         const arrayFromOrder = (orderValue) => {
             switch (orderValue) {
                 case 'O': return listOptions;
@@ -565,7 +693,7 @@ let SelecticStore = class SelecticStore extends Vue {
             return 0;
         };
         if (!keepFetched) {
-            if (this.isPartial) {
+            if (isPartial) {
                 this.state.totalAllOptions = Infinity;
                 this.state.totalDynOptions = Infinity;
             }
@@ -579,8 +707,8 @@ let SelecticStore = class SelecticStore extends Vue {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0);
             allOptions.push(...arrayFromOrder(orderValue));
             length = lengthFromOrder(orderValue);
-            this.activeOrder = orderValue;
-            this.dynOffset = 0;
+            this.data.activeOrder = orderValue;
+            this.data.dynOffset = 0;
         }
         else {
             /* sort */
@@ -589,7 +717,7 @@ let SelecticStore = class SelecticStore extends Vue {
                 const list = arrayFromOrder(orderValue);
                 const lngth = lengthFromOrder(orderValue);
                 if (orderValue === 'D') {
-                    this.dynOffset = offset;
+                    this.data.dynOffset = offset;
                 }
                 else {
                     offset += lngth;
@@ -600,7 +728,7 @@ let SelecticStore = class SelecticStore extends Vue {
                     break;
                 }
             }
-            this.activeOrder = 'D';
+            this.data.activeOrder = 'D';
             length = optionBehaviorOrder.reduce((total, orderValue) => total + lengthFromOrder(orderValue), 0);
         }
         this.state.allOptions = allOptions;
@@ -608,15 +736,19 @@ let SelecticStore = class SelecticStore extends Vue {
             this.state.totalAllOptions = length;
         }
         else {
-            if (!this.isPartial) {
+            if (!isPartial) {
                 this.state.totalAllOptions = allOptions.length;
             }
         }
         this.state.filteredOptions = [];
         this.state.totalFilteredOptions = Infinity;
-        this.buildFilteredOptions();
+        this.buildFilteredOptions().then(() => {
+            /* XXX: To recompute for strict mode and auto-select */
+            this.assertCorrectValue();
+        });
     }
     async buildFilteredOptions() {
+        var _a, _b, _c, _d;
         if (!this.state.isOpen) {
             /* Do not try to fetch anything while the select is not open */
             return;
@@ -626,12 +758,14 @@ let SelecticStore = class SelecticStore extends Vue {
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = this.state.filteredOptions.length;
-        if (this.hasAllItems) {
+        const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+        if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
+        const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
         /* Check if all options have been fetched */
-        if (this.hasFetchedAllItems) {
+        if (hasFetchedAllItems) {
             if (!search) {
                 this.state.filteredOptions = this.buildGroupItems(allOptions);
                 this.state.totalFilteredOptions = this.state.filteredOptions.length;
@@ -644,7 +778,7 @@ let SelecticStore = class SelecticStore extends Vue {
         }
         /* When we only have partial options */
         const offsetItem = this.state.offsetItem;
-        const marginSize = this.marginSize;
+        const marginSize = (_c = this.marginSize.value) !== null && _c !== void 0 ? _c : this.marginSize;
         const endIndex = offsetItem + marginSize;
         if (endIndex <= filteredOptionsLength) {
             return;
@@ -652,7 +786,8 @@ let SelecticStore = class SelecticStore extends Vue {
         if (!search && endIndex <= allOptionsLength) {
             this.state.filteredOptions = this.buildGroupItems(allOptions);
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
-            if (this.isPartial && this.state.totalDynOptions === Infinity) {
+            const isPartial = (_d = this.isPartial.value) !== null && _d !== void 0 ? _d : this.isPartial;
+            if (isPartial && this.state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
             return;
@@ -660,7 +795,7 @@ let SelecticStore = class SelecticStore extends Vue {
         if (filteredOptionsLength === 0 && this.state.optionBehaviorOperation === 'sort') {
             this.addStaticFilteredOptions();
             filteredOptionsLength = this.state.filteredOptions.length;
-            this.dynOffset = filteredOptionsLength;
+            this.data.dynOffset = filteredOptionsLength;
             if (endIndex <= filteredOptionsLength) {
                 return;
             }
@@ -716,30 +851,34 @@ let SelecticStore = class SelecticStore extends Vue {
         }
     }
     async fetchData() {
+        var _a;
         const state = this.state;
-        if (!this.fetchCallback) {
-            state.status.errorMessage = this.labels.noFetchMethod;
+        const labels = this.data.labels;
+        const fetchCallback = this.props.fetchCallback;
+        if (!fetchCallback) {
+            state.status.errorMessage = labels.noFetchMethod;
             return;
         }
         const search = state.searchText;
         const filteredOptionsLength = state.filteredOptions.length;
         const offsetItem = state.offsetItem;
         const pageSize = state.pageSize;
-        const marginSize = this.marginSize;
+        const marginSize = (_a = this.marginSize.value) !== null && _a !== void 0 ? _a : this.marginSize;
         const endIndex = offsetItem + marginSize;
+        const dynOffset = this.data.dynOffset;
         /* Run the query */
         this.state.status.searching = true;
         /* Manage cases where offsetItem is not equal to the last item received */
-        const offset = filteredOptionsLength - this.nbGroups(state.filteredOptions) - this.dynOffset;
+        const offset = filteredOptionsLength - this.nbGroups(state.filteredOptions) - dynOffset;
         const nbItems = endIndex - offset;
         const limit = Math.ceil(nbItems / pageSize) * pageSize;
         try {
             const requestId = ++this.requestId;
-            const { total: rTotal, result } = await this.fetchCallback(search, offset, limit);
+            const { total: rTotal, result } = await fetchCallback(search, offset, limit);
             let total = rTotal;
             /* Assert result is correctly formatted */
             if (!Array.isArray(result)) {
-                throw new Error(this.labels.wrongFormattedData);
+                throw new Error(labels.wrongFormattedData);
             }
             /* Handle case where total is not returned */
             if (typeof total !== 'number') {
@@ -753,7 +892,7 @@ let SelecticStore = class SelecticStore extends Vue {
                 /* update cache */
                 state.totalDynOptions = total;
                 state.dynOptions.splice(offset, limit, ...result);
-                this.$nextTick(() => this.buildAllOptions(true));
+                setTimeout(() => this.buildAllOptions(true), 0);
             }
             /* Check request is not obsolete */
             if (requestId !== this.requestId) {
@@ -766,13 +905,13 @@ let SelecticStore = class SelecticStore extends Vue {
                 const previousItem = state.filteredOptions[filteredOptionsLength - 1];
                 const options = this.buildGroupItems(result, previousItem);
                 const nbGroups1 = this.nbGroups(options);
-                state.filteredOptions.splice(offset + this.dynOffset, limit + nbGroups1, ...options);
+                state.filteredOptions.splice(offset + dynOffset, limit + nbGroups1, ...options);
             }
             let nbGroups = state.groups.size;
             if (offset + limit >= total) {
                 nbGroups = this.nbGroups(state.filteredOptions);
             }
-            state.totalFilteredOptions = total + nbGroups + this.dynOffset;
+            state.totalFilteredOptions = total + nbGroups + dynOffset;
             if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
                 this.addStaticFilteredOptions(true);
             }
@@ -827,7 +966,8 @@ let SelecticStore = class SelecticStore extends Vue {
     }
     buildSelectedItems(ids) {
         return this.buildItems(ids.map((id) => {
-            const item = this.cacheItem.get(id);
+            const cacheItem = this.data.cacheItem;
+            const item = cacheItem.get(id);
             return item || {
                 id,
                 text: String(id),
@@ -835,11 +975,12 @@ let SelecticStore = class SelecticStore extends Vue {
         }));
     }
     hasItemInStore(id) {
-        let item = this.cacheItem.get(id);
+        const cacheItem = this.data.cacheItem;
+        let item = cacheItem.get(id);
         if (!item) {
             item = this.getValue(id);
             if (item) {
-                this.cacheItem.set(item.id, item);
+                cacheItem.set(item.id, item);
             }
         }
         return !!item;
@@ -856,7 +997,7 @@ let SelecticStore = class SelecticStore extends Vue {
                 disabled: false,
                 isGroup: false,
             }, option, {
-                // tslint:disable-next-line:no-bitwise
+                /* eslint-disable-next-line no-bitwise */
                 selected: !!(+selected.includes(id) ^ selectionIsExcluded),
             });
         });
@@ -888,7 +1029,8 @@ let SelecticStore = class SelecticStore extends Vue {
         isValid = isValid && ['sort', 'force'].includes(operation);
         isValid = isValid && /^[ODE]+$/.test(order);
         if (!isValid) {
-            this.state.status.errorMessage = this.labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
+            const labels = this.data.labels;
+            this.state.status.errorMessage = labels.unknownPropertyValue.replace(/%s/, 'optionBehavior');
             operation = 'sort';
             orderArray = ['O', 'D', 'E'];
         }
@@ -915,14 +1057,18 @@ let SelecticStore = class SelecticStore extends Vue {
         for (const option of options) {
             if (!option.disabled) {
                 this.selectItem(option.id, true, true);
+                this.checkAutoDisabled();
                 return;
             }
         }
     }
     checkAutoDisabled() {
+        var _a, _b;
         const state = this.state;
-        const doNotCheck = this.disabled || this.isPartial || !state.autoDisabled;
-        if (doNotCheck || !this.hasFetchedAllItems) {
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const doNotCheck = isPartial || this.props.disabled || !state.autoDisabled;
+        const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
+        if (doNotCheck || !hasFetchedAllItems) {
             return;
         }
         const enabledOptions = state.allOptions.filter((opt) => !opt.disabled);
@@ -942,174 +1088,33 @@ let SelecticStore = class SelecticStore extends Vue {
         }
     }
     checkHideFilter() {
-        if (this.params && this.params.hideFilter !== 'auto') {
+        var _a;
+        const params = this.props.params;
+        if (params && params.hideFilter !== 'auto') {
             return;
         }
         const state = this.state;
-        if (state.multiple || this.isPartial) {
+        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        if (state.multiple || isPartial) {
             state.hideFilter = false;
         }
         else {
-            state.hideFilter = state.totalAllOptions <= this.itemsPerPage;
+            state.hideFilter = state.totalAllOptions <= this.data.itemsPerPage;
         }
     }
-    /* }}} */
-    /* }}} */
-    /* {{{ watch */
-    onOptionsChange(options = [], oldOptions = []) {
-        if (JSON.stringify(options) === JSON.stringify(oldOptions)) {
-            /* There is no real difference, only a change of reference */
-            return;
-        }
-        this.cacheItem.clear();
-        this.commit('isOpen', false);
-        this.buildAllOptions(true);
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-    onChildOptionsChange(childOptions = [], oldChildOptions = []) {
-        if (JSON.stringify(childOptions) === JSON.stringify(oldChildOptions)) {
-            /* There is no real difference, only a change of reference */
-            return;
-        }
-        this.cacheItem.clear();
-        this.commit('isOpen', false);
-        this.buildAllOptions(true);
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-    onValueChange() {
-        const value = typeof this.value === 'undefined' ? null : this.value;
-        this.commit('internalValue', value);
-    }
-    onSelectionExcludedChange() {
-        this.commit('selectionIsExcluded', this.selectionIsExcluded);
-    }
-    onDisabledChange() {
-        this.commit('disabled', this.disabled);
-    }
-    onFilteredChange() {
-        let areAllSelected = false;
-        if (this.hasAllItems) {
-            const selectionIsExcluded = +this.state.selectionIsExcluded;
-            // tslint:disable-next-line:no-bitwise
-            areAllSelected = this.state.filteredOptions.every((item) => !!(+item.selected ^ selectionIsExcluded));
-        }
-        this.state.status.areAllSelected = areAllSelected;
-    }
-    onInternalValueChange() {
-        this.buildSelectedOptions();
-    }
-    onAllOptionChange() {
-        this.checkAutoSelect();
-        this.checkAutoDisabled();
-    }
-    onTotalAllOptionsChange() {
-        this.checkHideFilter();
-    }
-    /* }}} */
-    /* {{{ life cycles methods */
-    created() {
-        const value = typeof this.value === 'undefined' ? null : this.value;
-        /* set initial value for non reactive attribute */
-        this.requestId = 0;
-        this.cacheRequest = new Map();
-        const stateParam = Object.assign({}, this.params);
-        if (stateParam.optionBehavior) {
-            this.buildOptionBehavior(stateParam.optionBehavior, stateParam);
-            delete stateParam.optionBehavior;
-        }
-        this.state = Object.assign(this.state, stateParam, {
-            internalValue: value,
-            selectionIsExcluded: this.selectionIsExcluded,
-            disabled: this.disabled,
-        });
-        this.checkHideFilter();
-        if (this.texts) {
-            this.changeTexts(this.texts);
-        }
-        this.addGroups(this.groups);
-        this.buildAllOptions();
-        this.assertCorrectValue();
-        this.buildSelectedOptions();
-    }
-};
-__decorate([
-    Prop()
-], SelecticStore.prototype, "value", void 0);
-__decorate([
-    Prop({ default: false })
-], SelecticStore.prototype, "selectionIsExcluded", void 0);
-__decorate([
-    Prop({ default: false })
-], SelecticStore.prototype, "disabled", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "options", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "childOptions", void 0);
-__decorate([
-    Prop({ default: () => [] })
-], SelecticStore.prototype, "groups", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "texts", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "params", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "fetchCallback", void 0);
-__decorate([
-    Prop()
-], SelecticStore.prototype, "getItemsCallback", void 0);
-__decorate([
-    Prop({ default: false })
-], SelecticStore.prototype, "keepOpenWithOtherSelectic", void 0);
-__decorate([
-    Watch('options')
-], SelecticStore.prototype, "onOptionsChange", null);
-__decorate([
-    Watch('childOptions')
-], SelecticStore.prototype, "onChildOptionsChange", null);
-__decorate([
-    Watch('value')
-], SelecticStore.prototype, "onValueChange", null);
-__decorate([
-    Watch('selectionIsExcluded')
-], SelecticStore.prototype, "onSelectionExcludedChange", null);
-__decorate([
-    Watch('disabled')
-], SelecticStore.prototype, "onDisabledChange", null);
-__decorate([
-    Watch('state.filteredOptions')
-], SelecticStore.prototype, "onFilteredChange", null);
-__decorate([
-    Watch('state.internalValue')
-], SelecticStore.prototype, "onInternalValueChange", null);
-__decorate([
-    Watch('state.allOptions')
-], SelecticStore.prototype, "onAllOptionChange", null);
-__decorate([
-    Watch('state.totalAllOptions')
-], SelecticStore.prototype, "onTotalAllOptionsChange", null);
-SelecticStore = __decorate([
-    Component
-], SelecticStore);
-var Store = SelecticStore;
+}
 
 /* File Purpose:
  * It displays the core element which is always visible (where selection is
  * displayed) and handles all interaction with it.
  */
-var __decorate$1 = (this && this.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let Selectic = class Selectic extends Vue {
+let MainInput = class MainInput extends Vue {
     constructor() {
         super(...arguments);
         /* }}} */
@@ -1155,7 +1160,7 @@ let Selectic = class Selectic extends Vue {
     get clearedLabel() {
         const isMultiple = this.store.state.multiple;
         const labelKey = isMultiple ? 'clearSelections' : 'clearSelection';
-        return this.store.labels[labelKey];
+        return this.store.data.labels[labelKey];
     }
     get singleSelectedItem() {
         const state = this.store.state;
@@ -1181,7 +1186,7 @@ let Selectic = class Selectic extends Vue {
     }
     get reverseSelectionLabel() {
         const labelKey = 'reverseSelection';
-        return this.store.labels[labelKey];
+        return this.store.data.labels[labelKey];
     }
     get formatItem() {
         const formatSelection = this.store.state.formatSelection;
@@ -1218,8 +1223,9 @@ let Selectic = class Selectic extends Vue {
         if (!store.state.multiple || nbHiddenItems === 0) {
             return '';
         }
-        const text = nbHiddenItems === 1 ? store.labels.moreSelectedItem
-            : store.labels.moreSelectedItems;
+        const labels = store.data.labels;
+        const text = nbHiddenItems === 1 ? labels.moreSelectedItem
+            : labels.moreSelectedItems;
         return text.replace(/%d/, nbHiddenItems.toString());
     }
     get moreSelectedTitle() {
@@ -1301,7 +1307,6 @@ let Selectic = class Selectic extends Vue {
     }
     /* }}} */
     render() {
-        const h = this.renderWrapper();
         return (h("div", { class: "has-feedback", on: {
                 'click.prevent.stop': () => this.toggleFocus(),
             } },
@@ -1336,24 +1341,24 @@ let Selectic = class Selectic extends Vue {
                 h("span", { class: "fa fa-caret-down selectic-icon" }))));
     }
 };
-__decorate$1([
+__decorate$4([
     Prop()
-], Selectic.prototype, "store", void 0);
-__decorate$1([
+], MainInput.prototype, "store", void 0);
+__decorate$4([
     Prop({ default: '' })
-], Selectic.prototype, "id", void 0);
-__decorate$1([
+], MainInput.prototype, "id", void 0);
+__decorate$4([
     Watch('store.state.internalValue')
-], Selectic.prototype, "onInternalChange", null);
-Selectic = __decorate$1([
+], MainInput.prototype, "onInternalChange", null);
+MainInput = __decorate$4([
     Component
-], Selectic);
-var MainInput = Selectic;
+], MainInput);
+var MainInput$1 = MainInput;
 
 /* File Purpose:
  * It manages all controls which can filter the data.
  */
-var __decorate$2 = (this && this.__decorate) || function (decorators, target, key, desc) {
+var __decorate$3 = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -1369,7 +1374,7 @@ let FilterPanel = class FilterPanel extends Vue {
     /* }}} */
     /* {{{ computed */
     get searchPlaceholder() {
-        return this.store.labels.searchPlaceholder;
+        return this.store.data.labels.searchPlaceholder;
     }
     get selectionIsExcluded() {
         return this.store.state.selectionIsExcluded;
@@ -1379,12 +1384,12 @@ let FilterPanel = class FilterPanel extends Vue {
         const state = store.state;
         const isMultiple = state.multiple;
         const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !store.hasAllItems;
+        const canNotSelect = !!state.searchText && !store.hasAllItems.value;
         return !isMultiple || hasItems || canNotSelect;
     }
     get disableRevert() {
         const store = this.store;
-        return !store.state.multiple || !store.hasFetchedAllItems;
+        return !store.state.multiple || !store.hasFetchedAllItems.value;
     }
     get enableRevert() {
         const state = this.store.state;
@@ -1404,11 +1409,11 @@ let FilterPanel = class FilterPanel extends Vue {
                 return;
             }
             this.closed = false;
-            el.value += key;
-            this.store.commit('searchText', el.value);
-            setTimeout(() => {
-                el.focus();
-            }, 0);
+            if (el) {
+                el.value += key;
+                this.store.commit('searchText', el.value);
+            }
+            this.getFocus();
         }
     }
     onInput(evt) {
@@ -1425,8 +1430,9 @@ let FilterPanel = class FilterPanel extends Vue {
         this.closed = !this.closed;
     }
     getFocus() {
-        if (!this.closed) {
-            setTimeout(() => this.$refs.filterInput.focus(), 0);
+        const el = this.$refs.filterInput;
+        if (!this.closed && el) {
+            setTimeout(() => el.focus(), 0);
         }
     }
     /* }}} */
@@ -1446,7 +1452,6 @@ let FilterPanel = class FilterPanel extends Vue {
     }
     /* }}} */
     render() {
-        const h = this.renderWrapper();
         return (h("div", { class: "filter-panel" },
             h("div", { class: {
                     panelclosed: this.closed,
@@ -1464,7 +1469,7 @@ let FilterPanel = class FilterPanel extends Vue {
                         h("input", { type: "checkbox", checked: this.store.state.status.areAllSelected, disabled: this.disableSelectAll, on: {
                                 change: this.onSelectAll,
                             } }),
-                        this.store.labels.selectAll))),
+                        this.store.data.labels.selectAll))),
                 this.enableRevert && (h("div", { class: ['toggle-selectic', {
                             'selectic__label-disabled': this.disableRevert,
                         }] },
@@ -1472,7 +1477,7 @@ let FilterPanel = class FilterPanel extends Vue {
                         h("input", { type: "checkbox", checked: this.selectionIsExcluded, disabled: this.disableRevert, on: {
                                 change: this.onExclude,
                             } }),
-                        this.store.labels.excludeResult)))),
+                        this.store.data.labels.excludeResult)))),
             h("div", { class: "curtain-handler", on: {
                     'click.prevent.stop': this.togglePanel,
                 } },
@@ -1484,13 +1489,13 @@ let FilterPanel = class FilterPanel extends Vue {
                     } }))));
     }
 };
-__decorate$2([
+__decorate$3([
     Prop()
 ], FilterPanel.prototype, "store", void 0);
-__decorate$2([
+__decorate$3([
     Watch('closed')
 ], FilterPanel.prototype, "onClosed", null);
-FilterPanel = __decorate$2([
+FilterPanel = __decorate$3([
     Component
 ], FilterPanel);
 var Filter = FilterPanel;
@@ -1499,7 +1504,7 @@ var Filter = FilterPanel;
  * It displays each item in an efficient way (optimizes DOM consumption).
  * It handles interactions with these items.
  */
-var __decorate$3 = (this && this.__decorate) || function (decorators, target, key, desc) {
+var __decorate$2 = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -1523,7 +1528,9 @@ let List = class List extends Vue {
         return this.store.state.multiple;
     }
     get itemsMargin() {
-        return this.store.marginSize;
+        var _a;
+        /* XXX: I don't really know when we should use value or not... */
+        return (_a = this.store.marginSize.value) !== null && _a !== void 0 ? _a : this.store.marginSize;
     }
     get shortOptions() {
         const endIndex = this.endIndex;
@@ -1555,7 +1562,7 @@ let List = class List extends Vue {
     }
     get startIndex() {
         const endIndex = this.endIndex;
-        const idx = endIndex - this.store.itemsPerPage - 3 * this.itemsMargin;
+        const idx = endIndex - this.store.data.itemsPerPage - 3 * this.itemsMargin;
         return Math.max(0, idx);
     }
     get leftItems() {
@@ -1599,7 +1606,8 @@ let List = class List extends Vue {
         const scrollTop = this.$refs.elList.scrollTop;
         const topIndex = Math.floor(scrollTop / this.itemHeight);
         const total = this.totalItems;
-        const bottomIndex = Math.min(topIndex + this.store.itemsPerPage, total);
+        const itemsPerPage = this.store.data.itemsPerPage;
+        const bottomIndex = Math.min(topIndex + itemsPerPage, total);
         this.debounce(() => this.store.commit('offsetItem', bottomIndex));
         this.computeGroupId(topIndex);
     }
@@ -1667,7 +1675,6 @@ let List = class List extends Vue {
     }
     /* }}} */
     render() {
-        const h = this.renderWrapper();
         return (h("ul", { on: {
                 scroll: this.checkOffset,
             }, ref: "elList" },
@@ -1688,22 +1695,22 @@ let List = class List extends Vue {
             !!this.bottomOffset && (h("li", { class: "selectic-item", style: `height:${this.bottomOffset}px;` }))));
     }
 };
-__decorate$3([
+__decorate$2([
     Prop()
 ], List.prototype, "store", void 0);
-__decorate$3([
+__decorate$2([
     Watch('store.state.activeItemIdx')
 ], List.prototype, "onIndexChange", null);
-__decorate$3([
+__decorate$2([
     Watch('store.state.offsetItem')
 ], List.prototype, "onOffsetChange", null);
-__decorate$3([
+__decorate$2([
     Watch('filteredOptions')
 ], List.prototype, "onFilteredOptionsChange", null);
-__decorate$3([
+__decorate$2([
     Watch('groupId')
 ], List.prototype, "onGroupIdChange", null);
-List = __decorate$3([
+List = __decorate$2([
     Component
 ], List);
 var List$1 = List;
@@ -1712,7 +1719,7 @@ var List$1 = List;
  * It manages the panel which is displayed when Selectic is open.
  * Content of inner elements are related to dedicated files.
  */
-var __decorate$4 = (this && this.__decorate) || function (decorators, target, key, desc) {
+var __decorate$1 = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -1731,7 +1738,7 @@ let ExtendedList = class ExtendedList extends Vue {
     /* }}} */
     /* {{{ computed */
     get searchingLabel() {
-        return this.store.labels.searching;
+        return this.store.data.labels.searching;
     }
     get searching() {
         return this.store.state.status.searching;
@@ -1746,9 +1753,9 @@ let ExtendedList = class ExtendedList extends Vue {
         const store = this.store;
         if (store.state.filteredOptions.length === 0) {
             if (store.state.searchText) {
-                return store.labels.noResult;
+                return store.data.labels.noResult;
             }
-            return store.labels.noData;
+            return store.data.labels.noData;
         }
         return '';
     }
@@ -1845,10 +1852,10 @@ let ExtendedList = class ExtendedList extends Vue {
     /* }}} */
     /* {{{ watch */
     onFilteredOptionsChange() {
-        Vue.nextTick(this.computeListSize, this);
+        this.$nextTick(this.computeListSize);
     }
     onHideFilterChange() {
-        Vue.nextTick(this.computeListSize, this);
+        this.$nextTick(this.computeListSize);
     }
     /* }}} */
     /* {{{ methods */
@@ -1878,12 +1885,13 @@ let ExtendedList = class ExtendedList extends Vue {
     }
     /* }}} */
     render() {
-        const h = this.renderWrapper();
         const store = this.store;
         const state = store.state;
+        const isGroup = state.groups.size > 0 &&
+            state.totalFilteredOptions > store.data.itemsPerPage;
         return (h("div", { style: this.positionStyle, class: "selectic selectic__extended-list" },
             !state.hideFilter && (h(Filter, { store: this.store })),
-            state.groups.size > 0 && state.totalFilteredOptions > store.itemsPerPage && (h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
+            isGroup && (h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
             h(List$1, { store: store, class: "selectic__extended-list__list-items", on: {
                     groupId: this.getGroup,
                 } }),
@@ -1894,31 +1902,31 @@ let ExtendedList = class ExtendedList extends Vue {
             this.errorMessage && (h("div", { class: "selectic__message alert-danger", on: { click: () => store.resetErrorMessage() } }, this.errorMessage))));
     }
 };
-__decorate$4([
+__decorate$1([
     Prop()
 ], ExtendedList.prototype, "store", void 0);
-__decorate$4([
+__decorate$1([
     Prop({ default: 0 })
 ], ExtendedList.prototype, "elementLeft", void 0);
-__decorate$4([
+__decorate$1([
     Prop({ default: 0 })
 ], ExtendedList.prototype, "elementRight", void 0);
-__decorate$4([
+__decorate$1([
     Prop({ default: 0 })
 ], ExtendedList.prototype, "elementTop", void 0);
-__decorate$4([
+__decorate$1([
     Prop({ default: 0 })
 ], ExtendedList.prototype, "elementBottom", void 0);
-__decorate$4([
+__decorate$1([
     Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
-__decorate$4([
+__decorate$1([
     Watch('store.state.filteredOptions')
 ], ExtendedList.prototype, "onFilteredOptionsChange", null);
-__decorate$4([
+__decorate$1([
     Watch('store.state.hideFilter')
 ], ExtendedList.prototype, "onHideFilterChange", null);
-ExtendedList = __decorate$4([
+ExtendedList = __decorate$1([
     Component
 ], ExtendedList);
 var ExtendedList$1 = ExtendedList;
@@ -1929,16 +1937,16 @@ var ExtendedList$1 = ExtendedList;
  * these items dynamically which allow to build very long list without loading
  * all data.
  */
-var __decorate$5 = (this && this.__decorate) || function (decorators, target, key, desc) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-function changeTexts$1(texts) {
-    changeTexts(texts);
+function changeTexts(texts) {
+    changeTexts$1(texts);
 }
-let Selectic$1 = class Selectic extends Vue {
+let Selectic = class Selectic extends Vue {
     constructor() {
         super(...arguments);
         /* }}} */
@@ -1948,15 +1956,16 @@ let Selectic$1 = class Selectic extends Vue {
         this.elementLeft = 0;
         this.elementRight = 0;
         this.width = 0;
+        this.hasBeenRendered = false;
         this.store = {};
     }
     /* }}} */
     /* {{{ computed */
     get isFocused() {
-        if (!this.store || !this.store.state) {
+        if (!this.hasBeenRendered) {
             return false;
         }
-        return this.store.state.isOpen;
+        return !!this.store.state.isOpen;
     }
     get scrollListener() {
         return this.computeOffset.bind(this, true);
@@ -2064,15 +2073,15 @@ let Selectic$1 = class Selectic extends Vue {
     }
     computeOffset(doNotAddListener = false) {
         const mainInput = this.$refs.mainInput;
-        if (!mainInput || !mainInput.$el) {
+        const mainEl = mainInput === null || mainInput === void 0 ? void 0 : mainInput.$el;
+        if (!mainEl) {
             /* This method has been called too soon (before render function) */
             return;
         }
-        const mainEl = mainInput.$el;
         const _elementsListeners = this._elementsListeners;
         /* add listeners */
         if (!doNotAddListener) {
-            let el = mainInput.$el;
+            let el = mainEl;
             while (el) {
                 el.addEventListener('scroll', this.scrollListener, { passive: true });
                 _elementsListeners.push(el);
@@ -2146,10 +2155,10 @@ let Selectic$1 = class Selectic extends Vue {
         }
     }
     onExcludedChange() {
-        this.store.selectionIsExcluded = this.selectionIsExcluded;
+        this.store.props.selectionIsExcluded = this.selectionIsExcluded;
     }
     onOptionsChange() {
-        this.store.options = this.options;
+        this.store.props.options = this.options;
     }
     onTextsChange() {
         const texts = this.texts;
@@ -2158,7 +2167,7 @@ let Selectic$1 = class Selectic extends Vue {
         }
     }
     onDisabledChange() {
-        this.store.disabled = this.disabled;
+        this.store.props.disabled = this.disabled;
     }
     onGroupsChanged() {
         this.store.changeGroups(this.groups);
@@ -2177,7 +2186,8 @@ let Selectic$1 = class Selectic extends Vue {
         const oldValue = this._oldValue;
         const value = this.getValue();
         const areSimilar = this.compareValues(oldValue, value);
-        /* should not trigger when initializing internalValue, but should do if it changes the inital value */
+        /* should not trigger when initializing internalValue, but should do
+         * if it changes the initial value */
         const canTrigger = (oldValue !== undefined || !this.hasGivenValue) && !areSimilar;
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
@@ -2206,243 +2216,268 @@ let Selectic$1 = class Selectic extends Vue {
             this.store.commit('isOpen', false);
         }, 0);
     }
-    extractFromNode(node, text = '') {
-        var _a, _b, _c, _d, _e, _f, _g;
-        function styleToString(staticStyle) {
-            if (!staticStyle) {
-                return;
-            }
-            let styles = [];
-            for (const [key, value] of Object.entries(staticStyle)) {
-                styles.push(`${key}: ${value}`);
-            }
-            return styles.join(';');
+    emit(event, ...args) {
+        this.$emit(event, ...args);
+        if (typeof this._on === 'function') {
+            this._on(event, ...args);
         }
-        const domProps = (_a = node.data) === null || _a === void 0 ? void 0 : _a.domProps;
-        const attrs = (_b = node.data) === null || _b === void 0 ? void 0 : _b.attrs;
-        const id = (_e = (_d = (_c = domProps === null || domProps === void 0 ? void 0 : domProps.value) !== null && _c !== void 0 ? _c : attrs === null || attrs === void 0 ? void 0 : attrs.value) !== null && _d !== void 0 ? _d : attrs === null || attrs === void 0 ? void 0 : attrs.id) !== null && _e !== void 0 ? _e : text;
-        const className = (_f = node.data) === null || _f === void 0 ? void 0 : _f.staticClass;
-        const style = styleToString((_g = node.data) === null || _g === void 0 ? void 0 : _g.staticStyle);
-        const optVal = {
-            id,
-            text,
-            className,
-            style,
-        };
-        if (attrs) {
-            for (const [key, val] of Object.entries(attrs)) {
-                switch (key) {
-                    case 'title':
-                        optVal.title = val;
-                        break;
-                    case 'disabled':
-                        if (val === false) {
-                            optVal.disabled = false;
-                        }
-                        else {
-                            optVal.disabled = true;
-                        }
-                        break;
-                    case 'group':
-                        optVal.group = val;
-                        break;
-                    case 'icon':
-                        optVal.icon = val;
-                        break;
-                    case 'data':
-                        optVal.data = val;
-                        break;
-                    default:
-                        if (key.startsWith('data')) {
-                            if (typeof optVal.data !== 'object') {
-                                optVal.data = {};
-                            }
-                            optVal.data[key.slice(5)] = val;
-                        }
-                }
-            }
-        }
-        return optVal;
     }
-    extractOptionFromNode(node) {
-        const children = node.children;
-        const text = (children && children[0].text || '').trim();
-        return this.extractFromNode(node, text);
-    }
-    extractOptgroupFromNode(node) {
-        var _a;
-        const attrs = (_a = node.data) === null || _a === void 0 ? void 0 : _a.attrs;
-        const children = node.children || [];
-        const text = (attrs === null || attrs === void 0 ? void 0 : attrs.label) || '';
-        const options = [];
-        for (const child of children) {
-            if (child.tag === 'option') {
-                options.push(this.extractOptionFromNode(child));
-            }
-        }
-        const opt = this.extractFromNode(node, text);
-        opt.options = options;
-        return opt;
-    }
+    // private extractFromNode(node: Vue.VNode, text = ''): OptionValue {
+    //     function styleToString(staticStyle?: {[key: string]: string}): string | undefined {
+    //         if (!staticStyle) {
+    //             return;
+    //         }
+    //         let styles = [];
+    //         for (const [key, value] of Object.entries(staticStyle)) {
+    //             styles.push(`${key}: ${value}`);
+    //         }
+    //         return styles.join(';');
+    //     }
+    //     const domProps = node.data?.domProps;
+    //     const attrs = node.data?.attrs;
+    //     const id = domProps?.value ?? attrs?.value ?? attrs?.id ?? text;
+    //     const className = node.data?.staticClass;
+    //     const style = styleToString(node.data?.staticStyle);
+    //     const optVal: OptionValue = {
+    //         id,
+    //         text,
+    //         className,
+    //         style,
+    //     };
+    //     if (attrs) {
+    //         for (const [key, val] of Object.entries(attrs)) {
+    //             switch(key) {
+    //                 case 'title':
+    //                     optVal.title = val;
+    //                     break;
+    //                 case 'disabled':
+    //                     if (val === false) {
+    //                         optVal.disabled = false;
+    //                     } else {
+    //                         optVal.disabled = true;
+    //                     }
+    //                     break;
+    //                 case 'group':
+    //                     optVal.group = val;
+    //                     break;
+    //                 case 'icon':
+    //                     optVal.icon = val;
+    //                     break;
+    //                 case 'data':
+    //                     optVal.data = val;
+    //                     break;
+    //                 default:
+    //                     if (key.startsWith('data')) {
+    //                         if (typeof optVal.data !== 'object') {
+    //                             optVal.data = {};
+    //                         }
+    //                         optVal.data[key.slice(5)] = val;
+    //                     }
+    //             }
+    //         }
+    //     }
+    //     return optVal;
+    // }
+    // private extractOptionFromNode(node: Vue.VNode): OptionValue {
+    //     const children = node.children;
+    //     const text = (children && children[0].text || '').trim();
+    //     return this.extractFromNode(node, text);
+    // }
+    // private extractOptgroupFromNode(node: Vue.VNode): OptionValue {
+    //     const attrs = node.data?.attrs;
+    //     const children = node.children || [];
+    //     const text = attrs?.label || '';
+    //     const options: OptionValue[] = [];
+    //     for (const child of children) {
+    //         if (child.tag === 'option') {
+    //             options.push(this.extractOptionFromNode(child));
+    //         }
+    //     }
+    //     const opt = this.extractFromNode(node, text);
+    //     opt.options = options;
+    //     return opt;
+    // }
     /* }}} */
     /* {{{ Life cycle */
     created() {
+        var _a, _b;
         this._elementsListeners = [];
-        this.store = new Store({ propsData: {
-                options: this.options,
-                value: this.value,
-                selectionIsExcluded: this.selectionIsExcluded,
-                disabled: this.disabled,
-                texts: this.texts,
-                groups: this.groups,
-                keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
-                params: {
-                    multiple: this.multiple,
-                    pageSize: this.params.pageSize || 100,
-                    hideFilter: this.params.hideFilter !== undefined
-                        ? this.params.hideFilter : 'auto',
-                    allowRevert: this.params.allowRevert,
-                    allowClearSelection: this.params.allowClearSelection || false,
-                    autoSelect: this.params.autoSelect === undefined
-                        ? !this.multiple && !this.params.fetchCallback
-                        : this.params.autoSelect,
-                    autoDisabled: typeof this.params.autoDisabled === 'boolean'
-                        ? this.params.autoDisabled : true,
-                    strictValue: this.params.strictValue || false,
-                    selectionOverflow: this.params.selectionOverflow || 'collapsed',
-                    placeholder: this.placeholder,
-                    formatOption: this.params.formatOption,
-                    formatSelection: this.params.formatSelection,
-                    listPosition: this.params.listPosition || 'auto',
-                    optionBehavior: this.params.optionBehavior,
-                    isOpen: !!this.open,
-                },
-                fetchCallback: this.params.fetchCallback,
-                getItemsCallback: this.params.getItemsCallback,
-            } });
+        this.store = new SelecticStore({
+            options: this.options,
+            value: this.value,
+            selectionIsExcluded: this.selectionIsExcluded,
+            disabled: this.disabled,
+            texts: this.texts,
+            groups: this.groups,
+            keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
+            params: {
+                multiple: ((_a = this.multiple) !== null && _a !== void 0 ? _a : false) !== false,
+                pageSize: this.params.pageSize || 100,
+                hideFilter: this.params.hideFilter !== undefined
+                    ? this.params.hideFilter : 'auto',
+                allowRevert: this.params.allowRevert,
+                allowClearSelection: this.params.allowClearSelection || false,
+                autoSelect: this.params.autoSelect === undefined
+                    ? !this.multiple && !this.params.fetchCallback
+                    : this.params.autoSelect,
+                autoDisabled: typeof this.params.autoDisabled === 'boolean'
+                    ? this.params.autoDisabled : true,
+                strictValue: this.params.strictValue || false,
+                selectionOverflow: this.params.selectionOverflow || 'collapsed',
+                placeholder: this.placeholder,
+                formatOption: this.params.formatOption,
+                formatSelection: this.params.formatSelection,
+                listPosition: this.params.listPosition || 'auto',
+                optionBehavior: this.params.optionBehavior,
+                isOpen: ((_b = this.open) !== null && _b !== void 0 ? _b : false) !== false,
+            },
+            fetchCallback: this.params.fetchCallback,
+            getItemsCallback: this.params.getItemsCallback,
+        });
+        if (typeof this._getMethods === 'function') {
+            this._getMethods({
+                clearCache: this.clearCache.bind(this),
+                changeTexts: this.changeTexts.bind(this),
+                getValue: this.getValue.bind(this),
+                getSelectedItems: this.getSelectedItems.bind(this),
+                isEmpty: this.isEmpty.bind(this),
+                toggleOpen: this.toggleOpen.bind(this),
+            });
+        }
     }
     mounted() {
-        setTimeout(() => this.computeOffset(), 0);
+        setTimeout(() => {
+            this.hasBeenRendered = true;
+            this.computeOffset();
+        }, 100);
     }
     beforeUpdate() {
-        const elements = this.$slots.default;
-        if (!elements) {
-            this.store.childOptions = [];
-            return;
-        }
-        const options = [];
-        for (const node of elements) {
-            if (node.tag === 'option') {
-                const prop = this.extractOptionFromNode(node);
-                options.push(prop);
-            }
-            else if (node.tag === 'optgroup') {
-                const prop = this.extractOptgroupFromNode(node);
-                options.push(prop);
-            }
-        }
-        this.store.childOptions = options;
+        // const elements = this.$slots.default;
+        // if (!elements) {
+        //     this.store.childOptions = [];
+        //     return;
+        // }
+        // const options = [];
+        // for (const node of elements) {
+        //     if (node.tag === 'option') {
+        //         const prop = this.extractOptionFromNode(node);
+        //         options.push(prop);
+        //     } else
+        //     if (node.tag === 'optgroup') {
+        //         const prop = this.extractOptgroupFromNode(node);
+        //         options.push(prop);
+        //     }
+        // }
+        // this.store.childOptions = options;
     }
     beforeDestroy() {
         this.removeListeners();
     }
     /* }}} */
     render() {
-        const h = this.renderWrapper();
         const id = this.id || undefined;
+        const store = this.store;
+        if (!store.state) {
+            return; /* component is not ready yet */
+        }
         return (h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
-                'click.prevent.stop': () => this.store.commit('isOpen', true),
+                'click.prevent.stop': () => store.commit('isOpen', true),
             } },
             h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", on: {
-                    focus: () => this.store.commit('isOpen', true),
+                    focus: () => store.commit('isOpen', true),
                     blur: this.checkFocus,
                 } }),
-            h(MainInput, { store: this.store, id: id, on: {
-                    'item:click': (id) => this.$emit('item:click', id, this),
+            h(MainInput$1, { store: store, id: id, on: {
+                    'item:click': (id) => this.emit('item:click', id, this),
                 }, ref: "mainInput" }),
-            this.isFocused && (h(ExtendedList$1, { class: this.className, store: this.store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
+            this.isFocused && (h(ExtendedList$1, { class: this.className, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
     }
 };
-__decorate$5([
+__decorate([
     Prop()
-], Selectic$1.prototype, "value", void 0);
-__decorate$5([
+], Selectic.prototype, "value", void 0);
+__decorate([
     Prop({ default: false })
-], Selectic$1.prototype, "selectionIsExcluded", void 0);
-__decorate$5([
+], Selectic.prototype, "selectionIsExcluded", void 0);
+__decorate([
     Prop({ default: () => [] })
-], Selectic$1.prototype, "options", void 0);
-__decorate$5([
+], Selectic.prototype, "options", void 0);
+__decorate([
     Prop({ default: () => [] })
-], Selectic$1.prototype, "groups", void 0);
-__decorate$5([
+], Selectic.prototype, "groups", void 0);
+__decorate([
     Prop({ default: false })
-], Selectic$1.prototype, "multiple", void 0);
-__decorate$5([
+], Selectic.prototype, "multiple", void 0);
+__decorate([
     Prop({ default: false })
-], Selectic$1.prototype, "disabled", void 0);
-__decorate$5([
+], Selectic.prototype, "disabled", void 0);
+__decorate([
     Prop({ default: '' })
-], Selectic$1.prototype, "placeholder", void 0);
-__decorate$5([
+], Selectic.prototype, "placeholder", void 0);
+__decorate([
     Prop({ default: '' })
-], Selectic$1.prototype, "id", void 0);
-__decorate$5([
+], Selectic.prototype, "id", void 0);
+__decorate([
     Prop({ default: '' })
-], Selectic$1.prototype, "className", void 0);
-__decorate$5([
+], Selectic.prototype, "className", void 0);
+__decorate([
     Prop()
-], Selectic$1.prototype, "title", void 0);
-__decorate$5([
+], Selectic.prototype, "title", void 0);
+__decorate([
     Prop()
-], Selectic$1.prototype, "texts", void 0);
-__decorate$5([
+], Selectic.prototype, "texts", void 0);
+__decorate([
     Prop({ default: false })
-], Selectic$1.prototype, "noCache", void 0);
-__decorate$5([
+], Selectic.prototype, "noCache", void 0);
+__decorate([
     Prop()
-], Selectic$1.prototype, "open", void 0);
-__decorate$5([
+], Selectic.prototype, "open", void 0);
+__decorate([
     Prop({ default: () => ({
             allowClearSelection: false,
             strictValue: false,
             selectionOverflow: 'collapsed',
         }) })
-], Selectic$1.prototype, "params", void 0);
-__decorate$5([
+], Selectic.prototype, "params", void 0);
+__decorate([
+    Prop()
+], Selectic.prototype, "_on", void 0);
+__decorate([
+    Prop()
+], Selectic.prototype, "_getMethods", void 0);
+__decorate([
     Watch('value')
-], Selectic$1.prototype, "onValueChange", null);
-__decorate$5([
+], Selectic.prototype, "onValueChange", null);
+__decorate([
     Watch('selectionIsExcluded')
-], Selectic$1.prototype, "onExcludedChange", null);
-__decorate$5([
+], Selectic.prototype, "onExcludedChange", null);
+__decorate([
     Watch('options')
-], Selectic$1.prototype, "onOptionsChange", null);
-__decorate$5([
+], Selectic.prototype, "onOptionsChange", null);
+__decorate([
     Watch('texts')
-], Selectic$1.prototype, "onTextsChange", null);
-__decorate$5([
+], Selectic.prototype, "onTextsChange", null);
+__decorate([
     Watch('disabled')
-], Selectic$1.prototype, "onDisabledChange", null);
-__decorate$5([
+], Selectic.prototype, "onDisabledChange", null);
+__decorate([
     Watch('groups')
-], Selectic$1.prototype, "onGroupsChanged", null);
-__decorate$5([
+], Selectic.prototype, "onGroupsChanged", null);
+__decorate([
     Watch('placeholder')
-], Selectic$1.prototype, "onPlaceholderChanged", null);
-__decorate$5([
+], Selectic.prototype, "onPlaceholderChanged", null);
+__decorate([
     Watch('open')
-], Selectic$1.prototype, "onOpenChanged", null);
-__decorate$5([
+], Selectic.prototype, "onOpenChanged", null);
+__decorate([
     Watch('isFocused')
-], Selectic$1.prototype, "onFocusChanged", null);
-__decorate$5([
+], Selectic.prototype, "onFocusChanged", null);
+__decorate([
     Watch('store.state.internalValue')
-], Selectic$1.prototype, "onInternalValueChange", null);
-Selectic$1 = __decorate$5([
+], Selectic.prototype, "onInternalValueChange", null);
+Selectic = __decorate([
     Component
-], Selectic$1);
-var Selectic$2 = Selectic$1;
+], Selectic);
+var Selectic$1 = Selectic;
 
-export default Selectic$2;
-export { changeTexts$1 as changeTexts };
+export { changeTexts, Selectic$1 as default };
