@@ -292,6 +292,7 @@ export default class SelecticStore {
     changeTexts(texts: PartialMessages): void;
     private hasValue;
     private getValue;
+    private convertTypeValue;
     private assertValueType;
     private assertCorrectValue;
     private updateFilteredOptions;

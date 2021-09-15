@@ -67,6 +67,43 @@ tape.test('Store creation', (subT) => {
         t.end();
     });
 
+    subT.test('"value" property', (sTest) => {
+        sTest.test('should initialize the value', async (t) => {
+            const propOptions = getOptions(5);
+            const store = new Store({
+                value: 2,
+                options: propOptions,
+            });
+
+            await sleep(0);
+
+            const state = store.state;
+
+            t.is(state.internalValue, 2);
+
+            t.end();
+        });
+
+        sTest.test('should set the correct value type', async (t) => {
+            const propOptions = getOptions(5);
+            const store = new Store({
+                value: 2,
+                params: {
+                    multiple: true,
+                },
+                options: propOptions,
+            });
+
+            await sleep(0);
+
+            const state = store.state;
+
+            t.deepEqual(state.internalValue, [2]);
+
+            t.end();
+        });
+    });
+
     subT.test('"options" property', (sTest) => {
         sTest.test('should handle short options list', async (t) => {
             const propOptions = getOptions(5);

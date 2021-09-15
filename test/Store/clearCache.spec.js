@@ -23,6 +23,26 @@ tape.test('clearCache()', (sTest) => {
         t.end();
     });
 
+    sTest.test('should clear all options already loaded in multiple mode', (t) => {
+        const store = new Store({
+            options: getOptions(10),
+            params: {
+                multiple: true,
+            },
+            value: [2, 4],
+        });
+        store.state.status.errorMessage = 'a message';
+
+        store.clearCache(true);
+
+        t.deepEqual(store.state.allOptions, []);
+        t.is(store.state.totalAllOptions, 0);
+        t.deepEqual(store.state.filteredOptions, []);
+        t.is(store.state.status.errorMessage, '');
+        t.deepEqual(store.state.internalValue, []);
+        t.end();
+    });
+
     sTest.test('should rebuild all options', (t) => {
         const options = getOptions(10);
         const store = new Store({

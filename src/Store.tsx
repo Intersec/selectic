@@ -602,8 +602,11 @@ export default class SelecticStore {
         }
 
         /* Update state */
-        assignObject(this.state, stateParam as SelecticStoreState, {
-            internalValue: value,
+        assignObject(this.state, stateParam as SelecticStoreState);
+        /* XXX: should be done in 2 lines, in order to set the multiple state
+         * and ensure convertValue run with correct state */
+        assignObject(this.state, {
+            internalValue: this.convertTypeValue(value),
             selectionIsExcluded: props.selectionIsExcluded,
             disabled: props.disabled,
         });
@@ -921,27 +924,37 @@ export default class SelecticStore {
             this.getElementOptions().find(findId);
     }
 
-    private assertValueType() {
+    private convertTypeValue(oldValue: OptionId | StrictOptionId[]) {
         const state = this.state;
-        const internalValue = state.internalValue;
         const isMultiple = state.multiple;
-        let newValue = internalValue;
+        let newValue = oldValue;
 
         if (isMultiple) {
-            if (!Array.isArray(internalValue)) {
-                newValue = internalValue === null ? [] : [internalValue];
+            if (!Array.isArray(oldValue)) {
+                newValue = oldValue === null ? [] : [oldValue];
             }
         } else {
-            if (Array.isArray(internalValue)) {
-                const value = internalValue[0];
+            if (Array.isArray(oldValue)) {
+                const value = oldValue[0];
                 newValue = typeof value === 'undefined' ? null : value;
             }
         }
-        state.internalValue = newValue;
+        return newValue;
+    }
+
+    private assertValueType() {
+        const state = this.state;
+        const internalValue = state.internalValue;
+        const newValue = this.convertTypeValue(internalValue);
+
+        if (newValue !== internalValue) {
+            state.internalValue = newValue;
+        }
     }
 
     private assertCorrectValue(applyStrict = false) {
         const state = this.state;
+        this.assertValueType();
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
@@ -949,7 +962,6 @@ export default class SelecticStore {
         let newValue = internalValue;
         const isPartial = this.isPartial.value ?? this.isPartial;
 
-        this.assertValueType();
         if (isMultiple) {
             const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
 
@@ -984,7 +996,7 @@ export default class SelecticStore {
                     return;
                 }
             } else
-            if (!this.hasItemInStore(newValue as OptionId)) {
+            if (newValue !== null && !this.hasItemInStore(newValue as OptionId)) {
                 filteredValue = null;
                 isDifferent = true;
 

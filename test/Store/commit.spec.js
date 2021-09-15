@@ -1063,4 +1063,158 @@ tape.test('commit()', (st) => {
             t.end();
         });
     });
+
+    st.test('when changing "internalValue"', (sTest) => {
+        sTest.test('should change the value', async (t) => {
+            const store1 = new Store({
+                options: getOptions(5),
+                params: {
+                    autoSelect: false,
+                },
+            });
+            const store2 = new Store({
+                options: getOptions(5),
+                params: {
+                    autoSelect: false,
+                    multiple: true,
+                },
+            });
+
+            store1.commit('internalValue', 3);
+            store2.commit('internalValue', [1, 2]);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, 3);
+            t.deepEqual(store2.state.internalValue, [1, 2]);
+
+            store1.commit('internalValue', 1);
+            store2.commit('internalValue', [3, 4, 5]);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, 1);
+            t.deepEqual(store2.state.internalValue, [3, 4, 5]);
+
+            store1.commit('internalValue', null);
+            store2.commit('internalValue', []);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, null);
+            t.deepEqual(store2.state.internalValue, []);
+
+            t.end();
+        });
+
+        sTest.test('should convert values', async (t) => {
+            const store1 = new Store({
+                options: getOptions(5),
+                params: {
+                    autoSelect: false,
+                },
+            });
+            const store2 = new Store({
+                options: getOptions(5),
+                params: {
+                    autoSelect: false,
+                    multiple: true,
+                },
+            });
+
+            store1.commit('internalValue', [3]);
+            store2.commit('internalValue', 1);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, 3);
+            t.deepEqual(store2.state.internalValue, [1]);
+
+            store1.commit('internalValue', [1, 2, 3]);
+            store2.commit('internalValue', 3);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, 1);
+            t.deepEqual(store2.state.internalValue, [3]);
+
+            store1.commit('internalValue', []);
+            store2.commit('internalValue', null);
+            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
+
+            t.is(store1.state.internalValue, null, 'should not select anything');
+            t.deepEqual(store2.state.internalValue, [], 'should have no selection');
+
+            t.end();
+        });
+
+        sTest.test('should be changed to the first option', async (t) => {
+            const store1 = new Store({
+                options: getOptions(5),
+                params: {
+                    autoSelect: true,
+                },
+                value: 2,
+            });
+
+            store1.commit('internalValue', 3);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.internalValue, 3);
+
+            store1.commit('internalValue', null);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.internalValue, 0);
+
+            t.end();
+        });
+
+        sTest.test('should be changed to the first remaining option', async (t) => {
+            const store1 = new Store({
+                options: [{
+                    id: 0,
+                }, {
+                    id: 1,
+                    disabled: true,
+                }, {
+                    id: 2,
+                }, {
+                    id: 3,
+                }, {
+                    id: 4,
+                }],
+                params: {
+                    autoSelect: true,
+                    strictValue: true,
+                },
+                value: 2,
+            });
+
+            store1.commit('internalValue', 0);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.internalValue, 0);
+
+            store1.props.options = [{
+                id: 1,
+                disabled: true,
+            }, {
+                id: 2,
+            }, {
+                id: 3,
+            }, {
+                id: 4,
+            }];
+
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.internalValue, 2, 'should change to the first available option');
+
+            store1.commit('internalValue', 3);
+            await _.nextVueTick(store1);
+
+            store1.commit('internalValue', null);
+            await _.nextVueTick(store1);
+
+            t.is(store1.state.internalValue, 2, 'should select the first available option');
+
+            t.end();
+        });
+    });
 });
