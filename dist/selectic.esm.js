@@ -192,6 +192,12 @@ class SelecticStore {
             const state = this.state;
             return state.dynOptions.length === state.totalDynOptions;
         });
+        this.listOptions = computed(() => {
+            return this.getListOptions();
+        });
+        this.elementOptions = computed(() => {
+            return this.getElementOptions();
+        });
         /* }}} */
         /* {{{ watch */
         watch(() => [this.props.options, this.props.childOptions], () => {
@@ -199,6 +205,11 @@ class SelecticStore {
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
+        });
+        watch(() => [this.listOptions, this.elementOptions], () => {
+            /* TODO: transform allOptions as a computed properties and this
+             * watcher become useless */
+            this.buildAllOptions(true);
         });
         watch(() => this.props.value, () => {
             var _a;
@@ -248,8 +259,11 @@ class SelecticStore {
             delete stateParam.hideFilter;
         }
         /* Update state */
-        assignObject(this.state, stateParam, {
-            internalValue: value,
+        assignObject(this.state, stateParam);
+        /* XXX: should be done in 2 lines, in order to set the multiple state
+         * and ensure convertValue run with correct state */
+        assignObject(this.state, {
+            internalValue: this.convertTypeValue(value),
             selectionIsExcluded: props.selectionIsExcluded,
             disabled: props.disabled,
         });
@@ -508,42 +522,50 @@ class SelecticStore {
         return !!this.getValue(id);
     }
     getValue(id) {
+        var _a, _b;
         function findId(option) {
             return option.id === id;
         }
         return this.state.filteredOptions.find(findId) ||
             this.state.dynOptions.find(findId) ||
-            this.getListOptions().find(findId) ||
-            this.getElementOptions().find(findId);
+            ((_a = this.listOptions.value) !== null && _a !== void 0 ? _a : this.listOptions).find(findId) ||
+            ((_b = this.elementOptions.value) !== null && _b !== void 0 ? _b : this.elementOptions).find(findId);
+    }
+    convertTypeValue(oldValue) {
+        const state = this.state;
+        const isMultiple = state.multiple;
+        let newValue = oldValue;
+        if (isMultiple) {
+            if (!Array.isArray(oldValue)) {
+                newValue = oldValue === null ? [] : [oldValue];
+            }
+        }
+        else {
+            if (Array.isArray(oldValue)) {
+                const value = oldValue[0];
+                newValue = typeof value === 'undefined' ? null : value;
+            }
+        }
+        return newValue;
     }
     assertValueType() {
         const state = this.state;
         const internalValue = state.internalValue;
-        const isMultiple = state.multiple;
-        let newValue = internalValue;
-        if (isMultiple) {
-            if (!Array.isArray(internalValue)) {
-                newValue = internalValue === null ? [] : [internalValue];
-            }
+        const newValue = this.convertTypeValue(internalValue);
+        if (newValue !== internalValue) {
+            state.internalValue = newValue;
         }
-        else {
-            if (Array.isArray(internalValue)) {
-                const value = internalValue[0];
-                newValue = typeof value === 'undefined' ? null : value;
-            }
-        }
-        state.internalValue = newValue;
     }
     assertCorrectValue(applyStrict = false) {
         var _a, _b;
         const state = this.state;
+        this.assertValueType();
         const internalValue = state.internalValue;
         const selectionIsExcluded = state.selectionIsExcluded;
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
         const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
-        this.assertValueType();
         if (isMultiple) {
             const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
             if (selectionIsExcluded && hasFetchedAllItems) {
@@ -573,7 +595,7 @@ class SelecticStore {
                     return;
                 }
             }
-            else if (!this.hasItemInStore(newValue)) {
+            else if (newValue !== null && !this.hasItemInStore(newValue)) {
                 filteredValue = null;
                 isDifferent = true;
                 if (isPartial && !applyStrict) {
@@ -602,13 +624,14 @@ class SelecticStore {
             this.state.groups.set(group.id, group.text);
         });
     }
-    /* XXX: This is not a computed property to avoid consuming more memory */
+    /* This method is for the computed property listOptions */
     getListOptions() {
         const options = this.props.options;
         const listOptions = [];
         if (!Array.isArray(options)) {
             return listOptions;
         }
+        const state = this.state;
         options.forEach((option) => {
             /* manage simple string */
             if (typeof option === 'string') {
@@ -621,13 +644,13 @@ class SelecticStore {
             const group = option.group;
             const subOptions = option.options;
             /* check for groups */
-            if (group && !this.state.groups.has(group)) {
-                this.state.groups.set(group, String(group));
+            if (group && !state.groups.has(group)) {
+                state.groups.set(group, String(group));
             }
             /* check for sub options */
             if (subOptions) {
                 const groupId = option.id;
-                this.state.groups.set(groupId, option.text);
+                state.groups.set(groupId, option.text);
                 subOptions.forEach((subOpt) => {
                     subOpt.group = groupId;
                 });
@@ -638,24 +661,25 @@ class SelecticStore {
         });
         return listOptions;
     }
-    /* XXX: This is not a computed property to avoid consuming more memory */
+    /* This method is for the computed property elementOptions */
     getElementOptions() {
         const options = this.props.childOptions;
         const childOptions = [];
         if (!Array.isArray(options) || options.length === 0) {
             return childOptions;
         }
+        const state = this.state;
         options.forEach((option) => {
             const group = option.group;
             const subOptions = option.options;
             /* check for groups */
-            if (group && !this.state.groups.has(group)) {
-                this.state.groups.set(group, String(group));
+            if (group && !state.groups.has(group)) {
+                state.groups.set(group, String(group));
             }
             /* check for sub options */
             if (subOptions) {
                 const groupId = option.id;
-                this.state.groups.set(groupId, option.text);
+                state.groups.set(groupId, option.text);
                 const sOpts = subOptions.map((subOpt) => {
                     return Object.assign({}, subOpt, {
                         group: groupId,
@@ -669,7 +693,7 @@ class SelecticStore {
         return childOptions;
     }
     buildAllOptions(keepFetched = false) {
-        var _a;
+        var _a, _b, _c;
         const allOptions = [];
         let listOptions = [];
         let elementOptions = [];
@@ -701,8 +725,8 @@ class SelecticStore {
                 this.state.totalDynOptions = 0;
             }
         }
-        listOptions = this.getListOptions();
-        elementOptions = this.getElementOptions();
+        listOptions = (_b = this.listOptions.value) !== null && _b !== void 0 ? _b : this.listOptions;
+        elementOptions = (_c = this.elementOptions.value) !== null && _c !== void 0 ? _c : this.elementOptions;
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0);
             allOptions.push(...arrayFromOrder(orderValue));
@@ -804,21 +828,22 @@ class SelecticStore {
     }
     async buildSelectedOptions() {
         const internalValue = this.state.internalValue;
-        if (this.state.multiple) {
+        const state = this.state;
+        if (state.multiple) {
             /* display partial information about selected items */
-            this.state.selectedOptions = this.buildSelectedItems(internalValue);
+            state.selectedOptions = this.buildSelectedItems(internalValue);
             const items = await this.getItems(internalValue).catch(() => []);
-            if (internalValue !== this.state.internalValue) {
+            if (internalValue !== state.internalValue) {
                 /* Values have been deprecated */
                 return;
             }
             if (items.length !== internalValue.length) {
-                if (!this.state.strictValue) {
-                    const updatedItems = this.state.selectedOptions.map((option) => {
+                if (!state.strictValue) {
+                    const updatedItems = state.selectedOptions.map((option) => {
                         const foundItem = items.find((item) => item.id === option.id);
                         return foundItem || option;
                     });
-                    this.state.selectedOptions = updatedItems;
+                    state.selectedOptions = updatedItems;
                 }
                 else {
                     const itemIds = items.map((item) => item.id);
@@ -827,27 +852,27 @@ class SelecticStore {
                 return;
             }
             /* display full information about selected items */
-            this.state.selectedOptions = items;
+            state.selectedOptions = items;
         }
         else if (internalValue === null) {
-            this.state.selectedOptions = null;
+            state.selectedOptions = null;
         }
         else {
             /* display partial information about selected items */
-            this.state.selectedOptions = this.buildSelectedItems([internalValue])[0];
+            state.selectedOptions = this.buildSelectedItems([internalValue])[0];
             const items = await this.getItems([internalValue]).catch(() => []);
-            if (internalValue !== this.state.internalValue) {
+            if (internalValue !== state.internalValue) {
                 /* Values have been deprecated */
                 return;
             }
             if (!items.length) {
-                if (this.state.strictValue) {
+                if (state.strictValue) {
                     this.commit('internalValue', null);
                 }
                 return;
             }
             /* display full information about selected items */
-            this.state.selectedOptions = items[0];
+            state.selectedOptions = items[0];
         }
     }
     async fetchData() {
@@ -935,6 +960,7 @@ class SelecticStore {
         return this.buildGroupItems(options.filter((option) => rgx.test(option.text)));
     }
     addStaticFilteredOptions(fromDynamic = false) {
+        var _a, _b;
         const search = this.state.searchText;
         let continueLoop = fromDynamic;
         if (this.state.optionBehaviorOperation !== 'sort') {
@@ -954,10 +980,10 @@ class SelecticStore {
             }
             switch (order) {
                 case 'O':
-                    options = this.filterOptions(this.getListOptions(), search);
+                    options = this.filterOptions((_a = this.listOptions.value) !== null && _a !== void 0 ? _a : this.listOptions, search);
                     break;
                 case 'E':
-                    options = this.filterOptions(this.getElementOptions(), search);
+                    options = this.filterOptions((_b = this.elementOptions.value) !== null && _b !== void 0 ? _b : this.elementOptions, search);
                     break;
             }
             this.state.filteredOptions.push(...options);
@@ -2158,7 +2184,7 @@ let Selectic = class Selectic extends Vue {
         this.store.props.selectionIsExcluded = this.selectionIsExcluded;
     }
     onOptionsChange() {
-        this.store.props.options = this.options;
+        this.store.props.options = Array.from(this.options);
     }
     onTextsChange() {
         const texts = this.texts;
