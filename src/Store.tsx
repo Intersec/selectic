@@ -448,6 +448,8 @@ export default class SelecticStore {
     public isPartial: ComputedRef<boolean>;
     public hasAllItems: ComputedRef<boolean>;
     public hasFetchedAllItems: ComputedRef<boolean>;
+    private listOptions: ComputedRef<OptionValue[]>;
+    private elementOptions: ComputedRef<OptionValue[]>;
 
     /* }}} */
 
@@ -525,6 +527,14 @@ export default class SelecticStore {
             return state.dynOptions.length === state.totalDynOptions;
         });
 
+        this.listOptions = computed(() => {
+            return this.getListOptions();
+        });
+
+        this.elementOptions = computed(() => {
+            return this.getElementOptions();
+        });
+
         /* }}} */
         /* {{{ watch */
 
@@ -533,6 +543,12 @@ export default class SelecticStore {
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
+        });
+
+        watch(() => [this.listOptions, this.elementOptions], () => {
+            /* TODO: transform allOptions as a computed properties and this
+             * watcher become useless */
+            this.buildAllOptions(true);
         });
 
         watch(() => this.props.value, () => {
@@ -920,8 +936,8 @@ export default class SelecticStore {
 
         return this.state.filteredOptions.find(findId) ||
             this.state.dynOptions.find(findId) ||
-            this.getListOptions().find(findId) ||
-            this.getElementOptions().find(findId);
+            (this.listOptions.value ?? this.listOptions).find(findId) ||
+            (this.elementOptions.value ?? this.elementOptions).find(findId);
     }
 
     private convertTypeValue(oldValue: OptionId | StrictOptionId[]) {
@@ -1032,7 +1048,7 @@ export default class SelecticStore {
         });
     }
 
-    /* XXX: This is not a computed property to avoid consuming more memory */
+    /* This method is for the computed property listOptions */
     private getListOptions(): OptionValue[] {
         const options = this.props.options;
         const listOptions: OptionValue[] = [];
@@ -1040,6 +1056,7 @@ export default class SelecticStore {
         if (!Array.isArray(options)) {
             return listOptions;
         }
+        const state = this.state;
 
         options.forEach((option) => {
             /* manage simple string */
@@ -1055,14 +1072,14 @@ export default class SelecticStore {
             const subOptions = option.options;
 
             /* check for groups */
-            if (group && !this.state.groups.has(group)) {
-                this.state.groups.set(group, String(group));
+            if (group && !state.groups.has(group)) {
+                state.groups.set(group, String(group));
             }
 
             /* check for sub options */
             if (subOptions) {
                 const groupId = option.id as StrictOptionId;
-                this.state.groups.set(groupId, option.text);
+                state.groups.set(groupId, option.text);
 
                 subOptions.forEach((subOpt) => {
                     subOpt.group = groupId;
@@ -1077,7 +1094,7 @@ export default class SelecticStore {
         return listOptions;
     }
 
-    /* XXX: This is not a computed property to avoid consuming more memory */
+    /* This method is for the computed property elementOptions */
     private getElementOptions(): OptionValue[] {
         const options = this.props.childOptions;
         const childOptions: OptionValue[] = [];
@@ -1085,20 +1102,21 @@ export default class SelecticStore {
         if (!Array.isArray(options) || options.length === 0) {
             return childOptions;
         }
+        const state = this.state;
 
         options.forEach((option) => {
             const group = option.group;
             const subOptions = option.options;
 
             /* check for groups */
-            if (group && !this.state.groups.has(group)) {
-                this.state.groups.set(group, String(group));
+            if (group && !state.groups.has(group)) {
+                state.groups.set(group, String(group));
             }
 
             /* check for sub options */
             if (subOptions) {
                 const groupId = option.id as StrictOptionId;
-                this.state.groups.set(groupId, option.text);
+                state.groups.set(groupId, option.text);
 
                 const sOpts: OptionValue[] = subOptions.map((subOpt) => {
                     return Object.assign({}, subOpt, {
@@ -1150,8 +1168,8 @@ export default class SelecticStore {
             }
         }
 
-        listOptions = this.getListOptions();
-        elementOptions = this.getElementOptions();
+        listOptions = this.listOptions.value ?? this.listOptions;
+        elementOptions = this.elementOptions.value ?? this.elementOptions;
 
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0)!;
@@ -1269,26 +1287,27 @@ export default class SelecticStore {
 
     private async buildSelectedOptions() {
         const internalValue = this.state.internalValue;
+        const state = this.state;
 
-        if (this.state.multiple) {
+        if (state.multiple) {
             /* display partial information about selected items */
-            this.state.selectedOptions = this.buildSelectedItems(internalValue as StrictOptionId[]);
+            state.selectedOptions = this.buildSelectedItems(internalValue as StrictOptionId[]);
 
             const items: OptionItem[] = await this.getItems(internalValue as StrictOptionId[]).catch(() => []);
-            if (internalValue !== this.state.internalValue) {
+            if (internalValue !== state.internalValue) {
                 /* Values have been deprecated */
                 return;
             }
 
             if (items.length !== (internalValue as StrictOptionId[]).length) {
-                if (!this.state.strictValue) {
-                    const updatedItems = this.state.selectedOptions.map((option) => {
+                if (!state.strictValue) {
+                    const updatedItems = state.selectedOptions.map((option) => {
                         const foundItem = items.find((item) => item.id === option.id);
 
                         return foundItem || option;
                     });
 
-                    this.state.selectedOptions = updatedItems;
+                    state.selectedOptions = updatedItems;
                 } else {
                     const itemIds = items.map((item) => item.id as StrictOptionId) ;
 
@@ -1298,29 +1317,29 @@ export default class SelecticStore {
             }
 
             /* display full information about selected items */
-            this.state.selectedOptions = items;
+            state.selectedOptions = items;
         } else
         if (internalValue === null) {
-            this.state.selectedOptions = null;
+            state.selectedOptions = null;
         } else {
             /* display partial information about selected items */
-            this.state.selectedOptions = this.buildSelectedItems([internalValue as OptionId])[0];
+            state.selectedOptions = this.buildSelectedItems([internalValue as OptionId])[0];
 
             const items = await this.getItems([internalValue as OptionId]).catch(() => []);
-            if (internalValue !== this.state.internalValue) {
+            if (internalValue !== state.internalValue) {
                 /* Values have been deprecated */
                 return;
             }
 
             if (!items.length) {
-                if (this.state.strictValue) {
+                if (state.strictValue) {
                     this.commit('internalValue', null);
                 }
                 return;
             }
 
             /* display full information about selected items */
-            this.state.selectedOptions = items[0];
+            state.selectedOptions = items[0];
         }
     }
 
@@ -1449,10 +1468,10 @@ export default class SelecticStore {
 
             switch (order) {
                 case 'O':
-                    options = this.filterOptions(this.getListOptions(), search);
+                    options = this.filterOptions(this.listOptions.value ?? this.listOptions, search);
                     break;
                 case 'E':
-                    options = this.filterOptions(this.getElementOptions(), search);
+                    options = this.filterOptions(this.elementOptions.value ?? this.elementOptions, search);
                     break;
             }
             this.state.filteredOptions.push(...options);

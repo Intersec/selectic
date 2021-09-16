@@ -278,6 +278,8 @@ export default class SelecticStore {
     isPartial: ComputedRef<boolean>;
     hasAllItems: ComputedRef<boolean>;
     hasFetchedAllItems: ComputedRef<boolean>;
+    private listOptions;
+    private elementOptions;
     _uid: number;
     constructor(props?: Props);
     commit<N extends keyof SelecticStoreState, V extends SelecticStoreState[N]>(name: N, value: V): void;

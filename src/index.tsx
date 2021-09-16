@@ -531,7 +531,7 @@ export default class Selectic extends Vue<Props> {
 
     @Watch('options')
     public onOptionsChange() {
-        this.store.props.options = this.options;
+        this.store.props.options = Array.from(this.options);
     }
 
     @Watch('texts')
