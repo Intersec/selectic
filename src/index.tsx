@@ -57,7 +57,7 @@ export {
     ListPosition,
 };
 
-type EventType = 'input' | 'change' | 'open' | 'close' | 'item:click';
+type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 
 export interface EventOptions {
     instance: Selectic;
@@ -627,7 +627,7 @@ export default class Selectic extends Vue<Props> {
 
     /* This method is only to emit the events and to replicate them */
     private _emit(event: 'input' | 'change', value: SelectedValue, options: EventChangeOptions): void;
-    private _emit(event: 'open' | 'close', options: EventOptions): void;
+    private _emit(event: 'open' | 'close' | 'focus' | 'blur', options: EventOptions): void;
     private _emit(event: 'item:click', value: OptionId, options: EventOptions): void;
     private _emit(event: EventType, ...args: any[]) {
         this.$emit(event, ...args);
@@ -638,7 +638,7 @@ export default class Selectic extends Vue<Props> {
     }
 
     private emit(event: 'input' | 'change', value: SelectedValue, isExcluded: boolean): void;
-    private emit(event: 'open' | 'close'): void;
+    private emit(event: 'open' | 'close' | 'focus' | 'blur'): void;
     private emit(event: 'item:click', value: OptionId): void;
     private emit(event: EventType, value?: SelectedValue | OptionId, isExcluded?: boolean) {
         const automatic = this.store.state.status.automaticChange;
@@ -656,10 +656,14 @@ export default class Selectic extends Vue<Props> {
                 this._emit(event, value as SelectedValue, changeOptions);
                 break;
             case 'open':
-                this._emit(event, options);
+            case 'focus':
+                this._emit('open', options);
+                this._emit('focus', options);
                 break;
             case 'close':
-                this._emit(event, options);
+            case 'blur':
+                this._emit('close', options);
+                this._emit('blur', options);
                 break;
             case 'item:click':
                 this._emit(event, value as OptionId, options);

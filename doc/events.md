@@ -8,7 +8,9 @@ Selectic component emits some events that can be caught by the parent.
 * [change](#change)
 * [item:click](#itemclick)
 * [open](#open)
+* [focus](#focus)
 * [close](#close)
+* [blur](#blur)
 
 ## input
 
@@ -53,12 +55,20 @@ An event _open_ is emitted when list is opening.
 1 argument is sent with the event:
 * Information about the event. This is an [`EventOptions` object](#eventoptions).
 
+## focus
+
+Is an alias of the [open](#open) event.
+
 ## close
 
-An event _close_ is emited when list is closing.
+An event _close_ is emitted when list is closing.
 
 1 argument is sent with the event:
 * Information about the event. This is an [`EventOptions` object](#eventoptions).
+
+## blur
+
+Is an alias of the [close](#close) event.
 
 # Types
 
@@ -66,7 +76,7 @@ An event _close_ is emited when list is closing.
 
 This is a string of an event that can be triggered by Selectic.
 
-Its value can be `'input' | 'change' | 'open' | 'close' | 'item:click'`
+Its value can be `'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click'`
 
 ## EventOptions
 

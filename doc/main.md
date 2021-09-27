@@ -24,6 +24,8 @@
 * change
 * open
 * close
+* focus
+* blur
 * item:click
 
 ## Methods
