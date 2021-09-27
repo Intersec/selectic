@@ -1,9 +1,9 @@
 import { Vue, h } from 'vtyx';
 import './css/selectic.css';
-import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition } from './Store';
+import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
-export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, };
+export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, };
 declare type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 export interface EventOptions {
     instance: Selectic;
@@ -17,7 +17,7 @@ export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
     pageSize?: number;
-    hideFilter?: boolean | 'auto';
+    hideFilter?: HideFilter;
     allowRevert?: boolean;
     allowClearSelection?: boolean;
     autoSelect?: boolean;

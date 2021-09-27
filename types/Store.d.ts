@@ -37,10 +37,11 @@ export declare type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
 export declare type FormatCallback = (_option: OptionItem) => OptionItem;
 export declare type SelectionOverflow = 'collapsed' | 'multiline';
 export declare type ListPosition = 'bottom' | 'top' | 'auto';
+export declare type HideFilter = boolean | 'auto' | 'open';
 export interface SelecticStoreStateParams {
     multiple?: boolean;
     placeholder?: string;
-    hideFilter?: boolean | 'auto';
+    hideFilter?: HideFilter;
     allowRevert?: boolean;
     allowClearSelection?: boolean;
     pageSize?: number;
@@ -83,6 +84,7 @@ export interface SelecticStoreState {
     disabled: boolean;
     placeholder: string;
     hideFilter: boolean;
+    keepFilterOpen: boolean;
     allowRevert?: boolean;
     allowClearSelection: boolean;
     autoSelect: boolean;
@@ -147,6 +149,7 @@ export default class SelecticStore {
         disabled: boolean;
         placeholder: string;
         hideFilter: boolean;
+        keepFilterOpen: boolean;
         allowRevert?: boolean | undefined;
         allowClearSelection: boolean;
         autoSelect: boolean;

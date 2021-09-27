@@ -107,6 +107,7 @@ class SelecticStore {
             disabled: false,
             placeholder: '',
             hideFilter: false,
+            keepFilterOpen: false,
             allowRevert: undefined,
             allowClearSelection: false,
             autoSelect: true,
@@ -262,6 +263,10 @@ class SelecticStore {
             delete stateParam.optionBehavior;
         }
         if (stateParam.hideFilter === 'auto') {
+            delete stateParam.hideFilter;
+        }
+        else if (stateParam.hideFilter === 'open') {
+            this.state.keepFilterOpen = true;
             delete stateParam.hideFilter;
         }
         /* Update state */
@@ -1468,6 +1473,10 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
         this.store.commit('selectionIsExcluded', !this.selectionIsExcluded);
     }
     togglePanel() {
+        if (this.store.state.keepFilterOpen === true) {
+            this.closed = false;
+            return;
+        }
         this.closed = !this.closed;
     }
     getFocus() {
@@ -1484,7 +1493,8 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
     /* }}} */
     /* {{{ Life cycle */
     mounted() {
-        this.closed = !this.store.state.searchText;
+        const state = this.store.state;
+        this.closed = !state.keepFilterOpen && !state.searchText;
         document.addEventListener('keypress', this.onKeyPressed);
         this.getFocus();
     }
@@ -1493,24 +1503,27 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
     }
     /* }}} */
     render() {
+        const store = this.store;
+        const state = store.state;
+        const labels = store.data.labels;
         return (vtyx.h("div", { class: "filter-panel" },
             vtyx.h("div", { class: {
                     panelclosed: this.closed,
                     panelopened: !this.closed,
                 } },
                 vtyx.h("div", { class: "filter-panel__input form-group has-feedback" },
-                    vtyx.h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, value: this.store.state.searchText, on: {
+                    vtyx.h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, value: state.searchText, on: {
                             'input.stop.prevent': this.onInput,
                         }, ref: "filterInput" }),
                     vtyx.h("span", { class: "fa fa-search selectic-search-scope\n                                     form-control-feedback" })),
-                this.store.state.multiple && (vtyx.h("div", { class: "toggle-selectic" },
+                state.multiple && (vtyx.h("div", { class: "toggle-selectic" },
                     vtyx.h("label", { class: ['control-label', {
                                 'selectic__label-disabled': this.disableSelectAll,
                             }] },
-                        vtyx.h("input", { type: "checkbox", checked: this.store.state.status.areAllSelected, disabled: this.disableSelectAll, on: {
+                        vtyx.h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, on: {
                                 change: this.onSelectAll,
                             } }),
-                        this.store.data.labels.selectAll))),
+                        labels.selectAll))),
                 this.enableRevert && (vtyx.h("div", { class: ['toggle-selectic', {
                             'selectic__label-disabled': this.disableRevert,
                         }] },
@@ -1518,8 +1531,8 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
                         vtyx.h("input", { type: "checkbox", checked: this.selectionIsExcluded, disabled: this.disableRevert, on: {
                                 change: this.onExclude,
                             } }),
-                        this.store.data.labels.excludeResult)))),
-            vtyx.h("div", { class: "curtain-handler", on: {
+                        labels.excludeResult)))),
+            !state.keepFilterOpen && (vtyx.h("div", { class: "curtain-handler", on: {
                     'click.prevent.stop': this.togglePanel,
                 } },
                 vtyx.h("span", { class: "fa fa-search" }),
@@ -1527,7 +1540,7 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
                         'fa': true,
                         'fa-caret-down': this.closed,
                         'fa-caret-up': !this.closed,
-                    } }))));
+                    } })))));
     }
 };
 __decorate$3([
@@ -2370,7 +2383,7 @@ let Selectic = class Selectic extends vtyx.Vue {
     /* }}} */
     /* {{{ Life cycle */
     created() {
-        var _a, _b;
+        var _a, _b, _c;
         this._elementsListeners = [];
         this.store = new SelecticStore({
             options: this.options,
@@ -2383,8 +2396,7 @@ let Selectic = class Selectic extends vtyx.Vue {
             params: {
                 multiple: ((_a = this.multiple) !== null && _a !== void 0 ? _a : false) !== false,
                 pageSize: this.params.pageSize || 100,
-                hideFilter: this.params.hideFilter !== undefined
-                    ? this.params.hideFilter : 'auto',
+                hideFilter: (_b = this.params.hideFilter) !== null && _b !== void 0 ? _b : 'auto',
                 allowRevert: this.params.allowRevert,
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
@@ -2399,7 +2411,7 @@ let Selectic = class Selectic extends vtyx.Vue {
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior,
-                isOpen: ((_b = this.open) !== null && _b !== void 0 ? _b : false) !== false,
+                isOpen: ((_c = this.open) !== null && _c !== void 0 ? _c : false) !== false,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
@@ -2551,4 +2563,4 @@ Selectic = __decorate([
 var Selectic$1 = Selectic;
 
 exports.changeTexts = changeTexts;
-exports['default'] = Selectic$1;
+exports["default"] = Selectic$1;

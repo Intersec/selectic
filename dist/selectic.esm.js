@@ -103,6 +103,7 @@ class SelecticStore {
             disabled: false,
             placeholder: '',
             hideFilter: false,
+            keepFilterOpen: false,
             allowRevert: undefined,
             allowClearSelection: false,
             autoSelect: true,
@@ -258,6 +259,10 @@ class SelecticStore {
             delete stateParam.optionBehavior;
         }
         if (stateParam.hideFilter === 'auto') {
+            delete stateParam.hideFilter;
+        }
+        else if (stateParam.hideFilter === 'open') {
+            this.state.keepFilterOpen = true;
             delete stateParam.hideFilter;
         }
         /* Update state */
@@ -1464,6 +1469,10 @@ let FilterPanel = class FilterPanel extends Vue {
         this.store.commit('selectionIsExcluded', !this.selectionIsExcluded);
     }
     togglePanel() {
+        if (this.store.state.keepFilterOpen === true) {
+            this.closed = false;
+            return;
+        }
         this.closed = !this.closed;
     }
     getFocus() {
@@ -1480,7 +1489,8 @@ let FilterPanel = class FilterPanel extends Vue {
     /* }}} */
     /* {{{ Life cycle */
     mounted() {
-        this.closed = !this.store.state.searchText;
+        const state = this.store.state;
+        this.closed = !state.keepFilterOpen && !state.searchText;
         document.addEventListener('keypress', this.onKeyPressed);
         this.getFocus();
     }
@@ -1489,24 +1499,27 @@ let FilterPanel = class FilterPanel extends Vue {
     }
     /* }}} */
     render() {
+        const store = this.store;
+        const state = store.state;
+        const labels = store.data.labels;
         return (h("div", { class: "filter-panel" },
             h("div", { class: {
                     panelclosed: this.closed,
                     panelopened: !this.closed,
                 } },
                 h("div", { class: "filter-panel__input form-group has-feedback" },
-                    h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, value: this.store.state.searchText, on: {
+                    h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, value: state.searchText, on: {
                             'input.stop.prevent': this.onInput,
                         }, ref: "filterInput" }),
                     h("span", { class: "fa fa-search selectic-search-scope\n                                     form-control-feedback" })),
-                this.store.state.multiple && (h("div", { class: "toggle-selectic" },
+                state.multiple && (h("div", { class: "toggle-selectic" },
                     h("label", { class: ['control-label', {
                                 'selectic__label-disabled': this.disableSelectAll,
                             }] },
-                        h("input", { type: "checkbox", checked: this.store.state.status.areAllSelected, disabled: this.disableSelectAll, on: {
+                        h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, on: {
                                 change: this.onSelectAll,
                             } }),
-                        this.store.data.labels.selectAll))),
+                        labels.selectAll))),
                 this.enableRevert && (h("div", { class: ['toggle-selectic', {
                             'selectic__label-disabled': this.disableRevert,
                         }] },
@@ -1514,8 +1527,8 @@ let FilterPanel = class FilterPanel extends Vue {
                         h("input", { type: "checkbox", checked: this.selectionIsExcluded, disabled: this.disableRevert, on: {
                                 change: this.onExclude,
                             } }),
-                        this.store.data.labels.excludeResult)))),
-            h("div", { class: "curtain-handler", on: {
+                        labels.excludeResult)))),
+            !state.keepFilterOpen && (h("div", { class: "curtain-handler", on: {
                     'click.prevent.stop': this.togglePanel,
                 } },
                 h("span", { class: "fa fa-search" }),
@@ -1523,7 +1536,7 @@ let FilterPanel = class FilterPanel extends Vue {
                         'fa': true,
                         'fa-caret-down': this.closed,
                         'fa-caret-up': !this.closed,
-                    } }))));
+                    } })))));
     }
 };
 __decorate$3([
@@ -2366,7 +2379,7 @@ let Selectic = class Selectic extends Vue {
     /* }}} */
     /* {{{ Life cycle */
     created() {
-        var _a, _b;
+        var _a, _b, _c;
         this._elementsListeners = [];
         this.store = new SelecticStore({
             options: this.options,
@@ -2379,8 +2392,7 @@ let Selectic = class Selectic extends Vue {
             params: {
                 multiple: ((_a = this.multiple) !== null && _a !== void 0 ? _a : false) !== false,
                 pageSize: this.params.pageSize || 100,
-                hideFilter: this.params.hideFilter !== undefined
-                    ? this.params.hideFilter : 'auto',
+                hideFilter: (_b = this.params.hideFilter) !== null && _b !== void 0 ? _b : 'auto',
                 allowRevert: this.params.allowRevert,
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
@@ -2395,7 +2407,7 @@ let Selectic = class Selectic extends Vue {
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior,
-                isOpen: ((_b = this.open) !== null && _b !== void 0 ? _b : false) !== false,
+                isOpen: ((_c = this.open) !== null && _c !== void 0 ? _c : false) !== false,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
