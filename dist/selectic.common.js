@@ -2557,6 +2557,15 @@ __decorate([
 __decorate([
     vtyx.Watch('store.state.internalValue')
 ], Selectic.prototype, "onInternalValueChange", null);
+__decorate([
+    vtyx.Emit('input'),
+    vtyx.Emit('change'),
+    vtyx.Emit('open'),
+    vtyx.Emit('focus'),
+    vtyx.Emit('close'),
+    vtyx.Emit('blur'),
+    vtyx.Emit('item:click')
+], Selectic.prototype, "render", null);
 Selectic = __decorate([
     vtyx.Component
 ], Selectic);
