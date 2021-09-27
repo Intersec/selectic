@@ -2021,15 +2021,26 @@ let Selectic = class Selectic extends Vue {
     }
     get outsideListener() {
         return (evt) => {
-            const target = evt.target;
             if (!this.$refs) {
                 /* this component should have been destroyed */
                 this.removeListeners();
                 this.store.commit('isOpen', false);
                 return;
             }
-            if (!this.$refs.extendedList.$el.contains(target) && !this.$el.contains(target)) {
-                this.store.commit('isOpen', false);
+            const store = this.store;
+            const keepOpenWithOtherSelectic = this.params.keepOpenWithOtherSelectic;
+            const extendedList = this.$refs.extendedList;
+            if (!extendedList) {
+                /* this component is not focused anymore */
+                if (!keepOpenWithOtherSelectic) {
+                    this.removeListeners();
+                    this.store.commit('isOpen', false);
+                }
+                return;
+            }
+            const target = evt.target;
+            if (!extendedList.$el.contains(target) && !this.$el.contains(target)) {
+                store.commit('isOpen', false);
             }
         };
     }
