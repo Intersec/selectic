@@ -483,14 +483,14 @@ export default class Selectic extends Vue<Props> {
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
             this.computeOffset();
-            this.$emit('open', this);
+            this.emit('open', this);
         } else {
             this.removeListeners();
             if (state.status.hasChanged) {
                 this.$emit('change', this.getValue(), state.selectionIsExcluded, this);
                 this.store.resetChange();
             }
-            this.$emit('close', this);
+            this.emit('close', this);
         }
     }
 
@@ -580,10 +580,10 @@ export default class Selectic extends Vue<Props> {
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
 
-            this.$emit('input', value, selectionIsExcluded, this);
+            this.emit('input', value, selectionIsExcluded, this);
 
             if (!this.isFocused) {
-                this.$emit('change', value, selectionIsExcluded, this);
+                this.emit('change', value, selectionIsExcluded, this);
                 this.store.resetChange();
             }
         }
@@ -613,6 +613,11 @@ export default class Selectic extends Vue<Props> {
         }, 0);
     }
 
+    private emit(event: 'input', value: SelectedValue, isExcluded: boolean, instance: Selectic): void;
+    private emit(event: 'change', value: SelectedValue, isExcluded: boolean, instance: Selectic): void;
+    private emit(event: 'open', instance: Selectic): void;
+    private emit(event: 'close', instance: Selectic): void;
+    private emit(event: 'item:click', value: OptionId, instance: Selectic): void;
     private emit(event: string, ...args: any[]) {
         this.$emit(event, ...args);
 
