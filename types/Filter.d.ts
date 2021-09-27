@@ -23,6 +23,6 @@ export default class FilterPanel extends Vue<Props> {
     private getFocus;
     onClosed(): void;
     mounted(): void;
-    destroyed(): void;
+    unmounted(): void;
     render(): h.JSX.Element;
 }

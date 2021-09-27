@@ -136,6 +136,6 @@ export default class Selectic extends Vue<Props> {
     created(): void;
     mounted(): void;
     beforeUpdate(): void;
-    beforeDestroy(): void;
+    beforeUnmount(): void;
     render(): h.JSX.Element | undefined;
 }

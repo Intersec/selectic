@@ -31,6 +31,6 @@ export default class ExtendedList extends Vue<Props> {
     private getGroup;
     private computeListSize;
     mounted(): void;
-    destroyed(): void;
+    unmounted(): void;
     render(): h.JSX.Element;
 }

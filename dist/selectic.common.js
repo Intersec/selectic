@@ -211,17 +211,17 @@ class SelecticStore {
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
-        });
+        }, { deep: true });
         vue.watch(() => [this.listOptions, this.elementOptions], () => {
             /* TODO: transform allOptions as a computed properties and this
              * watcher become useless */
             this.buildAllOptions(true);
-        });
+        }, { deep: true });
         vue.watch(() => this.props.value, () => {
             var _a;
             const value = (_a = this.props.value) !== null && _a !== void 0 ? _a : null;
             this.commit('internalValue', value);
-        });
+        }, { deep: true });
         vue.watch(() => this.props.selectionIsExcluded, () => {
             this.commit('selectionIsExcluded', this.props.selectionIsExcluded);
         });
@@ -237,14 +237,14 @@ class SelecticStore {
                 areAllSelected = this.state.filteredOptions.every((item) => !!(+item.selected ^ selectionIsExcluded));
             }
             this.state.status.areAllSelected = areAllSelected;
-        });
+        }, { deep: true });
         vue.watch(() => this.state.internalValue, () => {
             this.buildSelectedOptions();
-        });
+        }, { deep: true });
         vue.watch(() => this.state.allOptions, () => {
             this.checkAutoSelect();
             this.checkAutoDisabled();
-        });
+        }, { deep: true });
         vue.watch(() => this.state.totalAllOptions, () => {
             this.checkHideFilter();
         });
@@ -1393,7 +1393,7 @@ __decorate$4([
     vtyx.Prop({ default: '' })
 ], MainInput.prototype, "id", void 0);
 __decorate$4([
-    vtyx.Watch('store.state.internalValue')
+    vtyx.Watch('store.state.internalValue', { deep: true })
 ], MainInput.prototype, "onInternalChange", null);
 MainInput = __decorate$4([
     vtyx.Component
@@ -1497,7 +1497,7 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
         document.addEventListener('keypress', this.onKeyPressed);
         this.getFocus();
     }
-    destroyed() {
+    unmounted() {
         document.removeEventListener('keypress', this.onKeyPressed);
     }
     /* }}} */
@@ -1757,7 +1757,7 @@ __decorate$2([
     vtyx.Watch('store.state.offsetItem')
 ], List.prototype, "onOffsetChange", null);
 __decorate$2([
-    vtyx.Watch('filteredOptions')
+    vtyx.Watch('filteredOptions', { deep: true })
 ], List.prototype, "onFilteredOptionsChange", null);
 __decorate$2([
     vtyx.Watch('groupId')
@@ -1928,7 +1928,7 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         document.body.addEventListener('keydown', this.onKeyDown);
         this.computeListSize();
     }
-    destroyed() {
+    unmounted() {
         document.body.removeEventListener('keydown', this.onKeyDown);
         /* force the element to be removed from DOM */
         if (this.$el.parentNode) {
@@ -1973,7 +1973,7 @@ __decorate$1([
     vtyx.Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
 __decorate$1([
-    vtyx.Watch('store.state.filteredOptions')
+    vtyx.Watch('store.state.filteredOptions', { deep: true })
 ], ExtendedList.prototype, "onFilteredOptionsChange", null);
 __decorate$1([
     vtyx.Watch('store.state.hideFilter')
@@ -2462,7 +2462,7 @@ let Selectic = class Selectic extends vtyx.Vue {
         // }
         // this.store.childOptions = options;
     }
-    beforeDestroy() {
+    beforeUnmount() {
         this.removeListeners();
     }
     /* }}} */
@@ -2538,22 +2538,22 @@ __decorate([
     vtyx.Prop()
 ], Selectic.prototype, "_getMethods", void 0);
 __decorate([
-    vtyx.Watch('value')
+    vtyx.Watch('value', { deep: true })
 ], Selectic.prototype, "onValueChange", null);
 __decorate([
     vtyx.Watch('selectionIsExcluded')
 ], Selectic.prototype, "onExcludedChange", null);
 __decorate([
-    vtyx.Watch('options')
+    vtyx.Watch('options', { deep: true })
 ], Selectic.prototype, "onOptionsChange", null);
 __decorate([
-    vtyx.Watch('texts')
+    vtyx.Watch('texts', { deep: true })
 ], Selectic.prototype, "onTextsChange", null);
 __decorate([
     vtyx.Watch('disabled')
 ], Selectic.prototype, "onDisabledChange", null);
 __decorate([
-    vtyx.Watch('groups')
+    vtyx.Watch('groups', { deep: true })
 ], Selectic.prototype, "onGroupsChanged", null);
 __decorate([
     vtyx.Watch('placeholder')
@@ -2565,7 +2565,7 @@ __decorate([
     vtyx.Watch('isFocused')
 ], Selectic.prototype, "onFocusChanged", null);
 __decorate([
-    vtyx.Watch('store.state.internalValue')
+    vtyx.Watch('store.state.internalValue', { deep: true })
 ], Selectic.prototype, "onInternalValueChange", null);
 __decorate([
     vtyx.Emit('input'),
