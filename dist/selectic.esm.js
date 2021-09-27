@@ -97,6 +97,26 @@ let closePreviousSelectic;
 let uid = 0;
 class SelecticStore {
     constructor(props = {}) {
+        /* Do not need reactivity */
+        this.requestId = 0;
+        this._uid = ++uid;
+        /* {{{ Props */
+        const defaultProps = {
+            value: null,
+            selectionIsExcluded: false,
+            disabled: false,
+            options: null,
+            childOptions: [],
+            groups: [],
+            texts: null,
+            params: {},
+            fetchCallback: null,
+            getItemsCallback: null,
+            keepOpenWithOtherSelectic: false,
+        };
+        const propsVal = assignObject(defaultProps, props);
+        this.props = reactive(propsVal);
+        /* }}} */
         /* {{{ data */
         this.state = reactive({
             multiple: false,
@@ -137,27 +157,6 @@ class SelecticStore {
                 automaticClose: false,
             },
         });
-        /* Do not need reactivity */
-        this.requestId = 0;
-        this._uid = ++uid;
-        /* {{{ Props */
-        const defaultProps = {
-            value: null,
-            selectionIsExcluded: false,
-            disabled: false,
-            options: null,
-            childOptions: [],
-            groups: [],
-            texts: null,
-            params: {},
-            fetchCallback: null,
-            getItemsCallback: null,
-            keepOpenWithOtherSelectic: false,
-        };
-        const propsVal = assignObject(defaultProps, props);
-        this.props = reactive(propsVal);
-        /* }}} */
-        /* {{{ data */
         this.data = reactive({
             labels: Object.assign({}, messages),
             itemsPerPage: 10,
@@ -271,8 +270,8 @@ class SelecticStore {
          * and ensure convertValue run with correct state */
         assignObject(this.state, {
             internalValue: this.convertTypeValue(value),
-            selectionIsExcluded: props.selectionIsExcluded,
-            disabled: props.disabled,
+            selectionIsExcluded: !!props.selectionIsExcluded,
+            disabled: !!props.disabled, /* XXX: !! is needed to copy value and not proxy reference */
         });
         this.checkHideFilter();
         if (this.props.texts) {
