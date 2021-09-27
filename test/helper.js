@@ -40,6 +40,8 @@ function getInitialState(replacedAttributes) {
             errorMessage: '',
             areAllSelected: false,
             hasChanged: false,
+            automaticChange: false,
+            automaticClose: false,
         },
     }, replacedAttributes);
 }

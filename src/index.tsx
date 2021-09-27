@@ -57,6 +57,18 @@ export {
     ListPosition,
 };
 
+type EventType = 'input' | 'change' | 'open' | 'close' | 'item:click';
+
+export interface EventOptions {
+    instance: Selectic;
+    eventType: EventType;
+    automatic: boolean;
+}
+
+export interface EventChangeOptions extends EventOptions {
+    isExcluded: boolean;
+}
+
 export interface ParamProps {
     /* Method to call to fetch extra data */
     fetchCallback?: FetchCallback;
@@ -483,14 +495,14 @@ export default class Selectic extends Vue<Props> {
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
             this.computeOffset();
-            this.emit('open', this);
+            this.emit('open');
         } else {
             this.removeListeners();
             if (state.status.hasChanged) {
                 this.$emit('change', this.getValue(), state.selectionIsExcluded, this);
                 this.store.resetChange();
             }
-            this.emit('close', this);
+            this.emit('close');
         }
     }
 
@@ -580,10 +592,10 @@ export default class Selectic extends Vue<Props> {
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
 
-            this.emit('input', value, selectionIsExcluded, this);
+            this.emit('input', value, selectionIsExcluded);
 
             if (!this.isFocused) {
-                this.emit('change', value, selectionIsExcluded, this);
+                this.emit('change', value, selectionIsExcluded);
                 this.store.resetChange();
             }
         }
@@ -613,16 +625,45 @@ export default class Selectic extends Vue<Props> {
         }, 0);
     }
 
-    private emit(event: 'input', value: SelectedValue, isExcluded: boolean, instance: Selectic): void;
-    private emit(event: 'change', value: SelectedValue, isExcluded: boolean, instance: Selectic): void;
-    private emit(event: 'open', instance: Selectic): void;
-    private emit(event: 'close', instance: Selectic): void;
-    private emit(event: 'item:click', value: OptionId, instance: Selectic): void;
-    private emit(event: string, ...args: any[]) {
+    /* This method is only to emit the events and to replicate them */
+    private _emit(event: 'input' | 'change', value: SelectedValue, options: EventChangeOptions): void;
+    private _emit(event: 'open' | 'close', options: EventOptions): void;
+    private _emit(event: 'item:click', value: OptionId, options: EventOptions): void;
+    private _emit(event: EventType, ...args: any[]) {
         this.$emit(event, ...args);
 
         if (typeof this._on === 'function') {
             this._on(event, ...args);
+        }
+    }
+
+    private emit(event: 'input' | 'change', value: SelectedValue, isExcluded: boolean): void;
+    private emit(event: 'open' | 'close'): void;
+    private emit(event: 'item:click', value: OptionId): void;
+    private emit(event: EventType, value?: SelectedValue | OptionId, isExcluded?: boolean) {
+        const automatic = this.store.state.status.automaticChange;
+        const options: EventOptions = {
+            instance: this,
+            eventType: event,
+            automatic,
+        };
+        switch (event) {
+            case 'input':
+            case 'change':
+                const changeOptions: EventChangeOptions = Object.assign({
+                    isExcluded: isExcluded!,
+                }, options);
+                this._emit(event, value as SelectedValue, changeOptions);
+                break;
+            case 'open':
+                this._emit(event, options);
+                break;
+            case 'close':
+                this._emit(event, options);
+                break;
+            case 'item:click':
+                this._emit(event, value as OptionId, options);
+                break;
         }
     }
 
@@ -830,7 +871,7 @@ export default class Selectic extends Vue<Props> {
                     store={store}
                     id={id}
                     on={{
-                        'item:click': (id: OptionId) => this.emit('item:click', id, this),
+                        'item:click': (id: OptionId) => this.emit('item:click', id),
                     }}
                     ref="mainInput"
                 />

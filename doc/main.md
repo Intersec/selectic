@@ -24,6 +24,7 @@
 * change
 * open
 * close
+* item:click
 
 ## Methods
 
@@ -35,3 +36,7 @@
 * getSelectedItems
 * isEmpty
 * toggleOpen
+
+## Breaking changes
+
+[Migration strategy](./breakingChanges.md)

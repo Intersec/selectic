@@ -33,6 +33,9 @@ tape.test('Store creation', (subT) => {
 
         t.deepEqual(defaultStore.state, getInitialState({
             disabled: true,
+            status: {
+                automaticClose: true,
+            },
         }));
 
         const store = new Store({
@@ -62,6 +65,9 @@ tape.test('Store creation', (subT) => {
             }],
             autoSelect: false,
             disabled: true,
+            status: {
+                automaticClose: true,
+            },
         }));
 
         t.end();

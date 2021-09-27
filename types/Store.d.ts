@@ -112,6 +112,8 @@ export interface SelecticStoreState {
         errorMessage: string;
         areAllSelected: boolean;
         hasChanged: boolean;
+        automaticChange: boolean;
+        automaticClose: boolean;
     };
 }
 interface Messages {
@@ -268,6 +270,8 @@ export default class SelecticStore {
             errorMessage: string;
             areAllSelected: boolean;
             hasChanged: boolean;
+            automaticChange: boolean;
+            automaticClose: boolean;
         };
     };
     data: Data;
@@ -283,6 +287,8 @@ export default class SelecticStore {
     _uid: number;
     constructor(props?: Props);
     commit<N extends keyof SelecticStoreState, V extends SelecticStoreState[N]>(name: N, value: V): void;
+    setAutomaticChange(): void;
+    setAutomaticClose(): void;
     getItem(id: OptionId): OptionValue;
     getItems(ids: OptionId[]): Promise<OptionItem[]>;
     selectItem(id: OptionId, selected?: boolean, keepOpen?: boolean): void;

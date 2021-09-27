@@ -45,6 +45,9 @@ tape.test('commit()', (st) => {
             hideFilter: true,
             allowClearSelection: true,
             disabled: true,
+            status: {
+                automaticClose: true,
+            },
         }));
 
         store.commit('searchText', 'hello2');
@@ -945,15 +948,22 @@ tape.test('commit()', (st) => {
             t.end();
         });
 
-        sTest.test('should close the select list', (t) => {
+        sTest.test('should close the select list', async (t) => {
             const store = new Store({
                 options: getOptions(5),
             });
 
+
             store.commit('isOpen', true);
+            await sleep(0);
             store.commit('disabled', true);
 
             t.deepEqual(store.state.isOpen, false);
+            t.deepEqual(store.state.status.automaticClose, true);
+
+            await sleep(10);
+            t.deepEqual(store.state.status.automaticClose, false);
+
             t.end();
         });
     });
@@ -1080,26 +1090,32 @@ tape.test('commit()', (st) => {
                 },
             });
 
+            await sleep(0);
             store1.commit('internalValue', 3);
             store2.commit('internalValue', [1, 2]);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, 3);
             t.deepEqual(store2.state.internalValue, [1, 2]);
+            t.is(store1.state.status.automaticChange, false);
+            t.is(store2.state.status.automaticChange, false);
 
+            await sleep(0);
             store1.commit('internalValue', 1);
             store2.commit('internalValue', [3, 4, 5]);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, 1);
             t.deepEqual(store2.state.internalValue, [3, 4, 5]);
+            t.is(store1.state.status.automaticChange, false);
+            t.is(store2.state.status.automaticChange, false);
 
+            await sleep(0);
             store1.commit('internalValue', null);
             store2.commit('internalValue', []);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, null);
             t.deepEqual(store2.state.internalValue, []);
+            t.is(store1.state.status.automaticChange, false);
+            t.is(store2.state.status.automaticChange, false);
 
             t.end();
         });
@@ -1118,27 +1134,39 @@ tape.test('commit()', (st) => {
                     multiple: true,
                 },
             });
+            await sleep(0);
 
             store1.commit('internalValue', [3]);
             store2.commit('internalValue', 1);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, 3);
             t.deepEqual(store2.state.internalValue, [1]);
+            t.is(store1.state.status.automaticChange, true);
+            t.is(store2.state.status.automaticChange, true);
+
+            await sleep(0);
 
             store1.commit('internalValue', [1, 2, 3]);
             store2.commit('internalValue', 3);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, 1);
             t.deepEqual(store2.state.internalValue, [3]);
+            t.is(store1.state.status.automaticChange, true);
+            t.is(store2.state.status.automaticChange, true);
+
+            await sleep(0);
 
             store1.commit('internalValue', []);
             store2.commit('internalValue', null);
-            await Promise.all([_.nextVueTick(store1), _.nextVueTick(store2)]);
 
             t.is(store1.state.internalValue, null, 'should not select anything');
             t.deepEqual(store2.state.internalValue, [], 'should have no selection');
+            t.is(store1.state.status.automaticChange, true);
+            t.is(store2.state.status.automaticChange, true);
+
+            await sleep(0);
+            t.is(store1.state.status.automaticChange, false);
+            t.is(store2.state.status.automaticChange, false);
 
             t.end();
         });
@@ -1153,14 +1181,19 @@ tape.test('commit()', (st) => {
             });
 
             store1.commit('internalValue', 3);
-            await _.nextVueTick(store1);
 
             t.is(store1.state.internalValue, 3);
+            t.is(store1.state.status.automaticChange, false);
 
+            await sleep(0);
             store1.commit('internalValue', null);
-            await _.nextVueTick(store1);
 
             t.is(store1.state.internalValue, 0);
+            t.is(store1.state.status.automaticChange, true);
+
+            await sleep(0);
+
+            t.is(store1.state.status.automaticChange, false);
 
             t.end();
         });

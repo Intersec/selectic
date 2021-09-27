@@ -81,6 +81,8 @@ There are very few dependencies and code stays very small (~90kB).
 
 [Read the documentation](./doc/main.md) to know how to configure Selectic and all its possibilities.
 
+For users which are used to previous Selectic versions, they can read the [migration strategy guide](./doc/breakingChanges.md).
+
 It uses [VTYX](https://github.com/Intersec/vtyx) for strong typing.
 
 ## Tests

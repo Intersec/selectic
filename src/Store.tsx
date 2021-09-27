@@ -294,6 +294,12 @@ export interface SelecticStoreState {
 
         /* If true, a change has been done by user */
         hasChanged: boolean;
+
+        /* If true, it means the current change has been done automatically by Selectic */
+        automaticChange: boolean;
+
+        /* If true, it means the current close has been done automatically by Selectic */
+        automaticClose: boolean;
     };
 }
 
@@ -430,6 +436,8 @@ export default class SelecticStore {
             errorMessage: '',
             areAllSelected: false,
             hasChanged: false,
+            automaticChange: false,
+            automaticClose: false,
         },
     });
     public data: Data;
@@ -540,6 +548,7 @@ export default class SelecticStore {
 
         watch(() => [this.props.options, this.props.childOptions], () => {
             this.data.cacheItem.clear();
+            this.setAutomaticClose();
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
@@ -594,6 +603,7 @@ export default class SelecticStore {
         /* }}} */
 
         this.closeSelectic = () => {
+            this.setAutomaticClose();
             this.commit('isOpen', false);
         }
 
@@ -705,10 +715,21 @@ export default class SelecticStore {
             break;
           case 'disabled':
             if (value) {
+                this.setAutomaticClose();
                 this.commit('isOpen', false);
             }
             break;
         }
+    }
+
+    public setAutomaticChange() {
+        this.state.status.automaticChange = true;
+        setTimeout(() => this.state.status.automaticChange = false, 0);
+    }
+
+    public setAutomaticClose() {
+        this.state.status.automaticClose = true;
+        setTimeout(() => this.state.status.automaticClose = false, 0);
     }
 
     public getItem(id: OptionId): OptionValue {
@@ -824,6 +845,10 @@ export default class SelecticStore {
                 return;
             }
 
+            if (keepOpen) {
+                /* if keepOpen is true it means that it is an automatic change */
+                this.setAutomaticChange();
+            }
             this.commit('internalValue', id);
             hasChanged = true;
         }
@@ -964,6 +989,7 @@ export default class SelecticStore {
         const newValue = this.convertTypeValue(internalValue);
 
         if (newValue !== internalValue) {
+            this.setAutomaticChange();
             state.internalValue = newValue;
         }
     }
@@ -1024,6 +1050,7 @@ export default class SelecticStore {
             }
 
             if (isDifferent) {
+                this.setAutomaticChange();
                 newValue = filteredValue!;
             }
         }
@@ -1311,6 +1338,7 @@ export default class SelecticStore {
                 } else {
                     const itemIds = items.map((item) => item.id as StrictOptionId) ;
 
+                    this.setAutomaticChange();
                     this.commit('internalValue', itemIds);
                 }
                 return;
@@ -1333,6 +1361,7 @@ export default class SelecticStore {
 
             if (!items.length) {
                 if (state.strictValue) {
+                    this.setAutomaticChange();
                     this.commit('internalValue', null);
                 }
                 return;
@@ -1625,7 +1654,10 @@ export default class SelecticStore {
         const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
 
         if (hasOnlyOneOption || isEmpty) {
-            this.commit('isOpen', false);
+            if (state.isOpen) {
+                this.setAutomaticClose();
+                this.commit('isOpen', false);
+            }
             this.commit('disabled', true);
         } else {
             this.commit('disabled', false);

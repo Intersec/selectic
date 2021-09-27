@@ -4,6 +4,15 @@ import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchC
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, };
+declare type EventType = 'input' | 'change' | 'open' | 'close' | 'item:click';
+export interface EventOptions {
+    instance: Selectic;
+    eventType: EventType;
+    automatic: boolean;
+}
+export interface EventChangeOptions extends EventOptions {
+    isExcluded: boolean;
+}
 export interface ParamProps {
     fetchCallback?: FetchCallback;
     getItemsCallback?: GetCallback;
@@ -122,6 +131,7 @@ export default class Selectic extends Vue<Props> {
     onFocusChanged(): void;
     onInternalValueChange(): void;
     private checkFocus;
+    private _emit;
     private emit;
     created(): void;
     mounted(): void;
