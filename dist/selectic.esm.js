@@ -1,5 +1,5 @@
 import { Prop, Watch, Component, Vue, h } from 'vtyx';
-import { reactive, computed, watch } from 'vue';
+import { reactive, computed, unref, watch } from 'vue';
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -132,6 +132,8 @@ class SelecticStore {
                 errorMessage: '',
                 areAllSelected: false,
                 hasChanged: false,
+                automaticChange: false,
+                automaticClose: false,
             },
         });
         /* Do not need reactivity */
@@ -184,8 +186,7 @@ class SelecticStore {
             return this.state.filteredOptions.length >= nbItems;
         });
         this.hasFetchedAllItems = computed(() => {
-            var _a;
-            const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+            const isPartial = unref(this.isPartial);
             if (!isPartial) {
                 return true;
             }
@@ -202,6 +203,7 @@ class SelecticStore {
         /* {{{ watch */
         watch(() => [this.props.options, this.props.childOptions], () => {
             this.data.cacheItem.clear();
+            this.setAutomaticClose();
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
@@ -223,9 +225,8 @@ class SelecticStore {
             this.commit('disabled', this.props.disabled);
         });
         watch(() => this.state.filteredOptions, () => {
-            var _a;
             let areAllSelected = false;
-            const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+            const hasAllItems = unref(this.hasAllItems);
             if (hasAllItems) {
                 const selectionIsExcluded = +this.state.selectionIsExcluded;
                 /* eslint-disable-next-line no-bitwise */
@@ -245,6 +246,7 @@ class SelecticStore {
         });
         /* }}} */
         this.closeSelectic = () => {
+            this.setAutomaticClose();
             this.commit('isOpen', false);
         };
         const value = this.props.value;
@@ -333,10 +335,19 @@ class SelecticStore {
                 break;
             case 'disabled':
                 if (value) {
+                    this.setAutomaticClose();
                     this.commit('isOpen', false);
                 }
                 break;
         }
+    }
+    setAutomaticChange() {
+        this.state.status.automaticChange = true;
+        setTimeout(() => this.state.status.automaticChange = false, 0);
+    }
+    setAutomaticClose() {
+        this.state.status.automaticClose = true;
+        setTimeout(() => this.state.status.automaticClose = false, 0);
     }
     getItem(id) {
         let item;
@@ -380,10 +391,9 @@ class SelecticStore {
         return this.buildSelectedItems(ids);
     }
     selectItem(id, selected, keepOpen = false) {
-        var _a;
         const state = this.state;
         let hasChanged = false;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         /* Check that item is not disabled */
         if (!isPartial) {
             const item = state.allOptions.find((opt) => opt.id === id);
@@ -436,6 +446,10 @@ class SelecticStore {
             else if (id === oldValue) {
                 return;
             }
+            if (keepOpen) {
+                /* if keepOpen is true it means that it is an automatic change */
+                this.setAutomaticChange();
+            }
             this.commit('internalValue', id);
             hasChanged = true;
         }
@@ -444,11 +458,10 @@ class SelecticStore {
         }
     }
     toggleSelectAll() {
-        var _a;
         if (!this.state.multiple) {
             return;
         }
-        const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+        const hasAllItems = unref(this.hasAllItems);
         if (!hasAllItems) {
             const labels = this.data.labels;
             if (this.state.searchText) {
@@ -481,8 +494,7 @@ class SelecticStore {
         this.state.status.errorMessage = '';
     }
     clearCache(forceReset = false) {
-        var _a;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         const total = isPartial ? Infinity : 0;
         this.data.cacheItem.clear();
         this.state.allOptions = [];
@@ -522,14 +534,13 @@ class SelecticStore {
         return !!this.getValue(id);
     }
     getValue(id) {
-        var _a, _b;
         function findId(option) {
             return option.id === id;
         }
         return this.state.filteredOptions.find(findId) ||
             this.state.dynOptions.find(findId) ||
-            ((_a = this.listOptions.value) !== null && _a !== void 0 ? _a : this.listOptions).find(findId) ||
-            ((_b = this.elementOptions.value) !== null && _b !== void 0 ? _b : this.elementOptions).find(findId);
+            unref(this.listOptions).find(findId) ||
+            unref(this.elementOptions).find(findId);
     }
     convertTypeValue(oldValue) {
         const state = this.state;
@@ -553,11 +564,11 @@ class SelecticStore {
         const internalValue = state.internalValue;
         const newValue = this.convertTypeValue(internalValue);
         if (newValue !== internalValue) {
+            this.setAutomaticChange();
             state.internalValue = newValue;
         }
     }
     assertCorrectValue(applyStrict = false) {
-        var _a, _b;
         const state = this.state;
         this.assertValueType();
         const internalValue = state.internalValue;
@@ -565,9 +576,9 @@ class SelecticStore {
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         if (isMultiple) {
-            const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
+            const hasFetchedAllItems = unref(this.hasFetchedAllItems);
             if (selectionIsExcluded && hasFetchedAllItems) {
                 newValue = state.allOptions.reduce((values, option) => {
                     const id = option.id;
@@ -605,6 +616,7 @@ class SelecticStore {
                 }
             }
             if (isDifferent) {
+                this.setAutomaticChange();
                 newValue = filteredValue;
             }
         }
@@ -693,13 +705,12 @@ class SelecticStore {
         return childOptions;
     }
     buildAllOptions(keepFetched = false) {
-        var _a, _b, _c;
         const allOptions = [];
         let listOptions = [];
         let elementOptions = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length = Infinity;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         const arrayFromOrder = (orderValue) => {
             switch (orderValue) {
                 case 'O': return listOptions;
@@ -725,8 +736,8 @@ class SelecticStore {
                 this.state.totalDynOptions = 0;
             }
         }
-        listOptions = (_b = this.listOptions.value) !== null && _b !== void 0 ? _b : this.listOptions;
-        elementOptions = (_c = this.elementOptions.value) !== null && _c !== void 0 ? _c : this.elementOptions;
+        listOptions = unref(this.listOptions);
+        elementOptions = unref(this.elementOptions);
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0);
             allOptions.push(...arrayFromOrder(orderValue));
@@ -772,7 +783,6 @@ class SelecticStore {
         });
     }
     async buildFilteredOptions() {
-        var _a, _b, _c, _d;
         if (!this.state.isOpen) {
             /* Do not try to fetch anything while the select is not open */
             return;
@@ -782,12 +792,12 @@ class SelecticStore {
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = this.state.filteredOptions.length;
-        const hasAllItems = (_a = this.hasAllItems.value) !== null && _a !== void 0 ? _a : this.hasAllItems;
+        const hasAllItems = unref(this.hasAllItems);
         if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
-        const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
+        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
         /* Check if all options have been fetched */
         if (hasFetchedAllItems) {
             if (!search) {
@@ -802,7 +812,7 @@ class SelecticStore {
         }
         /* When we only have partial options */
         const offsetItem = this.state.offsetItem;
-        const marginSize = (_c = this.marginSize.value) !== null && _c !== void 0 ? _c : this.marginSize;
+        const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
         if (endIndex <= filteredOptionsLength) {
             return;
@@ -810,7 +820,7 @@ class SelecticStore {
         if (!search && endIndex <= allOptionsLength) {
             this.state.filteredOptions = this.buildGroupItems(allOptions);
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
-            const isPartial = (_d = this.isPartial.value) !== null && _d !== void 0 ? _d : this.isPartial;
+            const isPartial = unref(this.isPartial);
             if (isPartial && this.state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
@@ -847,6 +857,7 @@ class SelecticStore {
                 }
                 else {
                     const itemIds = items.map((item) => item.id);
+                    this.setAutomaticChange();
                     this.commit('internalValue', itemIds);
                 }
                 return;
@@ -867,6 +878,7 @@ class SelecticStore {
             }
             if (!items.length) {
                 if (state.strictValue) {
+                    this.setAutomaticChange();
                     this.commit('internalValue', null);
                 }
                 return;
@@ -876,7 +888,6 @@ class SelecticStore {
         }
     }
     async fetchData() {
-        var _a;
         const state = this.state;
         const labels = this.data.labels;
         const fetchCallback = this.props.fetchCallback;
@@ -888,7 +899,7 @@ class SelecticStore {
         const filteredOptionsLength = state.filteredOptions.length;
         const offsetItem = state.offsetItem;
         const pageSize = state.pageSize;
-        const marginSize = (_a = this.marginSize.value) !== null && _a !== void 0 ? _a : this.marginSize;
+        const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
         const dynOffset = this.data.dynOffset;
         /* Run the query */
@@ -960,7 +971,6 @@ class SelecticStore {
         return this.buildGroupItems(options.filter((option) => rgx.test(option.text)));
     }
     addStaticFilteredOptions(fromDynamic = false) {
-        var _a, _b;
         const search = this.state.searchText;
         let continueLoop = fromDynamic;
         if (this.state.optionBehaviorOperation !== 'sort') {
@@ -980,10 +990,10 @@ class SelecticStore {
             }
             switch (order) {
                 case 'O':
-                    options = this.filterOptions((_a = this.listOptions.value) !== null && _a !== void 0 ? _a : this.listOptions, search);
+                    options = this.filterOptions(unref(this.listOptions), search);
                     break;
                 case 'E':
-                    options = this.filterOptions((_b = this.elementOptions.value) !== null && _b !== void 0 ? _b : this.elementOptions, search);
+                    options = this.filterOptions(unref(this.elementOptions), search);
                     break;
             }
             this.state.filteredOptions.push(...options);
@@ -1089,11 +1099,10 @@ class SelecticStore {
         }
     }
     checkAutoDisabled() {
-        var _a, _b;
         const state = this.state;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         const doNotCheck = isPartial || this.props.disabled || !state.autoDisabled;
-        const hasFetchedAllItems = (_b = this.hasFetchedAllItems.value) !== null && _b !== void 0 ? _b : this.hasFetchedAllItems;
+        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
         if (doNotCheck || !hasFetchedAllItems) {
             return;
         }
@@ -1106,7 +1115,10 @@ class SelecticStore {
         const isEmpty = nb === 0;
         const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
         if (hasOnlyOneOption || isEmpty) {
-            this.commit('isOpen', false);
+            if (state.isOpen) {
+                this.setAutomaticClose();
+                this.commit('isOpen', false);
+            }
             this.commit('disabled', true);
         }
         else {
@@ -1114,13 +1126,12 @@ class SelecticStore {
         }
     }
     checkHideFilter() {
-        var _a;
         const params = this.props.params;
         if (params && params.hideFilter !== 'auto') {
             return;
         }
         const state = this.state;
-        const isPartial = (_a = this.isPartial.value) !== null && _a !== void 0 ? _a : this.isPartial;
+        const isPartial = unref(this.isPartial);
         if (state.multiple || isPartial) {
             state.hideFilter = false;
         }
@@ -1410,12 +1421,12 @@ let FilterPanel = class FilterPanel extends Vue {
         const state = store.state;
         const isMultiple = state.multiple;
         const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !store.hasAllItems.value;
+        const canNotSelect = !!state.searchText && !unref(store.hasAllItems);
         return !isMultiple || hasItems || canNotSelect;
     }
     get disableRevert() {
         const store = this.store;
-        return !store.state.multiple || !store.hasFetchedAllItems.value;
+        return !store.state.multiple || !unref(store.hasFetchedAllItems);
     }
     get enableRevert() {
         const state = this.store.state;
@@ -1554,9 +1565,8 @@ let List = class List extends Vue {
         return this.store.state.multiple;
     }
     get itemsMargin() {
-        var _a;
         /* XXX: I don't really know when we should use value or not... */
-        return (_a = this.store.marginSize.value) !== null && _a !== void 0 ? _a : this.store.marginSize;
+        return unref(this.store.marginSize);
     }
     get shortOptions() {
         const endIndex = this.endIndex;
@@ -2146,7 +2156,7 @@ let Selectic = class Selectic extends Vue {
             window.addEventListener('resize', this.windowResize, false);
             document.addEventListener('click', this.outsideListener, true);
             this.computeOffset();
-            this.$emit('open', this);
+            this.emit('open');
         }
         else {
             this.removeListeners();
@@ -2154,7 +2164,7 @@ let Selectic = class Selectic extends Vue {
                 this.$emit('change', this.getValue(), state.selectionIsExcluded, this);
                 this.store.resetChange();
             }
-            this.$emit('close', this);
+            this.emit('close');
         }
     }
     compareValues(oldValue, newValue) {
@@ -2217,9 +2227,9 @@ let Selectic = class Selectic extends Vue {
         const canTrigger = (oldValue !== undefined || !this.hasGivenValue) && !areSimilar;
         if (canTrigger) {
             const selectionIsExcluded = this.store.state.selectionIsExcluded;
-            this.$emit('input', value, selectionIsExcluded, this);
+            this.emit('input', value, selectionIsExcluded);
             if (!this.isFocused) {
-                this.$emit('change', value, selectionIsExcluded, this);
+                this.emit('change', value, selectionIsExcluded);
                 this.store.resetChange();
             }
         }
@@ -2242,10 +2252,40 @@ let Selectic = class Selectic extends Vue {
             this.store.commit('isOpen', false);
         }, 0);
     }
-    emit(event, ...args) {
+    _emit(event, ...args) {
         this.$emit(event, ...args);
         if (typeof this._on === 'function') {
             this._on(event, ...args);
+        }
+    }
+    emit(event, value, isExcluded) {
+        const automatic = this.store.state.status.automaticChange;
+        const options = {
+            instance: this,
+            eventType: event,
+            automatic,
+        };
+        switch (event) {
+            case 'input':
+            case 'change':
+                const changeOptions = Object.assign({
+                    isExcluded: isExcluded,
+                }, options);
+                this._emit(event, value, changeOptions);
+                break;
+            case 'open':
+            case 'focus':
+                this._emit('open', options);
+                this._emit('focus', options);
+                break;
+            case 'close':
+            case 'blur':
+                this._emit('close', options);
+                this._emit('blur', options);
+                break;
+            case 'item:click':
+                this._emit(event, value, options);
+                break;
         }
     }
     // private extractFromNode(node: Vue.VNode, text = ''): OptionValue {
@@ -2414,7 +2454,7 @@ let Selectic = class Selectic extends Vue {
                     blur: this.checkFocus,
                 } }),
             h(MainInput$1, { store: store, id: id, on: {
-                    'item:click': (id) => this.emit('item:click', id, this),
+                    'item:click': (id) => this.emit('item:click', id),
                 }, ref: "mainInput" }),
             this.isFocused && (h(ExtendedList$1, { class: this.className, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
     }

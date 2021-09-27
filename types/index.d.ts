@@ -4,7 +4,7 @@ import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchC
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, };
-declare type EventType = 'input' | 'change' | 'open' | 'close' | 'item:click';
+declare type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 export interface EventOptions {
     instance: Selectic;
     eventType: EventType;
