@@ -4,7 +4,7 @@
  * change or to get states.
  */
 
-import { reactive, watch, computed, ComputedRef } from 'vue';
+import { reactive, watch, unref, computed, ComputedRef } from 'vue';
 
 /* {{{ Types definitions */
 
@@ -525,7 +525,7 @@ export default class SelecticStore {
         });
 
         this.hasFetchedAllItems = computed(() => {
-            const isPartial = this.isPartial.value ?? this.isPartial;
+            const isPartial = unref(this.isPartial);
 
             if (!isPartial) {
                 return true;
@@ -575,7 +575,7 @@ export default class SelecticStore {
 
         watch(() => this.state.filteredOptions, () => {
             let areAllSelected = false;
-            const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
+            const hasAllItems = unref(this.hasAllItems);
 
             if (hasAllItems) {
                 const selectionIsExcluded = +this.state.selectionIsExcluded;
@@ -783,7 +783,7 @@ export default class SelecticStore {
     public selectItem(id: OptionId, selected?: boolean, keepOpen = false) {
         const state = this.state;
         let hasChanged = false;
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
 
         /* Check that item is not disabled */
         if (!isPartial) {
@@ -862,7 +862,7 @@ export default class SelecticStore {
         if (!this.state.multiple) {
             return;
         }
-        const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
+        const hasAllItems = unref(this.hasAllItems);
 
         if (!hasAllItems) {
             const labels = this.data.labels;
@@ -903,7 +903,7 @@ export default class SelecticStore {
     }
 
     public clearCache(forceReset = false) {
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
         const total = isPartial ? Infinity : 0;
 
         this.data.cacheItem.clear();
@@ -961,8 +961,8 @@ export default class SelecticStore {
 
         return this.state.filteredOptions.find(findId) ||
             this.state.dynOptions.find(findId) ||
-            (this.listOptions.value ?? this.listOptions).find(findId) ||
-            (this.elementOptions.value ?? this.elementOptions).find(findId);
+            unref(this.listOptions).find(findId) ||
+            unref(this.elementOptions).find(findId);
     }
 
     private convertTypeValue(oldValue: OptionId | StrictOptionId[]) {
@@ -1002,10 +1002,10 @@ export default class SelecticStore {
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
 
         if (isMultiple) {
-            const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
+            const hasFetchedAllItems = unref(this.hasFetchedAllItems);
 
             if (selectionIsExcluded && hasFetchedAllItems) {
                 newValue = state.allOptions.reduce((values, option) => {
@@ -1166,7 +1166,7 @@ export default class SelecticStore {
         let elementOptions: OptionValue[] = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length: number = Infinity;
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
 
         const arrayFromOrder = (orderValue: OptionBehaviorOrder): OptionValue[] => {
             switch(orderValue) {
@@ -1195,8 +1195,8 @@ export default class SelecticStore {
             }
         }
 
-        listOptions = this.listOptions.value ?? this.listOptions;
-        elementOptions = this.elementOptions.value ?? this.elementOptions;
+        listOptions = unref(this.listOptions);
+        elementOptions = unref(this.elementOptions);
 
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0)!;
@@ -1257,14 +1257,14 @@ export default class SelecticStore {
         const totalAllOptions = this.state.totalAllOptions;
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = this.state.filteredOptions.length;
-        const hasAllItems = this.hasAllItems.value ?? this.hasAllItems;
+        const hasAllItems = unref(this.hasAllItems);
 
         if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
 
-        const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
+        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
         /* Check if all options have been fetched */
         if (hasFetchedAllItems) {
             if (!search) {
@@ -1282,7 +1282,7 @@ export default class SelecticStore {
         /* When we only have partial options */
 
         const offsetItem = this.state.offsetItem;
-        const marginSize = this.marginSize.value ?? this.marginSize;
+        const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
 
         if (endIndex <= filteredOptionsLength) {
@@ -1292,7 +1292,7 @@ export default class SelecticStore {
         if (!search && endIndex <= allOptionsLength) {
             this.state.filteredOptions = this.buildGroupItems(allOptions);
             this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
-            const isPartial = this.isPartial.value ?? this.isPartial;
+            const isPartial = unref(this.isPartial);
             if (isPartial && this.state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
@@ -1386,7 +1386,7 @@ export default class SelecticStore {
         const filteredOptionsLength = state.filteredOptions.length;
         const offsetItem = state.offsetItem;
         const pageSize = state.pageSize;
-        const marginSize = this.marginSize.value ?? this.marginSize;
+        const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
         const dynOffset = this.data.dynOffset;
 
@@ -1497,10 +1497,10 @@ export default class SelecticStore {
 
             switch (order) {
                 case 'O':
-                    options = this.filterOptions(this.listOptions.value ?? this.listOptions, search);
+                    options = this.filterOptions(unref(this.listOptions), search);
                     break;
                 case 'E':
-                    options = this.filterOptions(this.elementOptions.value ?? this.elementOptions, search);
+                    options = this.filterOptions(unref(this.elementOptions), search);
                     break;
             }
             this.state.filteredOptions.push(...options);
@@ -1634,9 +1634,9 @@ export default class SelecticStore {
 
     private checkAutoDisabled() {
         const state = this.state;
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
         const doNotCheck = isPartial || this.props.disabled || !state.autoDisabled;
-        const hasFetchedAllItems = this.hasFetchedAllItems.value ?? this.hasFetchedAllItems;
+        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
 
         if (doNotCheck || !hasFetchedAllItems) {
             return;
@@ -1671,7 +1671,7 @@ export default class SelecticStore {
         }
 
         const state = this.state;
-        const isPartial = this.isPartial.value ?? this.isPartial;
+        const isPartial = unref(this.isPartial);
 
         if (state.multiple || isPartial) {
             state.hideFilter = false;

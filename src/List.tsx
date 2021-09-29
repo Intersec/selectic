@@ -4,6 +4,7 @@
  */
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import { unref } from 'vue';
 
 import Store, {
     OptionItem,
@@ -49,7 +50,7 @@ export default class List extends Vue<Props> {
 
     get itemsMargin(): number {
         /* XXX: I don't really know when we should use value or not... */
-        return this.store.marginSize.value ?? this.store.marginSize;
+        return unref(this.store.marginSize);
     }
 
     get shortOptions(): OptionItem[] {

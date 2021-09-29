@@ -3,6 +3,7 @@
  */
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import { unref } from 'vue';
 
 import Store from './Store';
 
@@ -42,7 +43,7 @@ export default class FilterPanel extends Vue<Props> {
         const state = store.state;
         const isMultiple = state.multiple;
         const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !store.hasAllItems.value;
+        const canNotSelect = !!state.searchText && !unref(store.hasAllItems);
 
         return !isMultiple || hasItems || canNotSelect;
     }
@@ -50,7 +51,7 @@ export default class FilterPanel extends Vue<Props> {
     get disableRevert() {
         const store = this.store;
 
-        return !store.state.multiple || !store.hasFetchedAllItems.value;
+        return !store.state.multiple || !unref(store.hasFetchedAllItems);
     }
 
     get enableRevert() {
