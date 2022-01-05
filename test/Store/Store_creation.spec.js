@@ -943,6 +943,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, true);
+                t.is(store.state.keepFilterOpen, false);
                 t.end();
             });
 
@@ -956,6 +957,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
                 t.end();
             });
 
@@ -994,6 +996,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
                 t.end();
             });
         });
@@ -1009,6 +1012,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
                 t.end();
             });
 
@@ -1022,17 +1026,20 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
 
                 /* Assert it doesn't change after fetching data */
                 store.commit('isOpen', true);
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
 
                 store.commit('isOpen', false);
                 await sleep(0);
 
                 t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, false);
                 t.end();
             });
         });
@@ -1086,6 +1093,49 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
 
                 t.is(store.state.hideFilter, true);
+                t.end();
+            });
+        });
+
+        st.test('having value "open"', (sTest) => {
+            sTest.test('should show filter with few options', async (t) => {
+                const store = new Store({
+                    options: getOptions(3),
+                    params: {
+                        hideFilter: 'open',
+                    },
+                });
+                await sleep(0);
+
+                t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, true);
+                t.end();
+            });
+
+            sTest.test('should show filter with dynamic options', async (t) => {
+                const store = new Store({
+                    fetchCallback: buildFetchCb({ total: 5 }),
+                    params: {
+                        hideFilter: 'open',
+                    },
+                });
+                await sleep(0);
+
+                t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, true);
+
+                /* Assert it doesn't change after fetching data */
+                store.commit('isOpen', true);
+                await sleep(0);
+
+                t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, true);
+
+                store.commit('isOpen', false);
+                await sleep(0);
+
+                t.is(store.state.hideFilter, false);
+                t.is(store.state.keepFilterOpen, true);
                 t.end();
             });
         });

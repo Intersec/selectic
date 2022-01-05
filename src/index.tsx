@@ -36,6 +36,7 @@ import Store, {
     FormatCallback,
     SelectionOverflow,
     ListPosition,
+    HideFilter,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -55,6 +56,7 @@ export {
     FormatCallback,
     SelectionOverflow,
     ListPosition,
+    HideFilter,
 };
 
 type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
@@ -83,7 +85,7 @@ export interface ParamProps {
     pageSize?: number;
 
     /* Hide the search control */
-    hideFilter?: boolean | 'auto';
+    hideFilter?: HideFilter;
 
     /* Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
@@ -774,8 +776,7 @@ export default class Selectic extends Vue<Props> {
             params: {
                 multiple: (this.multiple ?? false) !== false,
                 pageSize: this.params.pageSize || 100,
-                hideFilter: this.params.hideFilter !== undefined
-                          ? this.params.hideFilter : 'auto',
+                hideFilter: this.params.hideFilter ?? 'auto',
                 allowRevert: this.params.allowRevert, /* it can be undefined */
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined

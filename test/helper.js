@@ -8,6 +8,7 @@ function getInitialState(replacedAttributes) {
         disabled: false,
         placeholder: '',
         hideFilter: false,
+        keepFilterOpen: false,
         allowRevert: undefined,
         allowClearSelection: false,
         autoSelect: true,

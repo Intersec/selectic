@@ -100,6 +100,10 @@ export default class FilterPanel extends Vue<Props> {
     }
 
     private togglePanel() {
+        if (this.store.state.keepFilterOpen === true) {
+            this.closed = false;
+            return;
+        }
         this.closed = !this.closed;
     }
 
@@ -122,7 +126,8 @@ export default class FilterPanel extends Vue<Props> {
     /* {{{ Life cycle */
 
     public mounted() {
-        this.closed = !this.store.state.searchText;
+        const state = this.store.state;
+        this.closed = !state.keepFilterOpen && !state.searchText;
         document.addEventListener('keypress', this.onKeyPressed);
 
         this.getFocus();
@@ -135,6 +140,10 @@ export default class FilterPanel extends Vue<Props> {
     /* }}} */
 
     public render() {
+        const store = this.store;
+        const state = store.state;
+        const labels = store.data.labels;
+
         return (
             <div class="filter-panel">
                 <div
@@ -148,7 +157,7 @@ export default class FilterPanel extends Vue<Props> {
                             type="text"
                             class="form-control filter-input"
                             placeholder={this.searchPlaceholder}
-                            value={this.store.state.searchText}
+                            value={state.searchText}
                             on={{
                                 'input.stop.prevent': this.onInput,
                             }}
@@ -158,7 +167,7 @@ export default class FilterPanel extends Vue<Props> {
                                      form-control-feedback"
                         ></span>
                     </div>
-                    {this.store.state.multiple && (
+                    {state.multiple && (
                         <div class="toggle-selectic">
                             <label
                                 class={['control-label', {
@@ -167,13 +176,13 @@ export default class FilterPanel extends Vue<Props> {
                             >
                                 <input
                                     type="checkbox"
-                                    checked={this.store.state.status.areAllSelected}
+                                    checked={state.status.areAllSelected}
                                     disabled={this.disableSelectAll}
                                     on={{
                                         change: this.onSelectAll,
                                     }}
                                 />
-                                {this.store.data.labels.selectAll}
+                                {labels.selectAll}
                             </label>
                         </div>
                     )}
@@ -192,11 +201,13 @@ export default class FilterPanel extends Vue<Props> {
                                         change: this.onExclude,
                                     }}
                                 />
-                                {this.store.data.labels.excludeResult}
+                                {labels.excludeResult}
                             </label>
                         </div>
                     )}
                 </div>
+
+                {!state.keepFilterOpen && (
                 <div class="curtain-handler"
                      on={{
                          'click.prevent.stop': this.togglePanel,
@@ -209,6 +220,7 @@ export default class FilterPanel extends Vue<Props> {
                         'fa-caret-up': !this.closed,
                     }}></span>
                 </div>
+                )}
            </div>
         );
     }

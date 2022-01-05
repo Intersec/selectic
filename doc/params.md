@@ -10,13 +10,16 @@ This property is an object with several attributes which are listed below.
 
 ## hideFilter
 
-Type: `boolean` | `'auto'`
+Type: `boolean` | `'auto'` | `'open'`
 
 If `hideFilter` is set to `true`, the handler to open the filter panel is hidden and it will not be possible to search for options.
 
 If `hideFilter` is set to `'auto`, the handler to open the filter panel is hidden only if there is less than 10 options (when there is no scroll), and is displayed otherwise. _This is the default value_.
 
-If `hideFilter` is set to `true`, the handler to open the filter panel is always displayed.
+If `hideFilter` is set to `false`, the handler to open the filter panel is always displayed.
+
+If `hideFilter` is set to `'open'`, the handler to open or close the filter panel
+will not be displayed and the filter panel is always open.
 
 ```html
 <selectic

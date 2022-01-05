@@ -72,6 +72,15 @@ export type ListPosition =
     /* Display the list at bottom but if there is not enough space, display it at top */
   | 'auto';
 
+export type HideFilter =
+    /* Display or hide the filter panel */
+    boolean
+    /* The handler to open the filter panel is hidden only if there is less
+     * than 10 options */
+  | 'auto'
+    /* The panel filter is always open */
+  | 'open';
+
 export interface SelecticStoreStateParams {
     /* Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -80,7 +89,7 @@ export interface SelecticStoreStateParams {
     placeholder?: string;
 
     /* Hide filter component when enabled */
-    hideFilter?: boolean | 'auto';
+    hideFilter?: HideFilter;
 
     /* Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
@@ -202,6 +211,9 @@ export interface SelecticStoreState {
 
     /* If true, filters and controls are hidden */
     hideFilter: boolean;
+
+    /* If true, the filter panel is always open */
+    keepFilterOpen: boolean;
 
     /* Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
@@ -404,6 +416,7 @@ export default class SelecticStore {
         disabled: false,
         placeholder: '',
         hideFilter: false,
+        keepFilterOpen: false,
         allowRevert: undefined,
         allowClearSelection: false,
         autoSelect: true,
@@ -624,6 +637,9 @@ export default class SelecticStore {
         }
 
         if (stateParam.hideFilter === 'auto') {
+            delete stateParam.hideFilter;
+        } else if (stateParam.hideFilter === 'open') {
+            this.state.keepFilterOpen = true;
             delete stateParam.hideFilter;
         }
 
