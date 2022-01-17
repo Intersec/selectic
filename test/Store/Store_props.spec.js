@@ -223,6 +223,7 @@ tape.test('change props', (subT) => {
             const store = new Store({
                 value: 2,
                 options: getOptions(5, 'alpha'),
+                disabled: false,
                 params: {
                     autoDisabled: true,
                 },
@@ -249,6 +250,7 @@ tape.test('change props', (subT) => {
             const store = new Store({
                 value: 2,
                 options: getOptions(5, 'alpha'),
+                disabled: false,
                 params: {
                     autoDisabled: true,
                     strictValue: true,
@@ -295,6 +297,37 @@ tape.test('change props', (subT) => {
             t.is(store.state.internalValue, 1, 'should keep selected value');
             t.is(store.state.disabled, false, 'should enable the component');
             t.is(store.state.isOpen, false, 'should close the component anyway');
+            t.end();
+        });
+
+        sTest.test('should re-enable the select when data are loaded', async (t) => {
+            const store = new Store({
+                options: [],
+                disabled: false,
+                params: {
+                    autoDisabled: true,
+                },
+            });
+            await _.nextVueTick(store);
+
+            store.commit('isOpen', true);
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, null);
+            t.is(store.state.disabled, true);
+            t.is(store.state.isOpen, false);
+
+            store.props.options = getOptions(0, 'alpha');
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, null);
+            t.is(store.state.disabled, true), 'should be disabled';
+
+            store.props.options = getOptions(5, 'beta');
+            await _.nextVueTick(store);
+
+            t.is(store.state.internalValue, 0);
+            t.is(store.state.disabled, false), 'should be enabled';
             t.end();
         });
 

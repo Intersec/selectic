@@ -411,48 +411,7 @@ export default class SelecticStore {
 
     /* {{{ data */
 
-    public state = reactive<SelecticStoreState>({
-        multiple: false,
-        disabled: false,
-        placeholder: '',
-        hideFilter: false,
-        keepFilterOpen: false,
-        allowRevert: undefined,
-        allowClearSelection: false,
-        autoSelect: true,
-        autoDisabled: true,
-        strictValue: false,
-        selectionOverflow: 'collapsed',
-
-        internalValue: null,
-        isOpen: false,
-        searchText: '',
-        selectionIsExcluded: false,
-        allOptions: [],
-        dynOptions: [],
-        filteredOptions: [],
-        selectedOptions: null,
-        totalAllOptions: Infinity,
-        totalDynOptions: Infinity,
-        totalFilteredOptions: Infinity,
-        groups: new Map(),
-        offsetItem: 0,
-        activeItemIdx: -1,
-        pageSize: 100,
-        listPosition: 'auto',
-
-        optionBehaviorOperation: 'sort',
-        optionBehaviorOrder: ['O', 'D', 'E'],
-
-        status: {
-            searching: false,
-            errorMessage: '',
-            areAllSelected: false,
-            hasChanged: false,
-            automaticChange: false,
-            automaticClose: false,
-        },
-    });
+    public state: SelecticStoreState;
     public data: Data;
 
     /* Do not need reactivity */
@@ -499,6 +458,49 @@ export default class SelecticStore {
 
         /* }}} */
         /* {{{ data */
+
+        this.state = reactive<SelecticStoreState>({
+            multiple: false,
+            disabled: false,
+            placeholder: '',
+            hideFilter: false,
+            keepFilterOpen: false,
+            allowRevert: undefined,
+            allowClearSelection: false,
+            autoSelect: true,
+            autoDisabled: true,
+            strictValue: false,
+            selectionOverflow: 'collapsed',
+
+            internalValue: null,
+            isOpen: false,
+            searchText: '',
+            selectionIsExcluded: false,
+            allOptions: [],
+            dynOptions: [],
+            filteredOptions: [],
+            selectedOptions: null,
+            totalAllOptions: Infinity,
+            totalDynOptions: Infinity,
+            totalFilteredOptions: Infinity,
+            groups: new Map(),
+            offsetItem: 0,
+            activeItemIdx: -1,
+            pageSize: 100,
+            listPosition: 'auto',
+
+            optionBehaviorOperation: 'sort',
+            optionBehaviorOrder: ['O', 'D', 'E'],
+
+            status: {
+                searching: false,
+                errorMessage: '',
+                areAllSelected: false,
+                hasChanged: false,
+                automaticChange: false,
+                automaticClose: false,
+            },
+        });
 
         this.data = reactive({
             labels: Object.assign({}, messages),
@@ -649,8 +651,8 @@ export default class SelecticStore {
          * and ensure convertValue run with correct state */
         assignObject(this.state, {
             internalValue: this.convertTypeValue(value),
-            selectionIsExcluded: props.selectionIsExcluded,
-            disabled: props.disabled,
+            selectionIsExcluded: !!props.selectionIsExcluded,
+            disabled: !!props.disabled, /* XXX: !! is needed to copy value and not proxy reference */
         });
 
         this.checkHideFilter();

@@ -1,5 +1,5 @@
 import { Vue, h } from 'vtyx';
-import Store, { OptionItem, OptionId } from './Store';
+import Store, { OptionItem } from './Store';
 export interface Props {
     store: Store;
     options?: any[];
@@ -14,31 +14,7 @@ export default class List extends Vue<Props> {
     private itemHeight;
     private groupId;
     private doNotScroll;
-    get filteredOptions(): {
-        selected: boolean;
-        disabled: boolean;
-        isGroup: boolean;
-        id: OptionId;
-        text: string;
-        title?: string | undefined;
-        group?: import("./Store").StrictOptionId | undefined;
-        className?: string | undefined;
-        style?: string | undefined;
-        icon?: string | undefined;
-        options?: {
-            id: OptionId;
-            text: string;
-            title?: string | undefined;
-            disabled?: boolean | undefined;
-            group?: import("./Store").StrictOptionId | undefined;
-            className?: string | undefined;
-            style?: string | undefined;
-            icon?: string | undefined;
-            options?: any[] | undefined;
-            data?: any;
-        }[] | undefined;
-        data?: any;
-    }[];
+    get filteredOptions(): OptionItem[];
     get isMultiple(): boolean;
     get itemsMargin(): number;
     get shortOptions(): OptionItem[];
