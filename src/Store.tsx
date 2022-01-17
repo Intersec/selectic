@@ -651,8 +651,8 @@ export default class SelecticStore {
          * and ensure convertValue run with correct state */
         assignObject(this.state, {
             internalValue: this.convertTypeValue(value),
-            selectionIsExcluded: !!props.selectionIsExcluded,
-            disabled: !!props.disabled, /* XXX: !! is needed to copy value and not proxy reference */
+            selectionIsExcluded: !!this.props.selectionIsExcluded,
+            disabled: !!this.props.disabled, /* XXX: !! is needed to copy value and not proxy reference */
         });
 
         this.checkHideFilter();
