@@ -851,7 +851,7 @@ export default class Selectic extends Vue<Props> {
         // this.store.childOptions = options;
     }
 
-    public beforeDestroy() {
+    public beforeUnmount() {
         this.removeListeners();
     }
 

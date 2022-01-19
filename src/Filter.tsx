@@ -133,7 +133,7 @@ export default class FilterPanel extends Vue<Props> {
         this.getFocus();
     }
 
-    public destroyed() {
+    public unmounted() {
         document.removeEventListener('keypress', this.onKeyPressed);
     }
 

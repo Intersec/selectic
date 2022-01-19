@@ -228,7 +228,7 @@ export default class ExtendedList extends Vue<Props> {
         this.computeListSize();
     }
 
-    public destroyed() {
+    public unmounted() {
         document.body.removeEventListener('keydown', this.onKeyDown);
 
         /* force the element to be removed from DOM */
