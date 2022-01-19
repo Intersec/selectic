@@ -567,18 +567,18 @@ export default class SelecticStore {
             this.commit('isOpen', false);
             this.buildAllOptions(true);
             this.buildSelectedOptions();
-        });
+        }, { deep: true });
 
         watch(() => [this.listOptions, this.elementOptions], () => {
             /* TODO: transform allOptions as a computed properties and this
              * watcher become useless */
             this.buildAllOptions(true);
-        });
+        }, { deep: true });
 
         watch(() => this.props.value, () => {
             const value = this.props.value ?? null;
             this.commit('internalValue', value);
-        });
+        }, { deep: true });
 
         watch(() => this.props.selectionIsExcluded, () => {
             this.commit('selectionIsExcluded', this.props.selectionIsExcluded);
@@ -600,16 +600,16 @@ export default class SelecticStore {
             }
 
             this.state.status.areAllSelected = areAllSelected;
-        });
+        }, { deep: true });
 
         watch(() => this.state.internalValue, () => {
             this.buildSelectedOptions();
-        });
+        }, { deep: true });
 
         watch(() => this.state.allOptions, () => {
             this.checkAutoSelect();
             this.checkAutoDisabled();
-        });
+        }, { deep: true });
 
         watch(() => this.state.totalAllOptions, () => {
             this.checkHideFilter();

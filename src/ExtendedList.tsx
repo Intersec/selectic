@@ -192,7 +192,7 @@ export default class ExtendedList extends Vue<Props> {
     /* }}} */
     /* {{{ watch */
 
-    @Watch('store.state.filteredOptions')
+    @Watch('store.state.filteredOptions', { deep: true })
     public onFilteredOptionsChange() {
         this.$nextTick(this.computeListSize);
     }

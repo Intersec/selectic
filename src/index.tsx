@@ -537,7 +537,7 @@ export default class Selectic extends Vue<Props> {
     /* }}} */
     /* {{{ watch */
 
-    @Watch('value')
+    @Watch('value', { deep: true })
     public onValueChange() {
         const currentValue = this.store.state.internalValue;
         const newValue = this.value ?? null;
@@ -556,12 +556,12 @@ export default class Selectic extends Vue<Props> {
         this.store.props.selectionIsExcluded = this.selectionIsExcluded;
     }
 
-    @Watch('options')
+    @Watch('options', { deep: true })
     public onOptionsChange() {
         this.store.props.options = Array.from(this.options);
     }
 
-    @Watch('texts')
+    @Watch('texts', { deep: true })
     public onTextsChange() {
         const texts = this.texts;
 
@@ -575,7 +575,7 @@ export default class Selectic extends Vue<Props> {
         this.store.props.disabled = this.disabled;
     }
 
-    @Watch('groups')
+    @Watch('groups', { deep: true })
     public onGroupsChanged() {
         this.store.changeGroups(this.groups);
     }
@@ -595,7 +595,7 @@ export default class Selectic extends Vue<Props> {
         this.focusToggled();
     }
 
-    @Watch('store.state.internalValue')
+    @Watch('store.state.internalValue', { deep: true })
     public onInternalValueChange() {
         const oldValue = this._oldValue;
         const value = this.getValue();

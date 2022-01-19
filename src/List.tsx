@@ -220,7 +220,7 @@ export default class List extends Vue<Props> {
         this.checkOffset();
     }
 
-    @Watch('filteredOptions')
+    @Watch('filteredOptions', { deep: true })
     public onFilteredOptionsChange() {
         this.checkOffset();
     }

@@ -264,7 +264,7 @@ export default class MainInput extends Vue<Props> {
     /* }}} */
     /* {{{ watch */
 
-    @Watch('store.state.internalValue')
+    @Watch('store.state.internalValue', { deep: true })
     public onInternalChange() {
         this.nbHiddenItems = 0;
     }
