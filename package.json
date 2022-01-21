@@ -1,6 +1,6 @@
 {
     "name": "selectic",
-    "version": "3.0.11",
+    "version": "3.0.12",
     "description": "Smart Select for VueJS 3.x",
     "main": "dist/selectic.common.js",
     "module": "dist/selectic.esm.js",
@@ -19,7 +19,9 @@
         "select",
         "multiselect",
         "multi-select",
+        "multi-select",
         "dynamic select",
+        "smart select",
         "vue",
         "vue.js",
         "vueJS",

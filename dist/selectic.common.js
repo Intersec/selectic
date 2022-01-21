@@ -2439,12 +2439,12 @@ let Selectic = class Selectic extends vtyx.Vue {
         var _a, _b, _c;
         this._elementsListeners = [];
         this.store = new SelecticStore({
-            options: this.options,
-            value: this.value,
+            options: deepClone(this.options),
+            value: deepClone(this.value),
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
             texts: this.texts,
-            groups: this.groups,
+            groups: deepClone(this.groups),
             keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
                 multiple: ((_a = this.multiple) !== null && _a !== void 0 ? _a : false) !== false,
