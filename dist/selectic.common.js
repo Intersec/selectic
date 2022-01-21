@@ -41,7 +41,8 @@ styleInject(css_248z);
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */
-function deepClone(obj, refs = new WeakMap()) {
+function deepClone(origObject, ignoreAttributes = [], refs = new WeakMap()) {
+    const obj = vue.unref(origObject);
     /* For circular references */
     if (refs.has(obj)) {
         return refs.get(obj);
@@ -54,7 +55,7 @@ function deepClone(obj, refs = new WeakMap()) {
             const ref = [];
             refs.set(obj, ref);
             obj.forEach((val, idx) => {
-                ref[idx] = deepClone(val, refs);
+                ref[idx] = deepClone(val, ignoreAttributes, refs);
             });
             return ref;
         }
@@ -67,7 +68,11 @@ function deepClone(obj, refs = new WeakMap()) {
         const ref = {};
         refs.set(obj, ref);
         for (const [key, val] of Object.entries(obj)) {
-            ref[key] = deepClone(val, refs);
+            if (ignoreAttributes.includes(key)) {
+                ref[key] = val;
+                continue;
+            }
+            ref[key] = deepClone(val, ignoreAttributes, refs);
         }
         return ref;
     }
@@ -684,7 +689,7 @@ class SelecticStore {
     }
     /* This method is for the computed property listOptions */
     getListOptions() {
-        const options = deepClone(this.props.options);
+        const options = deepClone(this.props.options, ['data']);
         const listOptions = [];
         if (!Array.isArray(options)) {
             return listOptions;
@@ -721,7 +726,7 @@ class SelecticStore {
     }
     /* This method is for the computed property elementOptions */
     getElementOptions() {
-        const options = deepClone(this.props.childOptions);
+        const options = deepClone(this.props.childOptions, ['data']);
         const childOptions = [];
         if (!Array.isArray(options) || options.length === 0) {
             return childOptions;

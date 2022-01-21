@@ -4,7 +4,7 @@
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */
-export declare function deepClone<T = any>(obj: T, refs?: WeakMap<any, any>): T;
+export declare function deepClone<T = any>(origObject: T, ignoreAttributes?: string[], refs?: WeakMap<any, any>): T;
 /**
  * Escape search string to consider regexp special characters as they
  * are and not like special characters.
