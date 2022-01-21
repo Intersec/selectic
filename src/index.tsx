@@ -21,6 +21,8 @@
 import {Vue, Component, Emit, Prop, Watch, h} from 'vtyx';
 import './css/selectic.css';
 
+import { deepClone } from './tools';
+
 import Store, {
     changeTexts as storeChangeTexts,
     OptionProp,
@@ -558,7 +560,7 @@ export default class Selectic extends Vue<Props> {
 
     @Watch('options', { deep: true })
     public onOptionsChange() {
-        this.store.props.options = Array.from(this.options);
+        this.store.props.options = deepClone(this.options);
     }
 
     @Watch('texts', { deep: true })

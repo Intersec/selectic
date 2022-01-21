@@ -5,6 +5,7 @@
  */
 
 import { reactive, watch, unref, computed, ComputedRef } from 'vue';
+import { convertToRegExp, assignObject } from './tools';
 
 /* {{{ Types definitions */
 
@@ -335,42 +336,6 @@ interface Messages {
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
-
-/* }}} */
-/* {{{ Helper */
-
-/**
- * Escape search string to consider regexp special characters as they
- * are and not like special characters.
- * Consider * characters as a wildcards characters (meanings 0 or
- * more characters) and convert them to .* (the wildcard characters
- * in Regexp)
- *
- * @param  {String} name the original string to convert
- * @param  {String} [flag] mode to apply for regExp
- * @return {String} the string ready to use for RegExp format
- */
-function convertToRegExp(name: string, flag = 'i'): RegExp {
-    const pattern = name.replace(/[\\^$.+?(){}[\]|]/g, '\\$&')
-                        .replace(/\*/g, '.*');
-
-    return new RegExp(pattern, flag);
-}
-
-/** Does the same as Object.assign but does not replace if value is undefined */
-function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array<Partial<T>>): T {
-    const result = obj;
-    for (const source of sourceObjects) {
-        for (const key of Object.keys(source)) {
-            const value = source[key as keyof T];
-            if (value === undefined) {
-                continue;
-            }
-            result[key as keyof T] = value;
-        }
-    }
-    return result as T;
-}
 
 /* }}} */
 /* {{{ Static */

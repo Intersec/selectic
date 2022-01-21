@@ -1,0 +1,75 @@
+
+/**
+ * Clone the object and its inner properties.
+ * @param obj The object to be clone.
+ * @param refs internal reference to object to avoid cyclic references
+ * @returns a copy of obj
+ */
+export function deepClone<T = any>(obj: T, refs: WeakMap<any, any> = new WeakMap()): T {
+    /* For circular references */
+    if (refs.has(obj)) {
+        return refs.get(obj);
+    }
+
+    if (typeof obj === 'object') {
+        if (Array.isArray(obj)) {
+            const ref: any[] = [];
+            refs.set(obj, ref);
+            obj.forEach((val, idx) => {
+                ref[idx] = deepClone(val, refs);
+            });
+            return ref as unknown as T;
+        }
+
+        if (obj instanceof RegExp) {
+            const ref = new RegExp(obj.source, obj.flags);
+            refs.set(obj, ref);
+            return ref as unknown as T;
+        }
+
+        /* This should be an object */
+        const ref: any = {};
+        refs.set(obj, ref);
+        for (const [key, val] of Object.entries(obj)) {
+            ref[key] = deepClone(val, refs);
+        }
+        return ref as unknown as T;
+    }
+
+    /* This should be a primitive */
+    return obj;
+}
+
+
+/**
+ * Escape search string to consider regexp special characters as they
+ * are and not like special characters.
+ * Consider * characters as a wildcards characters (meanings 0 or
+ * more characters) and convert them to .* (the wildcard characters
+ * in Regexp)
+ *
+ * @param  {String} name the original string to convert
+ * @param  {String} [flag] mode to apply for regExp
+ * @return {String} the string ready to use for RegExp format
+ */
+export function convertToRegExp(name: string, flag = 'i'): RegExp {
+    const pattern = name.replace(/[\\^$.+?(){}[\]|]/g, '\\$&')
+                        .replace(/\*/g, '.*');
+
+    return new RegExp(pattern, flag);
+}
+
+/** Does the same as Object.assign but does not replace if value is undefined */
+export function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array<Partial<T>>): T {
+    const result = obj;
+    for (const source of sourceObjects) {
+        for (const key of Object.keys(source)) {
+            const value = source[key as keyof T];
+            if (value === undefined) {
+                continue;
+            }
+            result[key as keyof T] = value;
+        }
+    }
+    return result as T;
+}
