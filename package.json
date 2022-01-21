@@ -1,6 +1,6 @@
 {
     "name": "selectic",
-    "version": "3.0.8",
+    "version": "3.0.9",
     "description": "Smart Select for VueJS 3.x",
     "main": "dist/selectic.common.js",
     "module": "dist/selectic.esm.js",
