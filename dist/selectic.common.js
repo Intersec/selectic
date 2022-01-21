@@ -47,6 +47,9 @@ function deepClone(obj, refs = new WeakMap()) {
         return refs.get(obj);
     }
     if (typeof obj === 'object') {
+        if (obj === null) {
+            return obj;
+        }
         if (Array.isArray(obj)) {
             const ref = [];
             refs.set(obj, ref);
@@ -288,10 +291,10 @@ class SelecticStore {
             this.setAutomaticClose();
             this.commit('isOpen', false);
         };
-        const value = this.props.value;
+        const value = deepClone(this.props.value);
         /* set initial value for non reactive attribute */
         this.cacheRequest = new Map();
-        const stateParam = Object.assign({}, this.props.params);
+        const stateParam = deepClone(this.props.params);
         if (stateParam.optionBehavior) {
             this.buildOptionBehavior(stateParam.optionBehavior, stateParam);
             delete stateParam.optionBehavior;
@@ -681,7 +684,7 @@ class SelecticStore {
     }
     /* This method is for the computed property listOptions */
     getListOptions() {
-        const options = this.props.options;
+        const options = deepClone(this.props.options);
         const listOptions = [];
         if (!Array.isArray(options)) {
             return listOptions;
@@ -718,7 +721,7 @@ class SelecticStore {
     }
     /* This method is for the computed property elementOptions */
     getElementOptions() {
-        const options = this.props.childOptions;
+        const options = deepClone(this.props.childOptions);
         const childOptions = [];
         if (!Array.isArray(options) || options.length === 0) {
             return childOptions;
