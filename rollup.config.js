@@ -30,5 +30,12 @@ export default [{
         'vtyx',
     ],
     context: 'this',
+}, {
+    input: 'lib/tools.js',
+    output: [{
+        file: 'test/dist/tools.js',
+        exports: 'named',
+        format: 'cjs',
+    }],
+    context: 'this',
 }];
-
