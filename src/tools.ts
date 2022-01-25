@@ -1,3 +1,4 @@
+import { unref } from 'vue';
 
 /**
  * Clone the object and its inner properties.
@@ -5,7 +6,9 @@
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */
-export function deepClone<T = any>(obj: T, refs: WeakMap<any, any> = new WeakMap()): T {
+export function deepClone<T = any>(origObject: T, refs: WeakMap<any, any> = new WeakMap()): T {
+    const obj = unref(origObject);
+
     /* For circular references */
     if (refs.has(obj)) {
         return refs.get(obj);
