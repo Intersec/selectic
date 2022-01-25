@@ -1060,7 +1060,7 @@ export default class SelecticStore {
 
     /* This method is for the computed property listOptions */
     private getListOptions(): OptionValue[] {
-        const options = deepClone(this.props.options);
+        const options = deepClone(this.props.options, ['data']);
         const listOptions: OptionValue[] = [];
 
         if (!Array.isArray(options)) {
@@ -1106,7 +1106,7 @@ export default class SelecticStore {
 
     /* This method is for the computed property elementOptions */
     private getElementOptions(): OptionValue[] {
-        const options = deepClone(this.props.childOptions);
+        const options = deepClone(this.props.childOptions, ['data']);
         const childOptions: OptionValue[] = [];
 
         if (!Array.isArray(options) || options.length === 0) {

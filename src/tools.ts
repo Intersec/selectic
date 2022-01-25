@@ -6,7 +6,7 @@ import { unref } from 'vue';
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */
-export function deepClone<T = any>(origObject: T, refs: WeakMap<any, any> = new WeakMap()): T {
+export function deepClone<T = any>(origObject: T, ignoreAttributes: string[] = [], refs: WeakMap<any, any> = new WeakMap()): T {
     const obj = unref(origObject);
 
     /* For circular references */
@@ -23,7 +23,7 @@ export function deepClone<T = any>(origObject: T, refs: WeakMap<any, any> = new 
             const ref: any[] = [];
             refs.set(obj, ref);
             obj.forEach((val, idx) => {
-                ref[idx] = deepClone(val, refs);
+                ref[idx] = deepClone(val, ignoreAttributes, refs);
             });
             return ref as unknown as T;
         }
@@ -38,7 +38,12 @@ export function deepClone<T = any>(origObject: T, refs: WeakMap<any, any> = new 
         const ref: any = {};
         refs.set(obj, ref);
         for (const [key, val] of Object.entries(obj)) {
-            ref[key] = deepClone(val, refs);
+            if (ignoreAttributes.includes(key)) {
+                ref[key] = val;
+                continue;
+            }
+
+            ref[key] = deepClone(val, ignoreAttributes, refs);
         }
         return ref as unknown as T;
     }
@@ -46,7 +51,6 @@ export function deepClone<T = any>(origObject: T, refs: WeakMap<any, any> = new 
     /* This should be a primitive */
     return obj;
 }
-
 
 /**
  * Escape search string to consider regexp special characters as they
