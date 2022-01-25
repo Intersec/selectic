@@ -5,7 +5,7 @@
  */
 
 import { reactive, watch, unref, computed, ComputedRef } from 'vue';
-import { convertToRegExp, assignObject } from './tools';
+import { convertToRegExp, assignObject, deepClone } from './tools';
 
 /* {{{ Types definitions */
 
@@ -587,13 +587,13 @@ export default class SelecticStore {
             this.commit('isOpen', false);
         }
 
-        const value = this.props.value;
+        const value = deepClone(this.props.value);
 
         /* set initial value for non reactive attribute */
         this.cacheRequest = new Map();
 
         const stateParam: SelecticStoreStateParams | SelecticStoreState =
-            Object.assign({}, this.props.params);
+            deepClone(this.props.params);
 
         if (stateParam.optionBehavior) {
             this.buildOptionBehavior(
@@ -1060,7 +1060,7 @@ export default class SelecticStore {
 
     /* This method is for the computed property listOptions */
     private getListOptions(): OptionValue[] {
-        const options = this.props.options;
+        const options = deepClone(this.props.options);
         const listOptions: OptionValue[] = [];
 
         if (!Array.isArray(options)) {
@@ -1106,7 +1106,7 @@ export default class SelecticStore {
 
     /* This method is for the computed property elementOptions */
     private getElementOptions(): OptionValue[] {
-        const options = this.props.childOptions;
+        const options = deepClone(this.props.childOptions);
         const childOptions: OptionValue[] = [];
 
         if (!Array.isArray(options) || options.length === 0) {
