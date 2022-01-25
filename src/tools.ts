@@ -12,6 +12,10 @@ export function deepClone<T = any>(obj: T, refs: WeakMap<any, any> = new WeakMap
     }
 
     if (typeof obj === 'object') {
+        if (obj === null) {
+            return obj;
+        }
+
         if (Array.isArray(obj)) {
             const ref: any[] = [];
             refs.set(obj, ref);
