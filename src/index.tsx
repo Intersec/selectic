@@ -781,12 +781,12 @@ export default class Selectic extends Vue<Props> {
         this._elementsListeners = [];
 
         this.store = new Store({
-            options: this.options,
-            value: this.value,
+            options: deepClone(this.options),
+            value: deepClone(this.value),
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
             texts: this.texts,
-            groups: this.groups,
+            groups: deepClone(this.groups),
             keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
                 multiple: (this.multiple ?? false) !== false,
