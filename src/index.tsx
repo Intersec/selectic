@@ -18,7 +18,7 @@
  *   close [component]: triggered when the list closes.
  */
 
-import {Vue, Component, Emit, Prop, Watch, h} from 'vtyx';
+import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
 import './css/selectic.css';
 
 import { deepClone } from './tools';
@@ -859,13 +859,7 @@ export default class Selectic extends Vue<Props> {
 
     /* }}} */
 
-    @Emit('input')
-    @Emit('change')
-    @Emit('open')
-    @Emit('focus')
-    @Emit('close')
-    @Emit('blur')
-    @Emit('item:click')
+    @Emits(['input', 'change', 'open', 'focus', 'close', 'blur', 'item:click'])
     public render() {
         const id = this.id || undefined;
         const store = this.store;
