@@ -38,7 +38,7 @@
         "test": "npm run build && tape test/**/*.spec.js"
     },
     "dependencies": {
-        "vtyx": "4.0.3"
+        "vtyx": "4.0.4"
     },
     "devDependencies": {
         "@babel/types": "^7.16.7",
