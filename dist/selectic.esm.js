@@ -1,4 +1,4 @@
-import { Prop, Watch, Component, Vue, h, Emit } from 'vtyx';
+import { Prop, Watch, Component, Vue, h, Emits } from 'vtyx';
 import { unref, reactive, computed, watch } from 'vue';
 
 function styleInject(css, ref) {
@@ -2115,7 +2115,7 @@ let Selectic = class Selectic extends Vue {
             }];
     }
     get hasGivenValue() {
-        const value = this.value;
+        const value = unref(this.value);
         return value !== null && value !== undefined;
     }
     get defaultValue() {
@@ -2607,13 +2607,7 @@ __decorate([
     Watch('store.state.internalValue', { deep: true })
 ], Selectic.prototype, "onInternalValueChange", null);
 __decorate([
-    Emit('input'),
-    Emit('change'),
-    Emit('open'),
-    Emit('focus'),
-    Emit('close'),
-    Emit('blur'),
-    Emit('item:click')
+    Emits(['input', 'change', 'open', 'focus', 'close', 'blur', 'item:click'])
 ], Selectic.prototype, "render", null);
 Selectic = __decorate([
     Component

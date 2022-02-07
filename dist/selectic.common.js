@@ -2119,7 +2119,7 @@ let Selectic = class Selectic extends vtyx.Vue {
             }];
     }
     get hasGivenValue() {
-        const value = this.value;
+        const value = vue.unref(this.value);
         return value !== null && value !== undefined;
     }
     get defaultValue() {
@@ -2611,13 +2611,7 @@ __decorate([
     vtyx.Watch('store.state.internalValue', { deep: true })
 ], Selectic.prototype, "onInternalValueChange", null);
 __decorate([
-    vtyx.Emit('input'),
-    vtyx.Emit('change'),
-    vtyx.Emit('open'),
-    vtyx.Emit('focus'),
-    vtyx.Emit('close'),
-    vtyx.Emit('blur'),
-    vtyx.Emit('item:click')
+    vtyx.Emits(['input', 'change', 'open', 'focus', 'close', 'blur', 'item:click'])
 ], Selectic.prototype, "render", null);
 Selectic = __decorate([
     vtyx.Component
