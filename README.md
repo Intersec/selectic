@@ -2,6 +2,7 @@
 
 > VueJS 3.X + Typescript + JSX + Select
 
+[![npm](https://img.shields.io/npm/v/selectic.svg)](https://www.npmjs.com/package/selectic)
 
 ## Introduction
 
