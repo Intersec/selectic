@@ -19,6 +19,7 @@
  */
 
 import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
+import { unref } from 'vue';
 import './css/selectic.css';
 
 import { deepClone } from './tools';
@@ -373,7 +374,7 @@ export default class Selectic extends Vue<Props> {
     }
 
     get hasGivenValue() {
-        const value = this.value;
+        const value = unref(this.value);
 
         return value !== null && value !== undefined;
     }
