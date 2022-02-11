@@ -860,6 +860,44 @@ tape.test('Store creation', (subT) => {
                 t.deepEqual(store.state.internalValue, [2, 'hello', 1, true]);
                 t.end();
             });
+
+            sTest.test('should call getItemsCallback if item is not in options', async (t) => {
+                const spyGetItems = {};
+                const store = new Store({
+                    params: {
+                        multiple: true,
+                        strictValue: false,
+                    },
+                    getItemsCallback: buildGetItemsCb({ spy: spyGetItems}),
+                    options: getOptions(5),
+                    value: [2, 10, 1],
+                });
+
+                await sleep(0);
+                t.true(spyGetItems.nbCall >= 1, 'fetch callback should be called at least once');
+
+                t.deepEqual(store.state.internalValue, [2, 10, 1]);
+
+                const item = store.getItem(10);
+
+                t.deepEqual(item, {
+                    id: 10,
+                    text: 'some text 10',
+                    data: 'data10',
+                    disabled: false,
+                    selected: true,
+                    isGroup: false,
+                });
+
+                const currentOptions = store.state.allOptions;
+                t.is(currentOptions.length, 5, 'should add fetched items');
+
+                const hasItem10 = currentOptions.some((option) => option.id === 10);
+
+                t.false(hasItem10, 'should not add the item');
+
+                t.end();
+            });
         });
 
         st.test('in dynamic mode', (sTest) => {
