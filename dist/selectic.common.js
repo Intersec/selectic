@@ -38,6 +38,7 @@ styleInject(css_248z);
 /**
  * Clone the object and its inner properties.
  * @param obj The object to be clone.
+ * @param attributes list of attributes to not clone.
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */
@@ -299,7 +300,7 @@ class SelecticStore {
         const value = deepClone(this.props.value);
         /* set initial value for non reactive attribute */
         this.cacheRequest = new Map();
-        const stateParam = deepClone(this.props.params);
+        const stateParam = deepClone(this.props.params, ['data']);
         if (stateParam.optionBehavior) {
             this.buildOptionBehavior(stateParam.optionBehavior, stateParam);
             delete stateParam.optionBehavior;
@@ -2264,7 +2265,7 @@ let Selectic = class Selectic extends vtyx.Vue {
         this.store.props.selectionIsExcluded = this.selectionIsExcluded;
     }
     onOptionsChange() {
-        this.store.props.options = deepClone(this.options);
+        this.store.props.options = deepClone(this.options, ['data']);
     }
     onTextsChange() {
         const texts = this.texts;
@@ -2439,7 +2440,7 @@ let Selectic = class Selectic extends vtyx.Vue {
         var _a, _b, _c;
         this._elementsListeners = [];
         this.store = new SelecticStore({
-            options: deepClone(this.options),
+            options: deepClone(this.options, ['data']),
             value: deepClone(this.value),
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
