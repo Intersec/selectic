@@ -593,7 +593,7 @@ export default class SelecticStore {
         this.cacheRequest = new Map();
 
         const stateParam: SelecticStoreStateParams | SelecticStoreState =
-            deepClone(this.props.params);
+            deepClone(this.props.params, ['data']);
 
         if (stateParam.optionBehavior) {
             this.buildOptionBehavior(

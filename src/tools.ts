@@ -3,6 +3,7 @@ import { unref } from 'vue';
 /**
  * Clone the object and its inner properties.
  * @param obj The object to be clone.
+ * @param attributes list of attributes to not clone.
  * @param refs internal reference to object to avoid cyclic references
  * @returns a copy of obj
  */

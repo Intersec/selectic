@@ -561,7 +561,7 @@ export default class Selectic extends Vue<Props> {
 
     @Watch('options', { deep: true })
     public onOptionsChange() {
-        this.store.props.options = deepClone(this.options);
+        this.store.props.options = deepClone(this.options, ['data']);
     }
 
     @Watch('texts', { deep: true })
@@ -782,7 +782,7 @@ export default class Selectic extends Vue<Props> {
         this._elementsListeners = [];
 
         this.store = new Store({
-            options: deepClone(this.options),
+            options: deepClone(this.options, ['data']),
             value: deepClone(this.value),
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
