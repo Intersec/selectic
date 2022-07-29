@@ -29,6 +29,7 @@ export interface OptionValue {
     style?: string;
     icon?: string;
     options?: OptionValue[];
+    exclusive?: boolean;
 
     /* Used to store specific information about this option.
      * This `data` is not used by Selectic. */
@@ -766,14 +767,11 @@ export default class SelecticStore {
     public selectItem(id: OptionId, selected?: boolean, keepOpen = false) {
         const state = this.state;
         let hasChanged = false;
-        const isPartial = unref(this.isPartial);
+        const item = state.allOptions.find((opt) => opt.id === id);
 
         /* Check that item is not disabled */
-        if (!isPartial) {
-            const item = state.allOptions.find((opt) => opt.id === id);
-            if (item && item.disabled) {
-                return;
-            }
+        if (item?.disabled) {
+            return;
         }
 
         if (state.strictValue && !this.hasValue(id)) {
@@ -795,6 +793,17 @@ export default class SelecticStore {
                 hasChanged = internalValue.length > 0;
             } else
             if (selected && !isAlreadySelected) {
+                if (item?.exclusive) {
+                    /* clear the current selection because the item is exclusive */
+                    internalValue.splice(0, Infinity);
+                } else if (internalValue.length === 1) {
+                    const selectedId = internalValue[0];
+                    const selectedItem = state.allOptions.find((opt) => opt.id === selectedId);
+                    if (selectedItem?.exclusive) {
+                        /* clear the current selection because the old item was exclusive */
+                        internalValue.pop();
+                    }
+                }
                 internalValue.push(id);
                 hasChanged = true;
             } else

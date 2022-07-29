@@ -263,6 +263,7 @@ export default class List extends Vue<Props> {
                         'selected': option.selected,
                         'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
                         'selectic-item__disabled': !!option.disabled,
+                        'selectic-item__exclusive': !!option.exclusive,
                         'selectic-item__is-in-group': !!option.group,
                         'selectic-item__is-group': option.isGroup,
                     }]}

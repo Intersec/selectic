@@ -202,8 +202,10 @@ tape.test('selectItem()', (st) => {
 
     st.test('when "multiple" is true', (sTest) => {
         function getStore() {
-            const options = getOptions(6);
+            const options = getOptions(8);
             options[4].disabled = true;
+            options[6].exclusive = true;
+            options[7].exclusive = true;
 
             const store = new Store({
                 options: options,
@@ -363,7 +365,6 @@ tape.test('selectItem()', (st) => {
             t.end();
         });
 
-
         sTest.test('should clear selection', (t) => {
             const store = getStore();
             store.state.internalValue = [1, 4];
@@ -410,6 +411,30 @@ tape.test('selectItem()', (st) => {
             store.selectItem('2', false);
             t.deepEqual(store.state.internalValue, [2]);
             t.is(store.state.status.hasChanged, false);
+            t.end();
+        });
+
+        sTest.test('should keep only exclusive item', (t) => {
+            const store = getStore();
+            store.state.internalValue = [1, 4, 5];
+
+            store.selectItem(6, true);
+            t.deepEqual(store.state.internalValue, [6]);
+            t.is(store.state.status.hasChanged, true);
+
+            store.selectItem(7, true);
+            t.deepEqual(store.state.internalValue, [7]);
+            t.is(store.state.status.hasChanged, true);
+
+            store.selectItem(1, true);
+            t.deepEqual(store.state.internalValue, [1]);
+            t.is(store.state.status.hasChanged, true);
+
+            store.selectItem(5, true);
+            t.deepEqual(store.state.internalValue, [1, 5]);
+            t.is(store.state.status.hasChanged, true);
+
+            t.is(store.state.selectionIsExcluded, false);
             t.end();
         });
     });
