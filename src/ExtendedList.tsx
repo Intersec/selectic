@@ -255,6 +255,7 @@ export default class ExtendedList extends Vue<Props> {
                     store={this.store}
                 />
               )}
+
               {isGroup && (
                 <span
                     class="selectic-item selectic-item--header selectic-item__is-group"
@@ -264,7 +265,6 @@ export default class ExtendedList extends Vue<Props> {
               )}
                 <List
                     store={store}
-                    class="selectic__extended-list__list-items"
                     on={{
                         groupId: this.getGroup,
                     }}

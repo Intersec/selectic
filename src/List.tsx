@@ -22,7 +22,7 @@ export interface Props {
 @Component
 export default class List extends Vue<Props> {
     public $refs: {
-        elList: HTMLUListElement;
+        elList: HTMLDivElement;
     };
 
     /* {{{ props */
@@ -241,54 +241,59 @@ export default class List extends Vue<Props> {
 
     public render() {
         return (
-            <ul
+            <div
+                class="selectic__extended-list__list-container"
                 on={{
                     scroll: this.checkOffset,
                 }}
                 ref="elList"
             >
-              {!!this.topOffset && (
-                <li
-                    class="selectic-item"
-                    style={`height:${this.topOffset}px;`}
-                ></li>
-              )}
-              {this.shortOptions.map((option, idx) => (
-                <li
-                    on={{
-                        'click.prevent.stop': () => this.click(option),
-                        'mouseover': () => this.onMouseOver(idx),
-                    }}
-                    class={['selectic-item', option.className || '', {
-                        'selected': option.selected,
-                        'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
-                        'selectic-item__disabled': !!option.disabled,
-                        'selectic-item__exclusive': !!option.exclusive,
-                        'selectic-item__is-in-group': !!option.group,
-                        'selectic-item__is-group': option.isGroup,
-                    }]}
-                    style={option.style}
-                    title={option.title}
-                    key={'selectic-item-' + (idx + this.startIndex)}
+                <ul
+                    class="selectic__extended-list__list-items"
                 >
-                  {this.isMultiple && (
-                    <span
-                        class="fa fa-fw fa-check selectic-item_icon"
-                    ></span>
-                  )}
-                  {option.icon && (
-                    <span class={option.icon}></span>
-                  )}
-                    {option.text}
-                </li>
-              ))}
-              {!!this.bottomOffset && (
-                <li
-                    class="selectic-item"
-                    style={`height:${this.bottomOffset}px;`}
-                ></li>
-              )}
-            </ul>
+                {!!this.topOffset && (
+                    <li
+                        class="selectic-item"
+                        style={`height:${this.topOffset}px;`}
+                    ></li>
+                )}
+                {this.shortOptions.map((option, idx) => (
+                    <li
+                        on={{
+                            'click.prevent.stop': () => this.click(option),
+                            'mouseover': () => this.onMouseOver(idx),
+                        }}
+                        class={['selectic-item', option.className || '', {
+                            'selected': option.selected,
+                            'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
+                            'selectic-item__disabled': !!option.disabled,
+                            'selectic-item__exclusive': !!option.exclusive,
+                            'selectic-item__is-in-group': !!option.group,
+                            'selectic-item__is-group': option.isGroup,
+                        }]}
+                        style={option.style}
+                        title={option.title}
+                        key={'selectic-item-' + (idx + this.startIndex)}
+                    >
+                    {this.isMultiple && (
+                        <span
+                            class="fa fa-fw fa-check selectic-item_icon"
+                        ></span>
+                    )}
+                    {option.icon && (
+                        <span class={option.icon}></span>
+                    )}
+                        {option.text}
+                    </li>
+                ))}
+                {!!this.bottomOffset && (
+                    <li
+                        class="selectic-item"
+                        style={`height:${this.bottomOffset}px;`}
+                    ></li>
+                )}
+                </ul>
+            </div>
         );
     }
 }

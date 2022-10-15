@@ -192,9 +192,12 @@
     padding: 0;
     min-width: 200px;
 }
+.selectic__extended-list__list-container{
+    overflow: auto;
+}
 .selectic__extended-list__list-items {
     max-height: calc(var(--selectic-input-height) * 10);
-    overflow: auto;
+    min-width: max-content;
     padding-left: 0;
 }
 
