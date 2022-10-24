@@ -15,6 +15,7 @@ export interface OptionValue {
     style?: string;
     icon?: string;
     options?: OptionValue[];
+    exclusive?: boolean;
     data?: any;
 }
 declare type OptionBehaviorOperation = 'sort' | 'force';

@@ -8,7 +8,7 @@ export interface Props {
 }
 export default class List extends Vue<Props> {
     $refs: {
-        elList: HTMLUListElement;
+        elList: HTMLDivElement;
     };
     private store;
     private itemHeight;
