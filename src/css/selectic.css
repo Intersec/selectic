@@ -259,6 +259,11 @@
     left: auto;
     right: 10px;
 }
+.selectic .form-control-feedback.fa.selectic-search-scope {
+    width: calc(var(--selectic-input-height) * 0.75);
+    height: calc(var(--selectic-input-height) * 0.75);
+    line-height: calc(var(--selectic-input-height) * 0.75);
+}
 
 .selectic__message {
     text-align: center;
