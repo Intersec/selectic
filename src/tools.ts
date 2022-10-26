@@ -76,11 +76,12 @@ export function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array<Partial
     const result = obj;
     for (const source of sourceObjects) {
         for (const key of Object.keys(source)) {
-            const value = source[key as keyof T];
+            const typedKey = key as keyof T;
+            const value = source[typedKey];
             if (value === undefined) {
                 continue;
             }
-            result[key as keyof T] = value;
+            result[typedKey] = value!;
         }
     }
     return result as T;
