@@ -278,6 +278,32 @@ Read [the extended properties documentation](extendedProperties.md) for more inf
 />
 ```
 
+## forceSelectAll
+
+Type: `'auto' | 'visible'`
+
+Default value: `'auto'`
+
+In _multiple_ mode, there is a "select all" action.
+If the selection inversion is not available and all data are not fetched (in
+_dynamic_ mode) it will not be possible to select all items. So this action
+will be disabled.
+
+This option allows you to change the behavior.
+
+* `'auto'`: The action is disabled when not possible.
+* `'visible'`: The action is displayed even when all data are not fetched.
+
+```html
+<selectic
+    params={{
+        forceSelectAll: 'auto',
+    }}
+    options={optionList}
+/>
+```
+
+
 ## listPosition
 
 Type: `'auto' | 'bottom' | 'top'`

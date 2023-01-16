@@ -10,6 +10,7 @@ function getInitialState(replacedAttributes) {
         hideFilter: false,
         keepFilterOpen: false,
         allowRevert: undefined,
+        forceSelectAll: 'auto',
         allowClearSelection: false,
         autoSelect: true,
         autoDisabled: true,

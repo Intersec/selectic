@@ -83,6 +83,12 @@ export type HideFilter =
     /* The panel filter is always open */
   | 'open';
 
+export type SelectAllOption =
+    /* Display the "select all" only when data are all fetched or allowRevert */
+    'auto'
+    /* Always display the "select all" in mulitple mode. */
+  | 'visible';
+
 export interface SelecticStoreStateParams {
     /* Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -100,6 +106,9 @@ export interface SelecticStoreStateParams {
      * change selectionIsExcluded property.
      */
     allowRevert?: boolean;
+
+    /* Force the availability of the "select all" even if all data is not fetched yet. */
+    forceSelectAll?: SelectAllOption;
 
     /* Allow user to clear current selection */
     allowClearSelection?: boolean;
@@ -295,6 +304,9 @@ export interface SelecticStoreState {
     /* Indicate where the list should be deployed */
     listPosition: ListPosition;
 
+    /* If true, the "select All" is still available even if all data are not fetched yet. */
+    forceSelectAll: SelectAllOption;
+
     /* Inner status which should be modified only by store */
     status: {
         /* If true, a search is currently done */
@@ -442,6 +454,7 @@ export default class SelecticStore {
             isOpen: false,
             searchText: '',
             selectionIsExcluded: false,
+            forceSelectAll: 'auto',
             allOptions: [],
             dynOptions: [],
             filteredOptions: [],

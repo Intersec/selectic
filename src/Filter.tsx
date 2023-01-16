@@ -30,31 +30,53 @@ export default class FilterPanel extends Vue<Props> {
     /* }}} */
     /* {{{ computed */
 
-    get searchPlaceholder() {
+    get searchPlaceholder(): string {
         return this.store.data.labels.searchPlaceholder;
     }
 
-    get selectionIsExcluded() {
+    get selectionIsExcluded(): boolean {
         return this.store.state.selectionIsExcluded;
     }
 
-    get disableSelectAll() {
+    /* {{{ select all */
+
+    get hasNotAllItems(): boolean {
+        return !unref(this.store.hasAllItems);
+    }
+    get disabledPartialData(): boolean {
+        const state = this.store.state;
+        const autoDisplay = state.forceSelectAll === 'auto';
+        return this.hasNotAllItems && !this.enableRevert && autoDisplay;
+    }
+
+    get disableSelectAll(): boolean {
         const store = this.store;
         const state = store.state;
         const isMultiple = state.multiple;
-        const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !unref(store.hasAllItems);
+        const hasNoItems = state.filteredOptions.length === 0;
+        const canNotSelect = this.hasNotAllItems && !!state.searchText;
+        const partialDataDsbld = this.disabledPartialData;
 
-        return !isMultiple || hasItems || canNotSelect;
+        return !isMultiple || hasNoItems || canNotSelect || partialDataDsbld;
     }
 
-    get disableRevert() {
+    get titleSelectAll(): string {
+        if (this.disableSelectAll && this.disabledPartialData) {
+            return this.store.data.labels.cannotSelectAllRevertItems;
+        }
+
+        return '';
+    }
+
+    /* }}} */
+
+    get disableRevert(): boolean {
         const store = this.store;
 
         return !store.state.multiple || !unref(store.hasFetchedAllItems);
     }
 
-    get enableRevert() {
+    get enableRevert(): boolean {
         const state = this.store.state;
 
         return state.multiple && state.allowRevert !== false;
@@ -178,6 +200,7 @@ export default class FilterPanel extends Vue<Props> {
                                     type="checkbox"
                                     checked={state.status.areAllSelected}
                                     disabled={this.disableSelectAll}
+                                    title={this.titleSelectAll}
                                     on={{
                                         change: this.onSelectAll,
                                     }}

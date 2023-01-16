@@ -40,6 +40,7 @@ import Store, {
     SelectionOverflow,
     ListPosition,
     HideFilter,
+    SelectAllOption,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -97,6 +98,9 @@ export interface ParamProps {
      * change selectionIsExcluded property.
      */
     allowRevert?: boolean;
+
+    /* If true, the "select All" is still available even if all data are not fetched yet. */
+    forceSelectAll?: SelectAllOption;
 
     /* Allow user to clear the current selection */
     allowClearSelection?: boolean;
@@ -794,6 +798,7 @@ export default class Selectic extends Vue<Props> {
                 pageSize: this.params.pageSize || 100,
                 hideFilter: this.params.hideFilter ?? 'auto',
                 allowRevert: this.params.allowRevert, /* it can be undefined */
+                forceSelectAll: this.params.forceSelectAll || 'auto',
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
                           ? !this.multiple && !this.params.fetchCallback
