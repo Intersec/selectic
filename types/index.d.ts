@@ -1,6 +1,6 @@
 import { Vue, h } from 'vtyx';
 import './css/selectic.css';
-import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter } from './Store';
+import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter, SelectAllOption } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, };
@@ -19,6 +19,7 @@ export interface ParamProps {
     pageSize?: number;
     hideFilter?: HideFilter;
     allowRevert?: boolean;
+    forceSelectAll?: SelectAllOption;
     allowClearSelection?: boolean;
     autoSelect?: boolean;
     autoDisabled?: boolean;

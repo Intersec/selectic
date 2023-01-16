@@ -101,11 +101,12 @@ function assignObject(obj, ...sourceObjects) {
     const result = obj;
     for (const source of sourceObjects) {
         for (const key of Object.keys(source)) {
-            const value = source[key];
+            const typedKey = key;
+            const value = source[typedKey];
             if (value === undefined) {
                 continue;
             }
-            result[key] = value;
+            result[typedKey] = value;
         }
     }
     return result;
@@ -182,6 +183,7 @@ class SelecticStore {
             isOpen: false,
             searchText: '',
             selectionIsExcluded: false,
+            forceSelectAll: 'auto',
             allOptions: [],
             dynOptions: [],
             filteredOptions: [],
@@ -1405,7 +1407,7 @@ let MainInput = class MainInput extends vtyx.Vue {
     }
     /* }}} */
     render() {
-        return (vtyx.h("div", { class: "has-feedback", on: {
+        return (vtyx.h("div", { class: "selectic-container has-feedback", on: {
                 'click.prevent.stop': () => this.toggleFocus(),
             } },
             vtyx.h("div", { id: this.selecticId, class: ['selectic-input form-control',
@@ -1477,14 +1479,31 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
     get selectionIsExcluded() {
         return this.store.state.selectionIsExcluded;
     }
+    /* {{{ select all */
+    get hasNotAllItems() {
+        return !vue.unref(this.store.hasAllItems);
+    }
+    get disabledPartialData() {
+        const state = this.store.state;
+        const autoDisplay = state.forceSelectAll === 'auto';
+        return this.hasNotAllItems && !this.enableRevert && autoDisplay;
+    }
     get disableSelectAll() {
         const store = this.store;
         const state = store.state;
         const isMultiple = state.multiple;
-        const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !vue.unref(store.hasAllItems);
-        return !isMultiple || hasItems || canNotSelect;
+        const hasNoItems = state.filteredOptions.length === 0;
+        const canNotSelect = this.hasNotAllItems && !!state.searchText;
+        const partialDataDsbld = this.disabledPartialData;
+        return !isMultiple || hasNoItems || canNotSelect || partialDataDsbld;
     }
+    get titleSelectAll() {
+        if (this.disableSelectAll && this.disabledPartialData) {
+            return this.store.data.labels.cannotSelectAllRevertItems;
+        }
+        return '';
+    }
+    /* }}} */
     get disableRevert() {
         const store = this.store;
         return !store.state.multiple || !vue.unref(store.hasFetchedAllItems);
@@ -1572,7 +1591,7 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
                     vtyx.h("label", { class: ['control-label', {
                                 'selectic__label-disabled': this.disableSelectAll,
                             }] },
-                        vtyx.h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, on: {
+                        vtyx.h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, title: this.titleSelectAll, on: {
                                 change: this.onSelectAll,
                             } }),
                         labels.selectAll))),
@@ -2463,6 +2482,7 @@ let Selectic = class Selectic extends vtyx.Vue {
                 pageSize: this.params.pageSize || 100,
                 hideFilter: (_b = this.params.hideFilter) !== null && _b !== void 0 ? _b : 'auto',
                 allowRevert: this.params.allowRevert,
+                forceSelectAll: this.params.forceSelectAll || 'auto',
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
                     ? !this.multiple && !this.params.fetchCallback

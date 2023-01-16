@@ -97,11 +97,12 @@ function assignObject(obj, ...sourceObjects) {
     const result = obj;
     for (const source of sourceObjects) {
         for (const key of Object.keys(source)) {
-            const value = source[key];
+            const typedKey = key;
+            const value = source[typedKey];
             if (value === undefined) {
                 continue;
             }
-            result[key] = value;
+            result[typedKey] = value;
         }
     }
     return result;
@@ -178,6 +179,7 @@ class SelecticStore {
             isOpen: false,
             searchText: '',
             selectionIsExcluded: false,
+            forceSelectAll: 'auto',
             allOptions: [],
             dynOptions: [],
             filteredOptions: [],
@@ -1401,7 +1403,7 @@ let MainInput = class MainInput extends Vue {
     }
     /* }}} */
     render() {
-        return (h("div", { class: "has-feedback", on: {
+        return (h("div", { class: "selectic-container has-feedback", on: {
                 'click.prevent.stop': () => this.toggleFocus(),
             } },
             h("div", { id: this.selecticId, class: ['selectic-input form-control',
@@ -1473,14 +1475,31 @@ let FilterPanel = class FilterPanel extends Vue {
     get selectionIsExcluded() {
         return this.store.state.selectionIsExcluded;
     }
+    /* {{{ select all */
+    get hasNotAllItems() {
+        return !unref(this.store.hasAllItems);
+    }
+    get disabledPartialData() {
+        const state = this.store.state;
+        const autoDisplay = state.forceSelectAll === 'auto';
+        return this.hasNotAllItems && !this.enableRevert && autoDisplay;
+    }
     get disableSelectAll() {
         const store = this.store;
         const state = store.state;
         const isMultiple = state.multiple;
-        const hasItems = state.filteredOptions.length === 0;
-        const canNotSelect = !!state.searchText && !unref(store.hasAllItems);
-        return !isMultiple || hasItems || canNotSelect;
+        const hasNoItems = state.filteredOptions.length === 0;
+        const canNotSelect = this.hasNotAllItems && !!state.searchText;
+        const partialDataDsbld = this.disabledPartialData;
+        return !isMultiple || hasNoItems || canNotSelect || partialDataDsbld;
     }
+    get titleSelectAll() {
+        if (this.disableSelectAll && this.disabledPartialData) {
+            return this.store.data.labels.cannotSelectAllRevertItems;
+        }
+        return '';
+    }
+    /* }}} */
     get disableRevert() {
         const store = this.store;
         return !store.state.multiple || !unref(store.hasFetchedAllItems);
@@ -1568,7 +1587,7 @@ let FilterPanel = class FilterPanel extends Vue {
                     h("label", { class: ['control-label', {
                                 'selectic__label-disabled': this.disableSelectAll,
                             }] },
-                        h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, on: {
+                        h("input", { type: "checkbox", checked: state.status.areAllSelected, disabled: this.disableSelectAll, title: this.titleSelectAll, on: {
                                 change: this.onSelectAll,
                             } }),
                         labels.selectAll))),
@@ -2459,6 +2478,7 @@ let Selectic = class Selectic extends Vue {
                 pageSize: this.params.pageSize || 100,
                 hideFilter: (_b = this.params.hideFilter) !== null && _b !== void 0 ? _b : 'auto',
                 allowRevert: this.params.allowRevert,
+                forceSelectAll: this.params.forceSelectAll || 'auto',
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
                     ? !this.multiple && !this.params.fetchCallback
