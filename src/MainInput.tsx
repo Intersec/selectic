@@ -281,7 +281,7 @@ export default class MainInput extends Vue<Props> {
     public render() {
         return (
         <div
-            class="has-feedback"
+            class="selectic-container has-feedback"
             on={{
                 'click.prevent.stop': () => this.toggleFocus(),
             }}
