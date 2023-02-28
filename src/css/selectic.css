@@ -191,6 +191,9 @@
     border-radius: 0 0 4px 4px;
     padding: 0;
     min-width: 200px;
+    display: grid;
+    grid-template-rows: minmax(0, max-content) 1fr;
+    max-height: var(--availableSpace);
 }
 .selectic__extended-list__list-container{
     overflow: auto;

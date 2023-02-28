@@ -48,6 +48,7 @@ export default class ExtendedList extends Vue<Props> {
     private topGroup = ' ';
     private listHeight = 120;
     private listWidth = 200;
+    private availableSpace = 0;
 
     /* }}} */
     /* {{{ computed */
@@ -173,19 +174,23 @@ export default class ExtendedList extends Vue<Props> {
             const transform = horizontalStyle.includes('transform')
                 ? 'transform: translateX(-100%) translateY(-100%);'
                 : 'transform: translateY(-100%);';
+            this.availableSpace = this.elementTop;
 
             return `
                 top: ${this.elementTop}px;
                 ${horizontalStyle}
                 width: ${this.width}px;
-                ${transform}
+                ${transform};
+                --availableSpace: ${this.availableSpace}px;
             `;
         }
+        this.availableSpace = window.innerHeight - this.elementBottom;
 
         return `
             top: ${this.elementBottom}px;
             ${horizontalStyle}
             width: ${this.width}px;
+            --availableSpace: ${this.availableSpace}px;
         `;
     }
 
