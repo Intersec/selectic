@@ -18,12 +18,16 @@ export default class ExtendedList extends Vue<Props> {
     private topGroup;
     private listHeight;
     private listWidth;
+    private availableSpace;
+    /** check if the height of the box has been completely estimated. */
+    get isFullyEstimated(): boolean;
     get searchingLabel(): string;
     get searching(): boolean;
     get errorMessage(): string;
     get infoMessage(): string;
     get onKeyDown(): (evt: KeyboardEvent) => void;
     get bestPosition(): 'top' | 'bottom';
+    get position(): 'top' | 'bottom';
     get horizontalStyle(): string;
     get positionStyle(): string;
     onFilteredOptionsChange(): void;
