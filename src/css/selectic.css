@@ -184,16 +184,18 @@
 
 .selectic__extended-list {
     position: fixed;
+    top: var(--top-position, 0);
     z-index: 2000;
     height: auto;
+    max-height: var(--availableSpace);
     background-color: var(--selectic-bg, #ffffff);
     box-shadow: 2px 5px 12px 0px #888888;
     border-radius: 0 0 4px 4px;
     padding: 0;
+    width: var(--list-width, 200px);
     min-width: 200px;
     display: grid;
     grid-template-rows: minmax(0, max-content) 1fr;
-    max-height: var(--availableSpace);
 }
 .selectic__extended-list__list-container{
     overflow: auto;

@@ -184,6 +184,7 @@ export default class ExtendedList extends Vue<Props> {
     get positionStyle() {
         let listPosition = this.store.state.listPosition;
         const horizontalStyle = this.horizontalStyle;
+        const width = this.width;
 
         if (listPosition === 'auto') {
             listPosition = this.bestPosition;
@@ -193,23 +194,27 @@ export default class ExtendedList extends Vue<Props> {
             const transform = horizontalStyle.includes('transform')
                 ? 'transform: translateX(-100%) translateY(-100%);'
                 : 'transform: translateY(-100%);';
-            this.availableSpace = this.elementTop;
+            const elementTop = this.elementTop;
+            const availableSpace = this.elementTop;
+            this.availableSpace = availableSpace;
 
             return `
-                top: ${this.elementTop}px;
+                --top-position: ${elementTop}px;
                 ${horizontalStyle}
-                width: ${this.width}px;
+                --list-width: ${width}px;
                 ${transform};
-                --availableSpace: ${this.availableSpace}px;
+                --availableSpace: ${availableSpace}px;
             `;
         }
-        this.availableSpace = window.innerHeight - this.elementBottom;
+        const elementBottom = this.elementBottom;
+        const availableSpace = window.innerHeight - elementBottom;
+        this.availableSpace = availableSpace;
 
         return `
-            top: ${this.elementBottom}px;
+            --top-position: ${elementBottom}px;
             ${horizontalStyle}
-            width: ${this.width}px;
-            --availableSpace: ${this.availableSpace}px;
+            --list-width: ${width}px;
+            --availableSpace: ${availableSpace}px;
         `;
     }
 
