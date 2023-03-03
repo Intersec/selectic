@@ -197,6 +197,9 @@
     display: grid;
     grid-template-rows: minmax(0, max-content) 1fr;
 }
+.selectic__extended-list.selectic-position-top {
+    box-shadow: 2px -3px 12px 0px #888888;
+}
 .selectic__extended-list__list-container{
     overflow: auto;
 }

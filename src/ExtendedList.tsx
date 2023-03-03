@@ -160,6 +160,16 @@ export default class ExtendedList extends Vue<Props> {
         return availableBottom < availableTop ? 'top' : 'bottom';
     }
 
+    get position(): 'top' | 'bottom' {
+        const listPosition = this.store.state.listPosition;
+
+        if (listPosition === 'auto') {
+            return this.bestPosition;
+        }
+
+        return listPosition;
+    }
+
     get horizontalStyle(): string {
         const windowWidth = window.innerWidth;
         const listWidth = this.listWidth;
@@ -182,13 +192,9 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     get positionStyle() {
-        let listPosition = this.store.state.listPosition;
+        const listPosition = this.position;
         const horizontalStyle = this.horizontalStyle;
         const width = this.width;
-
-        if (listPosition === 'auto') {
-            listPosition = this.bestPosition;
-        }
 
         if (listPosition === 'top') {
             const transform = horizontalStyle.includes('transform')
@@ -277,7 +283,10 @@ export default class ExtendedList extends Vue<Props> {
         return (
             <div
                 style={this.positionStyle}
-                class="selectic selectic__extended-list"
+                class={[
+                    'selectic selectic__extended-list',
+                    `selectic-position-${this.position}`,
+                ]}
             >
               {!state.hideFilter && (
                 <Filter
