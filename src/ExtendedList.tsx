@@ -20,6 +20,11 @@ export interface Props {
     elementRight: number;
 }
 
+/* list estimation height
+ * 30px × 10 + 20px (for panel header)
+ */
+const DEFAULT_LIST_HEIGHT = 320;
+
 @Component
 export default class ExtendedList extends Vue<Props> {
     /* {{{ props */
@@ -46,12 +51,20 @@ export default class ExtendedList extends Vue<Props> {
     /* {{{ data */
 
     private topGroup = ' ';
-    private listHeight = 120;
+    private listHeight = 0;
     private listWidth = 200;
     private availableSpace = 0;
 
     /* }}} */
     /* {{{ computed */
+
+    /** check if the height of the box has been completely estimated. */
+    get isFullyEstimated(): boolean {
+        const listHeight = this.listHeight;
+        const availableSpace = this.availableSpace;
+
+        return listHeight !== 0 && listHeight < availableSpace;
+    }
 
     get searchingLabel() {
         return this.store.data.labels.searching;
@@ -125,20 +138,26 @@ export default class ExtendedList extends Vue<Props> {
 
     get bestPosition(): 'top' | 'bottom' {
         const windowHeight = window.innerHeight;
-        const listHeight = this.listHeight;
+        const isFullyEstimated = this.isFullyEstimated;
+        /* XXX: The max() is because if listHeight is greater than default,
+         * it means that the value is more accurate than the default. */
+        const listHeight = isFullyEstimated ? this.listHeight
+            : Math.max(DEFAULT_LIST_HEIGHT, this.listHeight);
         const inputTop = this.elementTop;
         const inputBottom = this.elementBottom;
+        const availableTop = inputTop;
+        const availableBottom = windowHeight - inputBottom;
 
-        if (inputBottom + listHeight <= windowHeight) {
+        if (listHeight < availableBottom) {
             return 'bottom';
         }
 
-        if (listHeight < inputTop) {
+        if (listHeight < availableTop) {
             return 'top';
         }
 
         /* There are not enough space neither at bottom nor at top */
-        return (windowHeight - inputBottom) < inputTop ? 'top' : 'bottom';
+        return availableBottom < availableTop ? 'top' : 'bottom';
     }
 
     get horizontalStyle(): string {
