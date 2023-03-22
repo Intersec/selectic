@@ -74,7 +74,7 @@ body {
 * **--selectic-active-item-bg** _(default: `#66afe9`)_: Background color of items where cursor is over or the active by the arrow keys.
 
 * **--selectic-input-height** _(default: `30px`)_: The height of each items.<br>
-**⚠ Currently this value is also hard-coded in javascript, so it can break the scoll height estimation if this value is changed.**
+**:warning: Currently this value is also hard-coded in javascript, so it can break the scroll height estimation if this value is changed.**
 
 ### Messages
 

@@ -5,13 +5,13 @@
 There are some texts in selectic. But sometimes it is useful to change them (because you want to translate them or to be more precise for the context usage).
 
 There are 3 ways to changes these texts:
-* Call the static `changetexts()` method. It changes texts for all selectic components.
+* Call the static `changeTexts()` method. It changes texts for all selectic components.
 * Change the `texts` property. It changes texts only for the component.
-* Call the `changetexts()` method on the component. It changes texts only for the component.
+* Call the `changeTexts()` method on the component. It changes texts only for the component.
 
 _Changes done locally are prioritary on changes done globally_.
 
-Changing texts on the component with property or with `changetexts()` are equivalent.
+Changing texts on the component with property or with `changeTexts()` are equivalent.
 
 They accept the same argument: an object which contains keys of sentences.
 
@@ -19,7 +19,7 @@ It is possible to replace only some sentences.
 
 ## Keys
 
-* **noFetchMethod**: This is an error message which is displayed if some options are missing and `fetchcallback` is not defined. _Default value is `'Fetch callback is missing: it is not possible to retrieve data.'`_.
+* **noFetchMethod**: This is an error message which is displayed if some options are missing and `fetchCallback` is not defined. _Default value is `'Fetch callback is missing: it is not possible to retrieve data.'`_.
 
 * **searchPlaceholder**: This is the message in the input placeholder to search for options. _Default value is `'Search'`_.
 
@@ -64,11 +64,11 @@ this.$refs.selectic.changeTexts({
 ```
 
 ```html
-<selectic
-    texts: {{
+<Selectic
+    :texts="{
         searchPlaceholder: 'Search for specific options?',
         searching: 'Loading information about this option',
-        noData: 'oups, I forgot to fill this select',
-    }}
+        noData: 'ouch, I forgot to fill this select',
+    }"
 />
 ```

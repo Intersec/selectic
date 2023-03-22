@@ -10,7 +10,7 @@ All these methods should be called directly on the component instance.
 
 `clearCache(forceReset: boolean = false) => void`
 
-Whole cache in selectic are cleared, and so all options are refetched.
+Whole cache in selectic are cleared, and so all options are re-fetched.
 This method is mainly useful in _dynamic_ mode when data should be completely changed (due to some context change).
 
 If `forceReset` is set to `true`, the current selection is also cleared. Otherwise it keeps previous selection.
@@ -54,4 +54,4 @@ This methods force the "open" state of the component.
 if `open` is not set, it toggles the current state.
 
 It returns the final state.
-Keep in mind that the state can be changed immediatley afterward by automatic settings (like [autoDisabled](params.md#autoDisabled)).
+Keep in mind that the state can be changed immediately afterward by automatic settings (like [autoDisabled](params.md#autoDisabled)).

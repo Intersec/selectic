@@ -15,9 +15,11 @@ const items = ['item1', 'second Item'];
 
 ```html
 <selectic
-    options={items}
+    :options="items"
 />
 ```
+![example with simple list](./images/example1.png)
+
 ## object[]
 
 It is possible to define the `option` more precisely.
@@ -36,8 +38,8 @@ It is possible to define the `option` more precisely.
 
 ```javascript
 const items = [{
-    id; 1,
-    text: 'item1',
+    id: 1,
+    text: 'a value',
 }, {
     id: 2,
     text: 'not available yet',
@@ -45,11 +47,13 @@ const items = [{
 }, {
     id: 3,
     text: 'the red option',
-    style: 'background-color: red',
-}];,
-{
+    style: 'color: red',
+}, {
+    id: 4,
+    text: 'another value',
+}, {
     id: 'group1',
-    text: 'some amount',
+    text: 'a "group" for some amounts',
     options: [{
         id: 'amount1',
         text: '1',
@@ -60,16 +64,20 @@ const items = [{
         id: 'amount3',
         text: '100',
     }],
-};
+}];
 ```
 
 ```html
 <selectic
-    options={items}
+    :options="items"
 />
 ```
+![example with object list](./images/example2.png)
 
-# Inner elements
+# Inner elements _(deprecated)_
+
+**:warning: This part has been deprecated with Selectic 3 +.**
+_The main reason is that VueJS 3 does not allowed to read slots as easily as in VueJS 2._
 
 Another way to create a list is to write elements as child of Selectic.
 
@@ -84,22 +92,25 @@ Element properties:
 * **disabled**: will set the **disabled** attribute.
 * **class**: will set the **className** attribute.
 * **style**: will set the **style** attribute.
-* any **data-**: will set the **data** atribute.
+* any **data-**: will set the **data** attribute.
 * Inner text will set the **text** attribute.
 * **label** _(only for optgroup)_: will set the **text** attribute.
 
 ```html
 <selectic>
     <option value="1">
-        item1
+        a value
     </option>
     <option value="2" disabled>
         not available yet
     </option>
-    <option value="3" style="background-color: red">
+    <option value="3" style="color: red">
         the red option
     </option>
-    <optgroup id="group1" label="some amount">
+    <option value="4">
+        another value
+    </option>
+    <optgroup id="group1" label="a &quotes;group&quotes; for some amounts">
         <option value="amount1">
             1
         </option>
@@ -112,8 +123,10 @@ Element properties:
     </optgroup>
 </selectic>
 ```
+![example with slot elements](./images/example2.png)
+
 If options are set both by options attribute and by inner elements,
 the inner elements are added first and then the one described in
 options attribute.
 
-To change this behavior wath the **optionBehavior** property of the [params](params.md) attribute.
+To change this behavior watch the **optionBehavior** property of the [params](params.md) attribute.

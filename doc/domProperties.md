@@ -10,7 +10,7 @@ It defines a unique identifier (ID) which must be unique in the whole document. 
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     value="item2"
     id="example"
 />
@@ -28,7 +28,7 @@ This is the id of the selected option or an array of id (if `multiple` is set).
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     value="item2"
 />
 ```
@@ -39,7 +39,7 @@ When disabled is set, `selectic` cannot be open nor changed.
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     disabled
 />
 ```
@@ -52,7 +52,7 @@ The `value` will be an array.
 
 ```html
 <selectic
-    options={['item1', 'item2', 'item3']}
+    :options="['item1', 'item2', 'item3']"
     multiple
 />
 ```
@@ -65,7 +65,7 @@ It displays the given text if no option is selected.
 
 ```html
 <selectic
-    options={['item1', 'item2', 'item3']}
+    :options="['item1', 'item2', 'item3']"
     placeholder="choose an item"
 />
 ```
@@ -76,7 +76,7 @@ It is added to the main element, and it behaves like `title` attribute of any HT
 
 ```html
 <selectic
-    options={['item1', 'item2', 'item3']}
+    :options="['item1', 'item2', 'item3']"
     title="An information about this component"
 />
 ```
@@ -91,7 +91,7 @@ Note that it will be applied to the inner list element too.
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     value="item2"
     className="my-custom-class another-class"
 />

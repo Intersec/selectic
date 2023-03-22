@@ -16,7 +16,7 @@ This is the id of the selected option or an array of id (if `multiple` is set).
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     value="item2"
 />
 ```
@@ -37,7 +37,7 @@ This value can be changed automatically by selectic if all options are fetched.
 
 ```html
 <selectic
-    options={['item1', 'item2']}
+    :options="['item1', 'item2']"
     value="item2"
     selectionIsExcluded
 />
@@ -51,7 +51,7 @@ Default: `[]`
 
 This property is to list all options available ([read how to build a list](list.md)).
 
-This property can be ommited in dynamic mode ([read how to build dynamic list](dynamic.md)).
+This property can be omitted in dynamic mode ([read how to build dynamic list](dynamic.md)).
 
 ## groups
 
@@ -65,13 +65,13 @@ It is required to fill this property only in _dynamic_ mode in order to know to 
 
 ```html
 <selectic
-    groups={[{
+    :groups="[{
         id: 'g1',
         text: 'The first group',
     }, {
         id: 'g2',
         text: 'The second group',
-    }]}
+    }]"
 />
 ```
 
@@ -91,12 +91,12 @@ It changes the texts only for this component. To change texts for all selectic c
 
 ```html
 <selectic
-    options={['Goldfish', 'Salmon', 'Trout', 'Tuna']}
+    :options="['Goldfish', 'Salmon', 'Trout', 'Tuna']"
     value="Tuna"
-    texts={{
+    :texts="{
         searchPlaceholder: 'Search for fish',
         noResult: 'No fish matched your search',
-    }}
+    }"
 />
 ```
 
@@ -114,9 +114,9 @@ This attribute has effects only in ([dynamic mode](dynamic.md)).
 
 ```html
 <selectic
-    params={{
+    :params="{
         fetchCallback: fetchData,
-    }}
+    }"
     noCache
 />
 ```
@@ -134,14 +134,14 @@ This allows to force the selectic to a given state. The state may be changed due
 
 It also allows to start in an open state.
 
-This attribute purpose is to change the state programatically. To keep state unchanged there are several other attributes ([disabled](extendedProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepOpenWithOtherSelectic), ...).
+This attribute purpose is to change the state programmatically. To keep state unchanged there are several other attributes ([disabled](extendedProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepOpenWithOtherSelectic), ...).
 The current state can be updated with the [open](events.md#open) and [close](events.md#close) events.
 
 It is also possible to change the "open" state with the method [toggleOpen](methods.md#toggleOpen).
 
 ```html
 <selectic
-    options={optionList}
+    :options="optionList"
     open
 />
 ```

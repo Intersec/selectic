@@ -12,51 +12,66 @@ reverse selection, and many other possibilities.
 
 It integrates well with VueJS and is reactive to option changes.
 
+Typescript types are provided.
+
 There are very few dependencies and code stays very small (~90kB).
+
+![example of a Selectic component](./doc/images/selectic_example.png)
 
 ## Example
 
 ```html
 <Selectic
-  :options="['first choice', 'second choice', 'third choice']"
-  v-model="selection"
+    :options="['first choice', 'second choice', 'third choice']"
+    v-model="selection"
 />
 
 <Selectic
-  value="item2"
-  :options="[{
-      id: 'item1',
-      text: 'The first item',
-      icon: 'fa fa-thumbs-o-up',
-  }, {
-      id: 'item2',
-      text: 'Another item',
-      title: 'second choice',
-  }, {
-      id: 'item3',
-      text: 'Disabled item',
-      disabled: true,
-  }]"
-  multiple
+    multiple
+    value="item2"
+    :options="[{
+        id: 'item1',
+        text: 'The first item',
+        icon: 'fa fa-thumbs-o-up',
+    }, {
+        id: 'item2',
+        text: 'Another item',
+        title: 'second choice',
+    }, {
+        id: 'item3',
+        text: 'Disabled item',
+        disabled: true,
+    }]"
 
-  @input="onChange"
+    @input="onChange"
 />
 
-<Selectic>
-  <optgroup label="Animals">
-    <option>Cat</option>
-    <option value="dog">Dog</option>
-    <option :value="42">42 goldfishes</option>
-  </optgroup>
-</Selectic>
+<Selectic
+    :options="[{
+        id: 'animals',
+        text: 'Animals',
+        options: [{
+            id: 'cat',
+            text: 'Cat',
+        }, {
+            id: 'dog',
+            text: 'A dog',
+        }, {
+            id: 42,
+            text: '42 goldfishes',
+        }],
+    }]"
+/>
 ```
+
+[Full documentation](./doc/main.md)
 
 ## Features
 
 * List of items (either string array or object array).
 * Can load dynamically list from a server and the list can be paginate (with a
   cache system to avoid reloading previous requests).
-* Slots: options may be added from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way _(currently disabled in 3.0.0)_.
+* ~~Slots: options may be added from Vue template (by writing explicit `<option>` or `<optgroup>`) in a reactive way~~ _(currently disabled in 3.0.0+)_.
 * Multi-sources: Possibility to combine options from different sources (static, dynamic or slots) or to use the other as fallback (if the list is empty).
 * Supports basic Select properties like `multiple`, `disabled`, `title`
 * Supports group element (equivalent of optGroup), even for dynamic list.

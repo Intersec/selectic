@@ -23,10 +23,10 @@ will not be displayed and the filter panel is always open.
 
 ```html
 <selectic
-    params={{
+    :params="{
         hideFilter: false,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -40,10 +40,10 @@ If `allowClearSelection` is set to `false`, it won't be possible to have nothing
 
 ```html
 <selectic
-    params={{
+    :params="{
         allowClearSelection: true,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -59,10 +59,10 @@ By default, it is set to `true` if `multiple` is not set, to `false` otherwise.
 
 ```html
 <selectic
-    params={{
+    :params="{
         autoSelect: false,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -72,16 +72,16 @@ Type: `boolean`
 
 If `autoDisabled` is set to `true`, it will disable automatically the component if the list of options is empty or if there is only one which must be selected (`allowClearSelection` is not set).
 
-It doesn't apply for dynamic list ([see dymanic configuration](dynamic.md)).
+It doesn't apply for dynamic list ([see dynamic configuration](dynamic.md)).
 
 By default, it is set to `true`.
 
 ```html
 <selectic
-    params={{
+    :params="{
         autoDisabled: true,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -89,16 +89,16 @@ By default, it is set to `true`.
 
 Type: `boolean`
 
-If `stricValue` is set to `true`, it will consider value as `undefined` if its value is not an id of `options`.
+If `strictValue` is set to `true`, it will consider value as `undefined` if its value is not an id of `options`.
 
 By default, it is set to `false`.
 
 ```html
 <selectic
-    params={{
+    :params="{
         strictValue: true,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -106,7 +106,7 @@ By default, it is set to `false`.
 
 Type: `'collapsed'` | `'multiline'`
 
-`selectOverflow` is to describe how selected options should be displayed when theyr are not enough space to display them all (in _multiple_ mode).
+`selectOverflow` is to describe how selected options should be displayed when they are not enough space to display them all (in _multiple_ mode).
 
 Currently there are two supported behavior:
 * `'collapsed'`: the size of selectic input is not changed. If there is not enough space to display all selected options then it displays the possible ones then displays a _"+x others"_ in a badge (_x_ is the number of not displayed options). It is possible to watch these options with `title` or by opening selectic and see which options are selected. _This is the default value_.
@@ -114,10 +114,10 @@ Currently there are two supported behavior:
 
 ```html
 <selectic
-    params={{
+    :params="{
         selectionOverflow: 'multiple',
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -131,10 +131,10 @@ By default, if there is no selected options, the result given by `getValue()` re
 
 ```html
 <selectic
-    params={{
+    :params="{
         emptyValue: '',
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -148,7 +148,7 @@ As argument, it receives an option item and should also return an option item.
 
 ```html
 <selectic
-    params={{
+    :params="{
         formatOption: (option) => {
             if (option.id === 2) {
                 return Object.assign({}, option, {
@@ -158,8 +158,8 @@ As argument, it receives an option item and should also return an option item.
             }
             return option;
         },
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -173,14 +173,14 @@ As argument, it receives an option item and should also return an option item.
 
 ```html
 <selectic
-    params={{
+    :params="{
         formatSelection: (option) => {
             return Object.assign({}, option, {
                 style: 'background-color: rgb(250, 250, 20 * option.id)',
             });
         },
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -196,10 +196,10 @@ It should return a promise which resolves with an object which contains the tota
 
 ```html
 <selectic
-    params={{
+    :params="{
         fetchCallback: (search, offset, limit) => fetch(`list?search=${search}&offset=${offset}&limit=${limit}`),
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -216,12 +216,12 @@ It should return a promise which resolves with an array of options corresponding
 
 ```html
 <selectic
-    params={{
+    :params="{
         getItemsCallback: (ids) => Promise.all(
             ids.map(id => fetch(`getItem?id=${id}`))
         ),
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -241,10 +241,10 @@ _`pageSize` default value is `100`._
 
 ```html
 <selectic
-    params={{
+    :params="{
         pageSize: 500,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -271,10 +271,10 @@ Read [the extended properties documentation](extendedProperties.md) for more inf
 
 ```html
 <selectic
-    params={{
+    :params="{
         allowRevert: true,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -296,10 +296,10 @@ This option allows you to change the behavior.
 
 ```html
 <selectic
-    params={{
+    :params="{
         forceSelectAll: 'auto',
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -312,14 +312,14 @@ Default value: `'auto'`
 
 `listPosition` defines where the list should be displayed (at top or at bottom of the select button).
 
-With the `'auto'` value it displays the list at bottom, but if there is not enought space (the select is at bottom of the page). It displays the list at top instead.
+With the `'auto'` value it displays the list at bottom, but if there is not enough space (the select is at bottom of the page). It displays the list at top instead.
 
 ```html
 <selectic
-    params={{
+    :params={
         listPosition: 'top',
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -356,10 +356,10 @@ Display only one source (the first which is not empty).
 
 ```html
 <selectic
-    params={{
+    :params="{
         optionBehavior: 'sort-DOE',
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```
 
@@ -369,16 +369,16 @@ Type: `boolean`
 
 Default value: `false`
 
-By default, only one selectic component can be open at the same time. So if another Selectic component is open (mainly programmtically) then any previously open component is closed.
+By default, only one selectic component can be open at the same time. So if another Selectic component is open (mainly programmatically) then any previously open component is closed.
 If `keepOpenWithOtherSelectic` is set to `true`, this component stays open when another Selectic component opens.
 
 Note: This attribute does not prevent closing when user clicks outside the component.
 
 ```html
 <selectic
-    params={{
+    :params="{
         keepOpenWithOtherSelectic: true,
-    }}
-    options={optionList}
+    }"
+    :options="optionList"
 />
 ```

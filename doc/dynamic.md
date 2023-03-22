@@ -2,9 +2,9 @@
 
 [Back to documentation index](main.md)
 
-The dynamic mode allows to load options dynamically (from a server or from anything else asynchrously).
+The dynamic mode allows to load options dynamically (from a server or from anything else asynchronously).
 The list of options will be built when selectic is open. It fetches the first options and fetch the following ones when it is needed.
-It keeps result in cache to avoid refetching when selectic is open another time.
+It keeps result in cache to avoid re-fetching when selectic is open another time.
 
 ## Basic usage
 
@@ -75,11 +75,11 @@ function buildItem(id) {
 
 ```html
 <selectic
-    value={5}
-    params={{
+    :value="5"
+    :params="{
         fetchCallback: listItems,
         getItemsCallback: getItems,
-    }}
+    }"
 />
 ```
 
@@ -115,11 +115,11 @@ If you don't want to activate this feature, then you could set the `allowRevert`
 ```html
 <selectic
     multiple
-    params={{
+    :params="{
         fetchCallback: fetchCallback,
         getItemsCallback: getItemsCallback,
         allowRevert: false,
-    }}
+    }"
 />
 ```
 
@@ -130,17 +130,17 @@ The list of all groups should be provided in the `groups` property and child opt
 
 ```html
 <selectic
-    groups={[{
+    :groups="[{
         id: 'group 1',
         text: 'This is the first group',
     }, {
         id: 'group 2',
         text: 'This is the second group',
-    }]}
-    params={{
+    }]"
+    :params="{
         fetchCallback: fetchCallback,
         getItemsCallback: getItemsCallback,
-    }}
+    }"
 />
 ```
 
