@@ -82,19 +82,34 @@ export default class MainInput extends Vue<Props> {
         return !isMultiple || !hasOnlyOneValue;
     }
 
-    get clearedLabel() {
+    get clearedLabel(): string {
         const isMultiple = this.store.state.multiple;
         const labelKey = isMultiple ? 'clearSelections' : 'clearSelection';
 
         return this.store.data.labels[labelKey];
     }
 
-    get singleSelectedItem() {
+    get singleSelectedItem(): undefined | OptionItem {
         const state = this.store.state;
         const isMultiple = state.multiple;
-        const selected = this.selectedOptions;
 
-        return !isMultiple && !!selected && (selected as OptionItem).text;
+        if (isMultiple) {
+            return;
+        }
+
+        return this.selectedOptions as OptionItem;
+    }
+
+    get singleSelectedItemText(): string {
+        const item = this.singleSelectedItem;
+
+        return item?.text || '';
+    }
+
+    get singleSelectedItemTitle(): string {
+        const item = this.singleSelectedItem;
+
+        return item?.title || item?.text || '';
     }
 
     get singleStyle() {
@@ -342,9 +357,9 @@ export default class MainInput extends Vue<Props> {
                 <span
                     class="selectic-item_text"
                     style={this.singleStyle}
-                    title={this.singleSelectedItem || ''}
+                    title={this.singleSelectedItemTitle}
                 >
-                    {this.singleSelectedItem}
+                    {this.singleSelectedItemText}
                 </span>
             )}
             {this.displayPlaceholder && (
@@ -374,7 +389,7 @@ export default class MainInput extends Vue<Props> {
                             <div
                                 class="single-value"
                                 style={item.style}
-                                title={item.text}
+                                title={item.title || item.text}
                                 on={{
                                     click: () => this.$emit('item:click', item.id),
                                 }}
