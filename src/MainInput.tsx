@@ -32,6 +32,9 @@ export default class MainInput extends Vue<Props> {
 
     private nbHiddenItems = 0;
 
+    /* reactivity non needed */
+    private domObserver: MutationObserver | null = null;
+
     /* }}} */
     /* {{{ computed */
 
@@ -221,6 +224,13 @@ export default class MainInput extends Vue<Props> {
          * currently shown */
         const el = this.$refs.selectedItems;
         const parentEl = el.parentElement as HTMLDivElement;
+
+        if (!document.contains(parentEl)) {
+            /* The element is currently not in DOM */
+            this.createObserver(parentEl);
+            return;
+        }
+
         const parentPadding = parseInt(getComputedStyle(parentEl).getPropertyValue('padding-right'), 10);
         const clearEl = parentEl.querySelector('.selectic-input__clear-icon')  as HTMLSpanElement;
         const clearWidth = clearEl ? clearEl.offsetWidth : 0;
@@ -261,6 +271,36 @@ export default class MainInput extends Vue<Props> {
         this.nbHiddenItems = selectedOptions.length - idx;
     }
 
+    private closeObserver() {
+        const observer = this.domObserver;
+        if (observer) {
+            observer.disconnect();
+        }
+        this.domObserver = null;
+    }
+
+    private createObserver(el: HTMLElement) {
+        this.closeObserver();
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    for (const elMutated of Array.from(mutation.addedNodes)) {
+                        /* Check that element has been added to DOM */
+                        if (elMutated.contains(el)) {
+                            this.closeObserver();
+                            this.computeSize();
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+        const config = { childList: true, subtree: true };
+
+        observer.observe(document, config);
+        this.domObserver = observer;
+    }
+
     /* }}} */
     /* {{{ watch */
 
@@ -274,6 +314,10 @@ export default class MainInput extends Vue<Props> {
 
     public updated() {
         this.computeSize();
+    }
+
+    public beforeUnmount() {
+        this.closeObserver();
     }
 
     /* }}} */
