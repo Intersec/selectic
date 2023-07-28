@@ -47,6 +47,8 @@ It is possible to replace only some sentences.
 
 * **moreSelectedItems**: This is a message displayed in a badge if there are more selected options than the size of the component. _Default value is `'+%d others'`_.
 
+* **wrongQueryResult**: This is an error message displayed when result from the `fetchCallback` don't return all expected values. _Default value is `'Query did not return all results.'`_.
+
 
 ## Example
 

@@ -1387,7 +1387,7 @@ tape.test('Store creation', (subT) => {
                 command1.fetch();
                 await _.nextVueTick(store1, spy1.promise);
 
-                t.is(store1.state.filteredOptions.length, 3);
+                t.is(store1.state.filteredOptions.length, 3, 'should contain the groups');
 
                 const command2 = {};
                 const spy2 = {};

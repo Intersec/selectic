@@ -5,7 +5,7 @@
  */
 
 import { reactive, watch, unref, computed, ComputedRef } from 'vue';
-import { convertToRegExp, assignObject, deepClone } from './tools';
+import { convertToRegExp, assignObject, deepClone, compareOptions } from './tools';
 
 /* {{{ Types definitions */
 
@@ -346,6 +346,7 @@ interface Messages {
     moreSelectedItem: string;
     moreSelectedItems: string;
     unknownPropertyValue: string;
+    wrongQueryResult: string;
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
@@ -376,6 +377,7 @@ let messages: Messages = {
     moreSelectedItem: '+1 other',
     moreSelectedItems: '+%d others',
     unknownPropertyValue: 'property "%s" has incorrect values.',
+    wrongQueryResult: 'Query did not return all results.',
 };
 
 let closePreviousSelectic: undefined | voidCaller;
@@ -1165,7 +1167,7 @@ export default class SelecticStore {
         return childOptions;
     }
 
-    private buildAllOptions(keepFetched = false) {
+    private buildAllOptions(keepFetched = false, stopFetch = false) {
         const allOptions: OptionValue[] = [];
         let listOptions: OptionValue[] = [];
         let elementOptions: OptionValue[] = [];
@@ -1242,13 +1244,26 @@ export default class SelecticStore {
             }
         }
 
-        this.state.filteredOptions = [];
-        this.state.totalFilteredOptions = Infinity;
+        if (!stopFetch) {
+            this.state.filteredOptions = [];
+            this.state.totalFilteredOptions = Infinity;
 
-        this.buildFilteredOptions().then(() => {
-            /* XXX: To recompute for strict mode and auto-select */
-            this.assertCorrectValue();
-        });
+            this.buildFilteredOptions().then(() => {
+                /* XXX: To recompute for strict mode and auto-select */
+                this.assertCorrectValue();
+            });
+        } else {
+            /* Do not fetch again just build filteredOptions */
+            const search = this.state.searchText;
+            if (!search) {
+                this.state.filteredOptions = this.buildGroupItems(allOptions);
+                this.state.totalFilteredOptions = this.state.filteredOptions.length;
+                return;
+            }
+            const options = this.filterOptions(allOptions, search);
+            this.state.filteredOptions = options;
+            this.state.totalFilteredOptions = this.state.filteredOptions.length;
+        }
     }
 
     private async buildFilteredOptions() {
@@ -1407,6 +1422,7 @@ export default class SelecticStore {
             const requestId = ++this.requestId;
             const {total: rTotal, result} = await fetchCallback(search, offset, limit);
             let total = rTotal;
+            let errorMessage = '';
 
             /* Assert result is correctly formatted */
             if (!Array.isArray(result)) {
@@ -1426,8 +1442,16 @@ export default class SelecticStore {
             if (!search) {
                 /* update cache */
                 state.totalDynOptions = total;
-                state.dynOptions.splice(offset, limit, ...result);
-                setTimeout(() => this.buildAllOptions(true), 0);
+                const old = state.dynOptions.splice(offset, limit, ...result);
+                if (compareOptions(old, result)) {
+                    /* Added options are the same as previous ones.
+                     * Stop fetching to avoid infinite loop
+                     */
+                    errorMessage = labels.wrongQueryResult;
+                    setTimeout(() => this.buildAllOptions(true, true), 0);
+                } else {
+                    setTimeout(() => this.buildAllOptions(true), 0);
+                }
             }
 
             /* Check request is not obsolete */
@@ -1456,12 +1480,12 @@ export default class SelecticStore {
                 this.addStaticFilteredOptions(true);
             }
 
-            state.status.errorMessage = '';
+            state.status.errorMessage = errorMessage;
         } catch (e) {
             state.status.errorMessage = (e as Error).message;
             if (!search) {
                 state.totalDynOptions = 0;
-                this.buildAllOptions(true);
+                this.buildAllOptions(true, true);
             }
         }
 

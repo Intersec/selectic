@@ -748,6 +748,186 @@ tape.test('commit()', (st) => {
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 200]));
                 t.deepEqual(store.state.allOptions.length, 300);
                 t.deepEqual(store.state.offsetItem, 180);
+                t.is(store.state.status.errorMessage, '');
+
+                t.end();
+            });
+
+            sTest.test('should fetch only once', async (t) => {
+                const command = {};
+                let nbTry = 0;
+
+                const store = new Store({
+                    fetchCallback: buildFetchCb({ total: 500, command }),
+                });
+                command.usage = 0;
+                store.commit('isOpen', true);
+
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage, 1, 'the fetch is done only once to get first page');
+                t.is(store.state.status.errorMessage, '');
+
+                command.usage = 0;
+                store.commit('offsetItem', 180);
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage, 1, 'fetch missing options only once');
+                t.is(store.state.status.errorMessage, '');
+
+                t.deepEqual(store.state.allOptions.length, 300);
+
+                t.end();
+            });
+
+            sTest.test('should fetch several time if needed', async (t) => {
+                const command = {};
+                let nbTry = 0;
+
+                const store = new Store({
+                    fetchCallback: buildFetchCb({ total: 500, command }),
+                });
+                command.usage = 0;
+                store.commit('isOpen', true);
+
+                command.interceptResult = (result) => {
+                    switch (command.usage) {
+                        case 1:
+                            /* returns only some of the first options */
+                            result.result = result.result.slice(0, 15);
+                            break;
+                        case 2:
+                            /* returns only some options */
+                            result.result = result.result.slice(0, 25);
+                        default:
+                            /* do not change the result */
+                    }
+                    return result;
+                };
+
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage > 1, true, 'should fetch first options with several fetch');
+                t.is(command.usage < 10, true, 'should have stop fetching by itself');
+                t.is(store.state.allOptions.length >= 50, true, 'should have retrieve the first options');
+                t.is(store.state.status.errorMessage, '');
+
+                command.usage = 0;
+                store.commit('offsetItem', 180);
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage > 1, true, 'should fetch missing options with several fetch');
+                t.is(command.usage < 10, true, 'should have stop fetching by itself');
+
+                t.deepEqual(store.state.allOptions.length, 300);
+                t.is(store.state.status.errorMessage, '');
+
+                t.end();
+            });
+
+            sTest.test('should stop fetching with wrong result: similar results', async (t) => {
+                const command = {};
+                let nbTry = 0;
+
+                const store = new Store({
+                    fetchCallback: buildFetchCb({ total: 500, command }),
+                });
+                command.usage = 0;
+                store.commit('isOpen', true);
+
+                command.interceptResult = (result) => {
+                    /* Returns only the 2 first options */
+                    result.result = result.result.slice(0, 2);
+
+                    return result;
+                };
+
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage > 1, true, 'should have try to fetch several times');
+                t.is(command.usage < 10, true, 'should have stop fetching');
+                t.is(store.state.status.errorMessage, store.data.labels.wrongQueryResult);
+
+                command.usage = 0;
+                store.commit('offsetItem', 180);
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage < 10, true, 'should have stop fetching');
+                t.is(store.state.status.errorMessage, store.data.labels.wrongQueryResult);
+
+                t.end();
+            });
+
+            sTest.test('should stop fetching with wrong result: wrong total', async (t) => {
+                const command = {};
+                let nbTry = 0;
+
+                const store = new Store({
+                    fetchCallback: buildFetchCb({ total: 20, command }),
+                });
+                command.usage = 0;
+                store.commit('isOpen', true);
+
+                command.interceptResult = (result) => {
+                    result.total = 50;
+
+                    return result;
+                };
+
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage > 1, true, 'should have try to fetch several times');
+                t.is(command.usage < 10, true, 'should have stop fetching');
+                t.is(store.state.status.errorMessage, store.data.labels.wrongQueryResult);
+
+                command.usage = 0;
+                store.commit('offsetItem', 30);
+                nbTry = 0;
+                while (nbTry !== command.usage && nbTry < 10) {
+                    nbTry = command.usage;
+                    command.fetch();
+                    await _.nextVueTick(store, command.promise);
+                }
+
+                t.is(command.usage < 10, true, 'should have stop fetching');
+                t.is(store.state.status.errorMessage, store.data.labels.wrongQueryResult);
+
+                t.deepEqual(store.state.allOptions.length, 20);
 
                 t.end();
             });

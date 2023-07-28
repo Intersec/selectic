@@ -101,6 +101,7 @@ function buildFetchCb({
         command.reject = () => {};
         command.promise = () => {};
         command.fetch = () => {};
+        command.usage = 0;
     }
 
     return (search, offset, limit) => {
@@ -128,10 +129,16 @@ function buildFetchCb({
             });
 
             function resolveFetch() {
-                resolve({
+                let result = {
                     total,
                     result: getOptions(nb, prefix, offset, groupName),
-                });
+                };
+
+                if (command && command.interceptResult) {
+                    result = command.interceptResult(result);
+                }
+
+                resolve(result);
             }
 
             if (command) {
@@ -145,6 +152,7 @@ function buildFetchCb({
 
         if (command) {
             command.promise = fetchPromise;
+            command.usage++;
         }
         spy.promise = fetchPromise;
 

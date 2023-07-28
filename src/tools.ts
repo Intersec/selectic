@@ -1,4 +1,5 @@
 import { unref } from 'vue';
+import { OptionValue } from './Store';
 
 /**
  * Clone the object and its inner properties.
@@ -85,4 +86,34 @@ export function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array<Partial
         }
     }
     return result as T;
+}
+
+/** Compare 2 list of options.
+ * @returns true if there are no difference
+ */
+export function compareOptions(oldOptions: OptionValue[], newOptions: OptionValue[]): boolean {
+    if (oldOptions.length !== newOptions.length) {
+        return false;
+    }
+
+    return oldOptions.every((oldOption, idx) => {
+        const newOption = newOptions[idx];
+        const keys = Object.keys(oldOption);
+        if (keys.length !== Object.keys(newOption).length) {
+            return false;
+        }
+        return keys.every((optionKey) => {
+            const key = optionKey as keyof OptionValue;
+            const oldValue = oldOption[key];
+            const newValue = newOption[key];
+
+            if (key === 'options') {
+                return compareOptions(oldValue, newValue);
+            }
+            if (key === 'data') {
+                return JSON.stringify(oldValue) === JSON.stringify(newValue);
+            }
+            return oldValue === newValue;
+        });
+    });
 }
