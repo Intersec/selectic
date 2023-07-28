@@ -11,13 +11,16 @@ export default class MainInput extends Vue<Props> {
     private store;
     private id;
     private nbHiddenItems;
+    private domObserver;
     get isDisabled(): boolean;
     get hasValue(): boolean;
     get displayPlaceholder(): boolean;
     get canBeCleared(): boolean;
     get showClearAll(): boolean;
     get clearedLabel(): string;
-    get singleSelectedItem(): string | false;
+    get singleSelectedItem(): undefined | OptionItem;
+    get singleSelectedItemText(): string;
+    get singleSelectedItemTitle(): string;
     get singleStyle(): string | undefined;
     get selecticId(): string | undefined;
     get isSelectionReversed(): boolean;
@@ -31,7 +34,10 @@ export default class MainInput extends Vue<Props> {
     private selectItem;
     private clearSelection;
     private computeSize;
+    private closeObserver;
+    private createObserver;
     onInternalChange(): void;
     updated(): void;
+    beforeUnmount(): void;
     render(): h.JSX.Element;
 }

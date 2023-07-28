@@ -139,6 +139,7 @@ interface Messages {
     moreSelectedItem: string;
     moreSelectedItems: string;
     unknownPropertyValue: string;
+    wrongQueryResult: string;
 }
 export declare type PartialMessages = {
     [K in keyof Messages]?: Messages[K];

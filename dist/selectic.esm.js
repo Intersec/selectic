@@ -107,6 +107,33 @@ function assignObject(obj, ...sourceObjects) {
     }
     return result;
 }
+/** Compare 2 list of options.
+ * @returns true if there are no difference
+ */
+function compareOptions(oldOptions, newOptions) {
+    if (oldOptions.length !== newOptions.length) {
+        return false;
+    }
+    return oldOptions.every((oldOption, idx) => {
+        const newOption = newOptions[idx];
+        const keys = Object.keys(oldOption);
+        if (keys.length !== Object.keys(newOption).length) {
+            return false;
+        }
+        return keys.every((optionKey) => {
+            const key = optionKey;
+            const oldValue = oldOption[key];
+            const newValue = newOption[key];
+            if (key === 'options') {
+                return compareOptions(oldValue, newValue);
+            }
+            if (key === 'data') {
+                return JSON.stringify(oldValue) === JSON.stringify(newValue);
+            }
+            return oldValue === newValue;
+        });
+    });
+}
 
 /* File Purpose:
  * It keeps and computes all states at a single place.
@@ -136,6 +163,7 @@ let messages = {
     moreSelectedItem: '+1 other',
     moreSelectedItems: '+%d others',
     unknownPropertyValue: 'property "%s" has incorrect values.',
+    wrongQueryResult: 'Query did not return all results.',
 };
 let closePreviousSelectic;
 /* }}} */
@@ -763,7 +791,7 @@ class SelecticStore {
         });
         return childOptions;
     }
-    buildAllOptions(keepFetched = false) {
+    buildAllOptions(keepFetched = false, stopFetch = false) {
         const allOptions = [];
         let listOptions = [];
         let elementOptions = [];
@@ -834,12 +862,26 @@ class SelecticStore {
                 this.state.totalAllOptions = allOptions.length;
             }
         }
-        this.state.filteredOptions = [];
-        this.state.totalFilteredOptions = Infinity;
-        this.buildFilteredOptions().then(() => {
-            /* XXX: To recompute for strict mode and auto-select */
-            this.assertCorrectValue();
-        });
+        if (!stopFetch) {
+            this.state.filteredOptions = [];
+            this.state.totalFilteredOptions = Infinity;
+            this.buildFilteredOptions().then(() => {
+                /* XXX: To recompute for strict mode and auto-select */
+                this.assertCorrectValue();
+            });
+        }
+        else {
+            /* Do not fetch again just build filteredOptions */
+            const search = this.state.searchText;
+            if (!search) {
+                this.state.filteredOptions = this.buildGroupItems(allOptions);
+                this.state.totalFilteredOptions = this.state.filteredOptions.length;
+                return;
+            }
+            const options = this.filterOptions(allOptions, search);
+            this.state.filteredOptions = options;
+            this.state.totalFilteredOptions = this.state.filteredOptions.length;
+        }
     }
     async buildFilteredOptions() {
         if (!this.state.isOpen) {
@@ -971,6 +1013,7 @@ class SelecticStore {
             const requestId = ++this.requestId;
             const { total: rTotal, result } = await fetchCallback(search, offset, limit);
             let total = rTotal;
+            let errorMessage = '';
             /* Assert result is correctly formatted */
             if (!Array.isArray(result)) {
                 throw new Error(labels.wrongFormattedData);
@@ -986,8 +1029,17 @@ class SelecticStore {
             if (!search) {
                 /* update cache */
                 state.totalDynOptions = total;
-                state.dynOptions.splice(offset, limit, ...result);
-                setTimeout(() => this.buildAllOptions(true), 0);
+                const old = state.dynOptions.splice(offset, limit, ...result);
+                if (compareOptions(old, result)) {
+                    /* Added options are the same as previous ones.
+                     * Stop fetching to avoid infinite loop
+                     */
+                    errorMessage = labels.wrongQueryResult;
+                    setTimeout(() => this.buildAllOptions(true, true), 0);
+                }
+                else {
+                    setTimeout(() => this.buildAllOptions(true), 0);
+                }
             }
             /* Check request is not obsolete */
             if (requestId !== this.requestId) {
@@ -1010,13 +1062,13 @@ class SelecticStore {
             if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
                 this.addStaticFilteredOptions(true);
             }
-            state.status.errorMessage = '';
+            state.status.errorMessage = errorMessage;
         }
         catch (e) {
             state.status.errorMessage = e.message;
             if (!search) {
                 state.totalDynOptions = 0;
-                this.buildAllOptions(true);
+                this.buildAllOptions(true, true);
             }
         }
         this.state.status.searching = false;
@@ -1216,6 +1268,8 @@ let MainInput = class MainInput extends Vue {
         /* }}} */
         /* {{{ data */
         this.nbHiddenItems = 0;
+        /* reactivity non needed */
+        this.domObserver = null;
     }
     /* }}} */
     /* {{{ computed */
@@ -1261,8 +1315,18 @@ let MainInput = class MainInput extends Vue {
     get singleSelectedItem() {
         const state = this.store.state;
         const isMultiple = state.multiple;
-        const selected = this.selectedOptions;
-        return !isMultiple && !!selected && selected.text;
+        if (isMultiple) {
+            return;
+        }
+        return this.selectedOptions;
+    }
+    get singleSelectedItemText() {
+        const item = this.singleSelectedItem;
+        return (item === null || item === void 0 ? void 0 : item.text) || '';
+    }
+    get singleSelectedItemTitle() {
+        const item = this.singleSelectedItem;
+        return (item === null || item === void 0 ? void 0 : item.title) || (item === null || item === void 0 ? void 0 : item.text) || '';
     }
     get singleStyle() {
         const selected = this.selectedOptions;
@@ -1360,6 +1424,11 @@ let MainInput = class MainInput extends Vue {
          * currently shown */
         const el = this.$refs.selectedItems;
         const parentEl = el.parentElement;
+        if (!document.contains(parentEl)) {
+            /* The element is currently not in DOM */
+            this.createObserver(parentEl);
+            return;
+        }
         const parentPadding = parseInt(getComputedStyle(parentEl).getPropertyValue('padding-right'), 10);
         const clearEl = parentEl.querySelector('.selectic-input__clear-icon');
         const clearWidth = clearEl ? clearEl.offsetWidth : 0;
@@ -1391,6 +1460,33 @@ let MainInput = class MainInput extends Vue {
         idx--;
         this.nbHiddenItems = selectedOptions.length - idx;
     }
+    closeObserver() {
+        const observer = this.domObserver;
+        if (observer) {
+            observer.disconnect();
+        }
+        this.domObserver = null;
+    }
+    createObserver(el) {
+        this.closeObserver();
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    for (const elMutated of Array.from(mutation.addedNodes)) {
+                        /* Check that element has been added to DOM */
+                        if (elMutated.contains(el)) {
+                            this.closeObserver();
+                            this.computeSize();
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+        const config = { childList: true, subtree: true };
+        observer.observe(document, config);
+        this.domObserver = observer;
+    }
     /* }}} */
     /* {{{ watch */
     onInternalChange() {
@@ -1400,6 +1496,9 @@ let MainInput = class MainInput extends Vue {
     /* {{{ life cycles methods */
     updated() {
         this.computeSize();
+    }
+    beforeUnmount() {
+        this.closeObserver();
     }
     /* }}} */
     render() {
@@ -1411,14 +1510,14 @@ let MainInput = class MainInput extends Vue {
                         focused: this.store.state.isOpen,
                         disabled: this.store.state.disabled,
                     }] },
-                this.hasValue && !this.store.state.multiple && (h("span", { class: "selectic-item_text", style: this.singleStyle, title: this.singleSelectedItem || '' }, this.singleSelectedItem)),
+                this.hasValue && !this.store.state.multiple && (h("span", { class: "selectic-item_text", style: this.singleStyle, title: this.singleSelectedItemTitle }, this.singleSelectedItemText)),
                 this.displayPlaceholder && (h("span", { class: [
                         'selectic-input__selected-items__placeholder',
                         'selectic-item_text',
                     ], title: this.store.state.placeholder }, this.store.state.placeholder)),
                 this.store.state.multiple && (h("div", { class: "selectic-input__selected-items", ref: "selectedItems" },
                     this.isSelectionReversed && (h("span", { class: "fa fa-strikethrough selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
-                    this.showSelectedOptions.map((item) => (h("div", { class: "single-value", style: item.style, title: item.text, on: {
+                    this.showSelectedOptions.map((item) => (h("div", { class: "single-value", style: item.style, title: item.title || item.text, on: {
                             click: () => this.$emit('item:click', item.id),
                         } },
                         h("span", { class: "selectic-input__selected-items__value" }, item.text),
