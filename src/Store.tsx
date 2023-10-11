@@ -1447,7 +1447,13 @@ export default class SelecticStore {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
                      */
-                    errorMessage = labels.wrongQueryResult;
+                    if (!this.hasFetchedAllItems) {
+                        /* Display error if all items are not fetch
+                         * We can have the case where old value and result
+                         * are the same but total is correct when the
+                         * total is 0 */
+                        errorMessage = labels.wrongQueryResult;
+                    }
                     setTimeout(() => this.buildAllOptions(true, true), 0);
                 } else {
                     setTimeout(() => this.buildAllOptions(true), 0);
