@@ -585,6 +585,11 @@ export default class SelecticStore {
 
         watch(() => this.state.internalValue, () => {
             this.buildSelectedOptions();
+            /* If there is only one item, and the previous selected value was
+             * different, then if we change it to the only available item we
+             * should disable Selectic (user has no more choice).
+             * This is why it is needed to check autoDisabled here. */
+            this.checkAutoDisabled();
         }, { deep: true });
 
         watch(() => this.state.allOptions, () => {
