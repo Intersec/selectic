@@ -2,33 +2,30 @@
 
 [Back to documentation index](main.md)
 
+[List of all properties](properties.md)
+
 In property `params` you can configure selectic to behave the way you want.
 All configurations set in this property should not change during the component life.
 
 This property is an object with several attributes which are listed below.
 
-
-## hideFilter
-
-Type: `boolean` | `'auto'` | `'open'`
-
-If `hideFilter` is set to `true`, the handler to open the filter panel is hidden and it will not be possible to search for options.
-
-If `hideFilter` is set to `'auto`, the handler to open the filter panel is hidden only if there is less than 10 options (when there is no scroll), and is displayed otherwise. _This is the default value_.
-
-If `hideFilter` is set to `false`, the handler to open the filter panel is always displayed.
-
-If `hideFilter` is set to `'open'`, the handler to open or close the filter panel
-will not be displayed and the filter panel is always open.
-
-```html
-<selectic
-    :params="{
-        hideFilter: false,
-    }"
-    :options="optionList"
-/>
-```
+* [allowClearSelection](params.md#allowclearselection)
+* [allowRevert](params.md#allowrevert)
+* [autoDisabled](params.md#autodisabled)
+* [autoSelect](params.md#autoselect)
+* [emptyValue](params.md#emptyvalue)
+* [fetchCallback](params.md#fetchcallback)
+* [forceSelectAll](params.md#forceselectall)
+* [formatOption](params.md#formatoption)
+* [formatSelection](params.md#formatselection)
+* [getItemsCallback](params.md#getitemscallback)
+* [hideFilter](params.md#hidefilter)
+* [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
+* [listPosition](params.md#listposition)
+* [optionBehavior](params.md#optionbehavior)
+* [pageSize](params.md#pagesize)
+* [selectionOverflow](params.md#selectionoverflow)
+* [strictValue](params.md#strictvalue)
 
 ## allowClearSelection
 
@@ -47,20 +44,31 @@ If `allowClearSelection` is set to `false`, it won't be possible to have nothing
 />
 ```
 
-## autoSelect
+## allowRevert
 
-Type: `boolean`
+Type: `boolean` | `undefined`
 
-If `autoSelect` is set to `true`, it will select automatically the first item if the value is empty. It behaves like `<select>` which selects by default the first item.
+In _multiple_ mode, it is possible to invert the selection.
+However in _dynamic_ mode selectic does not know all options so it cannot select the opposite selections.
 
-If `autoSelect` is set to `false`, it won't select anything automatically.
+To allow this feature in _dynamic_ mode, there is a property `selectionIsExcluded` which means that values returned by `getValue()`, `getSelection()` or emitted events are the ones which are not selected.
 
-By default, it is set to `true` if `multiple` is not set, to `false` otherwise.
+As this behavior is more complex, it is needed to set `allowRevert` to `true` to enable it.
+
+Read [the dynamic documentation](dynamic.md) for more information.
+
+If `allowRevert` is set to `false`, the action to invert the selection will always be disabled.
+
+If `allowRevert` is set to `true`, the action to invert the selection will always be enabled. The parent of selectic component should support `selectionIsExcluded` property (which can be applied in _dynamic_ mode).
+
+If `allowRevert` is set to `undefined` (is not set), the action to invert the selection will be enabled only if the `selectionIsExcluded` property is not needed (always in _static_ mode, and in _dynamic_ mode when all options are already fetched).
+
+Read [the extended properties documentation](extendedProperties.md) for more information about `selectionIsExcluded`.
 
 ```html
 <selectic
     :params="{
-        autoSelect: false,
+        allowRevert: true,
     }"
     :options="optionList"
 />
@@ -85,37 +93,20 @@ By default, it is set to `true`.
 />
 ```
 
-## strictValue
+## autoSelect
 
 Type: `boolean`
 
-If `strictValue` is set to `true`, it will consider value as `undefined` if its value is not an id of `options`.
+If `autoSelect` is set to `true`, it will select automatically the first item if the value is empty. It behaves like `<select>` which selects by default the first item.
 
-By default, it is set to `false`.
+If `autoSelect` is set to `false`, it won't select anything automatically.
 
-```html
-<selectic
-    :params="{
-        strictValue: true,
-    }"
-    :options="optionList"
-/>
-```
-
-## selectionOverflow
-
-Type: `'collapsed'` | `'multiline'`
-
-`selectOverflow` is to describe how selected options should be displayed when they are not enough space to display them all (in _multiple_ mode).
-
-Currently there are two supported behavior:
-* `'collapsed'`: the size of selectic input is not changed. If there is not enough space to display all selected options then it displays the possible ones then displays a _"+x others"_ in a badge (_x_ is the number of not displayed options). It is possible to watch these options with `title` or by opening selectic and see which options are selected. _This is the default value_.
-* `'multiline'`: If there is not enough space to display all selected options then it displays the others on another line. The size of the component can be higher than the allowed space.
+By default, it is set to `true` if `multiple` is not set, to `false` otherwise.
 
 ```html
 <selectic
     :params="{
-        selectionOverflow: 'multiple',
+        autoSelect: false,
     }"
     :options="optionList"
 />
@@ -133,6 +124,50 @@ By default, if there is no selected options, the result given by `getValue()` re
 <selectic
     :params="{
         emptyValue: '',
+    }"
+    :options="optionList"
+/>
+```
+
+## fetchCallback
+
+Type: `function (search, offset, limit) => Promise<{total, result}>`
+
+The purpose of this function is to return a list of option dynamically. With it, it is possible to fetch data build the list asynchronously (useful for very large list).
+
+Read [the dynamic documentation](dynamic.md) for more information.
+
+It should return a promise which resolves with an object which contains the total number of items and the list of options asked by the request.
+
+```html
+<selectic
+    :params="{
+        fetchCallback: (search, offset, limit) => fetch(`list?search=${search}&offset=${offset}&limit=${limit}`),
+    }"
+    :options="optionList"
+/>
+```
+
+## forceSelectAll
+
+Type: `'auto' | 'visible'`
+
+Default value: `'auto'`
+
+In _multiple_ mode, there is a "select all" action.
+If the selection inversion is not available and all data are not fetched (in
+_dynamic_ mode) it will not be possible to select all items. So this action
+will be disabled.
+
+This option allows you to change the behavior.
+
+* `'auto'`: The action is disabled when not possible.
+* `'visible'`: The action is displayed even when all data are not fetched.
+
+```html
+<selectic
+    :params="{
+        forceSelectAll: 'auto',
     }"
     :options="optionList"
 />
@@ -184,25 +219,6 @@ As argument, it receives an option item and should also return an option item.
 />
 ```
 
-## fetchCallback
-
-Type: `function (search, offset, limit) => Promise<{total, result}>`
-
-The purpose of this function is to return a list of option dynamically. With it, it is possible to fetch data build the list asynchronously (useful for very large list).
-
-Read [the dynamic documentation](dynamic.md) for more information.
-
-It should return a promise which resolves with an object which contains the total number of items and the list of options asked by the request.
-
-```html
-<selectic
-    :params="{
-        fetchCallback: (search, offset, limit) => fetch(`list?search=${search}&offset=${offset}&limit=${limit}`),
-    }"
-    :options="optionList"
-/>
-```
-
 ## getItemsCallback
 
 Type: `function (optionId[]) => Promise<option[]>`
@@ -225,84 +241,47 @@ It should return a promise which resolves with an array of options corresponding
 />
 ```
 
-## pageSize
+## hideFilter
 
-Type: `number`
+Type: `boolean` | `'auto'` | `'open'`
 
-`pageSize` is the number of options requested in dynamic mode when selectic needs to display more options than it has in cache.
+If `hideFilter` is set to `true`, the handler to open the filter panel is hidden and it will not be possible to search for options.
 
-By changing this value you can optimize performance result (more or less requests vs memory cache consumption).
+If `hideFilter` is set to `'auto`, the handler to open the filter panel is hidden only if there is less than 10 options (when there is no scroll), and is displayed otherwise. _This is the default value_.
 
-Read [the dynamic documentation](dynamic.md) for more information.
+If `hideFilter` is set to `false`, the handler to open the filter panel is always displayed.
 
-Selectic displays 10 options at a time, but it will call for a new request as soon as the last option index reach the half of page size.
-
-_`pageSize` default value is `100`._
+If `hideFilter` is set to `'open'`, the handler to open or close the filter panel
+will not be displayed and the filter panel is always open.
 
 ```html
 <selectic
     :params="{
-        pageSize: 500,
+        hideFilter: false,
     }"
     :options="optionList"
 />
 ```
 
-## allowRevert
+## keepOpenWithOtherSelectic
 
-Type: `boolean` | `undefined`
+Type: `boolean`
 
-In _multiple_ mode, it is possible to invert the selection.
-However in _dynamic_ mode selectic does not know all options so it cannot select the opposite selections.
+Default value: `false`
 
-To allow this feature in _dynamic_ mode, there is a property `selectionIsExcluded` which means that values returned by `getValue()`, `getSelection()` or emitted events are the ones which are not selected.
+By default, only one selectic component can be open at the same time. So if another Selectic component is open (mainly programmatically) then any previously open component is closed.
+If `keepOpenWithOtherSelectic` is set to `true`, this component stays open when another Selectic component opens.
 
-As this behavior is more complex, it is needed to set `allowRevert` to `true` to enable it.
-
-Read [the dynamic documentation](dynamic.md) for more information.
-
-If `allowRevert` is set to `false`, the action to invert the selection will always be disabled.
-
-If `allowRevert` is set to `true`, the action to invert the selection will always be enabled. The parent of selectic component should support `selectionIsExcluded` property (which can be applied in _dynamic_ mode).
-
-If `allowRevert` is set to `undefined` (is not set), the action to invert the selection will be enabled only if the `selectionIsExcluded` property is not needed (always in _static_ mode, and in _dynamic_ mode when all options are already fetched).
-
-Read [the extended properties documentation](extendedProperties.md) for more information about `selectionIsExcluded`.
+Note: This attribute does not prevent closing when user clicks outside the component.
 
 ```html
 <selectic
     :params="{
-        allowRevert: true,
+        keepOpenWithOtherSelectic: true,
     }"
     :options="optionList"
 />
 ```
-
-## forceSelectAll
-
-Type: `'auto' | 'visible'`
-
-Default value: `'auto'`
-
-In _multiple_ mode, there is a "select all" action.
-If the selection inversion is not available and all data are not fetched (in
-_dynamic_ mode) it will not be possible to select all items. So this action
-will be disabled.
-
-This option allows you to change the behavior.
-
-* `'auto'`: The action is disabled when not possible.
-* `'visible'`: The action is displayed even when all data are not fetched.
-
-```html
-<selectic
-    :params="{
-        forceSelectAll: 'auto',
-    }"
-    :options="optionList"
-/>
-```
-
 
 ## listPosition
 
@@ -363,21 +342,60 @@ Display only one source (the first which is not empty).
 />
 ```
 
-## keepOpenWithOtherSelectic
+## pageSize
 
-Type: `boolean`
+Type: `number`
 
-Default value: `false`
+`pageSize` is the number of options requested in dynamic mode when selectic needs to display more options than it has in cache.
 
-By default, only one selectic component can be open at the same time. So if another Selectic component is open (mainly programmatically) then any previously open component is closed.
-If `keepOpenWithOtherSelectic` is set to `true`, this component stays open when another Selectic component opens.
+By changing this value you can optimize performance result (more or less requests vs memory cache consumption).
 
-Note: This attribute does not prevent closing when user clicks outside the component.
+Read [the dynamic documentation](dynamic.md) for more information.
+
+Selectic displays 10 options at a time, but it will call for a new request as soon as the last option index reach the half of page size.
+
+_`pageSize` default value is `100`._
 
 ```html
 <selectic
     :params="{
-        keepOpenWithOtherSelectic: true,
+        pageSize: 500,
+    }"
+    :options="optionList"
+/>
+```
+
+## selectionOverflow
+
+Type: `'collapsed'` | `'multiline'`
+
+`selectOverflow` is to describe how selected options should be displayed when they are not enough space to display them all (in _multiple_ mode).
+
+Currently there are two supported behavior:
+* `'collapsed'`: the size of selectic input is not changed. If there is not enough space to display all selected options then it displays the possible ones then displays a _"+x others"_ in a badge (_x_ is the number of not displayed options). It is possible to watch these options with `title` or by opening selectic and see which options are selected. _This is the default value_.
+* `'multiline'`: If there is not enough space to display all selected options then it displays the others on another line. The size of the component can be higher than the allowed space.
+
+```html
+<selectic
+    :params="{
+        selectionOverflow: 'multiple',
+    }"
+    :options="optionList"
+/>
+```
+
+## strictValue
+
+Type: `boolean`
+
+If `strictValue` is set to `true`, it will consider value as `undefined` if its value is not an id of `options`.
+
+By default, it is set to `false`.
+
+```html
+<selectic
+    :params="{
+        strictValue: true,
     }"
     :options="optionList"
 />

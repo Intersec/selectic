@@ -2,56 +2,35 @@
 
 [Back to documentation index](main.md)
 
+[List of all properties](properties.md)
+
 Selectic supports common properties which are related to `<select>` element ([read dom properties document](domProperties.md)), but they are some more which are more related to the nature of selectic.
 
-## value
+* [groups](extendedProperties.md#groups)
+* [noCache](extendedProperties.md#nocache)
+* [open](extendedProperties.md#open)
+* [options](extendedProperties.md#options)
+* [selectionIsExcluded](extendedProperties.md#selectionisexcluded)
+* [texts](extendedProperties.md#texts)
+* [params](extendedProperties.md#params)
+    * [allowClearSelection](params.md#allowclearselection)
+    * [allowRevert](params.md#allowrevert)
+    * [autoDisabled](params.md#autodisabled)
+    * [autoSelect](params.md#autoselect)
+    * [emptyValue](params.md#emptyvalue)
+    * [fetchCallback](params.md#fetchcallback)
+    * [forceSelectAll](params.md#forceselectall)
+    * [formatOption](params.md#formatoption)
+    * [formatSelection](params.md#formatselection)
+    * [getItemsCallback](params.md#getitemscallback)
+    * [hideFilter](params.md#hidefilter)
+    * [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
+    * [listPosition](params.md#listposition)
+    * [optionBehavior](params.md#optionbehavior)
+    * [pageSize](params.md#pagesize)
+    * [selectionOverflow](params.md#selectionoverflow)
+    * [strictValue](params.md#strictvalue)
 
-Type: `optionId` or `optionId[]`
-
-Default: `null` or `[]`
-
-The selected value.  This is the initial value, and it can be altered to change the current selection.
-
-This is the id of the selected option or an array of id (if `multiple` is set).
-
-```html
-<selectic
-    :options="['item1', 'item2']"
-    value="item2"
-/>
-```
-
-## selectionIsExcluded
-
-Type: `boolean`
-
-Default: `false`
-
-It should be only used in _multiple_ mode.
-
-If it is set to `true`, it means that current `value` are options which are **not** selected.
-
-It is useful with _dynamic_ mode where it is not possible to fetch all options.
-
-This value can be changed automatically by selectic if all options are fetched.
-
-```html
-<selectic
-    :options="['item1', 'item2']"
-    value="item2"
-    selectionIsExcluded
-/>
-```
-
-## options
-
-Type: `Option[]`
-
-Default: `[]`
-
-This property is to list all options available ([read how to build a list](list.md)).
-
-This property can be omitted in dynamic mode ([read how to build dynamic list](dynamic.md)).
 
 ## groups
 
@@ -72,31 +51,6 @@ It is required to fill this property only in _dynamic_ mode in order to know to 
         id: 'g2',
         text: 'The second group',
     }]"
-/>
-```
-
-## texts
-
-Type: `Object`
-
-Default: `{}`
-
-The `texts` property is to change texts in the component.
-
-It is possible to change all texts or only some.
-
-It changes the texts only for this component. To change texts for all selectic components, you should use the static method `changeTexts()`.
-
-[Read the documentation about changing text](changeText.md).
-
-```html
-<selectic
-    :options="['Goldfish', 'Salmon', 'Trout', 'Tuna']"
-    value="Tuna"
-    :texts="{
-        searchPlaceholder: 'Search for fish',
-        noResult: 'No fish matched your search',
-    }"
 />
 ```
 
@@ -143,6 +97,63 @@ It is also possible to change the "open" state with the method [toggleOpen](meth
 <selectic
     :options="optionList"
     open
+/>
+```
+
+## options
+
+Type: `Option[]`
+
+Default: `[]`
+
+This property is to list all options available ([read how to build a list](list.md)).
+
+This property can be omitted in dynamic mode ([read how to build dynamic list](dynamic.md)).
+
+## selectionIsExcluded
+
+Type: `boolean`
+
+Default: `false`
+
+It should be only used in _multiple_ mode.
+
+If it is set to `true`, it means that current `value` are options which are **not** selected.
+
+It is useful with _dynamic_ mode where it is not possible to fetch all options.
+
+This value can be changed automatically by selectic if all options are fetched.
+
+```html
+<selectic
+    :options="['item1', 'item2']"
+    value="item2"
+    selectionIsExcluded
+/>
+```
+
+## texts
+
+Type: `Object`
+
+Default: `{}`
+
+The `texts` property is to change texts in the component.
+
+It is possible to change all texts or only some.
+
+It changes the texts only for this component. To change texts for all selectic components, you should use the static method `changeTexts()`.
+
+[Read the documentation about changing text](changeText.md).
+
+```html
+<selectic
+    :options="['Goldfish', 'Salmon', 'Trout', 'Tuna']"
+    value="Tuna"
+    :texts="{
+        searchPlaceholder: 'Search for fish',
+        noResult: 'No fish matched your search',
+    }"
 />
 ```
 

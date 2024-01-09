@@ -3,6 +3,7 @@
 ## Configuration
 
 * Build a select from a list [(details)](./list.md)
+* List all supported properties [(details)](./properties.md)
 * Support DOM attributes [(details)](./domProperties.md)
   * value
   * disabled
