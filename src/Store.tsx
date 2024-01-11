@@ -1452,7 +1452,7 @@ export default class SelecticStore {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
                      */
-                    if (!this.hasFetchedAllItems) {
+                    if (!unref(this.hasFetchedAllItems)) {
                         /* Display error if all items are not fetch
                          * We can have the case where old value and result
                          * are the same but total is correct when the
