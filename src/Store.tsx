@@ -784,19 +784,19 @@ export default class SelecticStore {
         return this.buildSelectedItems(ids);
     }
 
-    public selectItem(id: OptionId, selected?: boolean, keepOpen = false) {
+    public selectItem(id: OptionId, selected?: boolean, keepOpen = false): boolean {
         const state = this.state;
         let hasChanged = false;
         const item = state.allOptions.find((opt) => opt.id === id);
 
         /* Check that item is not disabled */
         if (item?.disabled) {
-            return;
+            return hasChanged;
         }
 
         if (state.strictValue && !this.hasValue(id)) {
             /* reject invalid values */
-            return;
+            return hasChanged;
         }
 
         if (state.multiple) {
@@ -849,12 +849,12 @@ export default class SelecticStore {
 
             if (!selected) {
                 if (id !== oldValue) {
-                    return;
+                    return hasChanged;
                 }
                 id = null;
             } else
             if (id === oldValue) {
-                return;
+                return hasChanged;
             }
 
             if (keepOpen) {
@@ -868,6 +868,8 @@ export default class SelecticStore {
         if (hasChanged) {
             state.status.hasChanged = true;
         }
+
+        return hasChanged;
     }
 
     public toggleSelectAll() {
