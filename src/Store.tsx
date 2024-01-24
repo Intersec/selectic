@@ -784,6 +784,34 @@ export default class SelecticStore {
         return this.buildSelectedItems(ids);
     }
 
+    public selectGroup(id: OptionId, itemsSelected: boolean) {
+        const state = this.state;
+
+        if (!state.multiple || unref(this.isPartial)) {
+            return;
+        }
+
+        const selectItem = this.selectItem.bind(this);
+        let hasChanged = false;
+        this.data.doNotUpdate = true;
+        const items = state.filteredOptions.filter((item) => {
+            const isInGroup = item.group === id && !item.exclusive && !item.disabled;
+
+            if (isInGroup) {
+                hasChanged = selectItem(item.id, itemsSelected, true) || hasChanged;
+            }
+
+            return isInGroup;
+        });
+        this.data.doNotUpdate = false;
+
+        if (hasChanged && items.length) {
+            this.updateFilteredOptions();
+        }
+
+        return;
+    }
+
     public selectItem(id: OptionId, selected?: boolean, keepOpen = false): boolean {
         const state = this.state;
         let hasChanged = false;
@@ -1080,6 +1108,7 @@ export default class SelecticStore {
         if (!this.data.doNotUpdate) {
             this.state.filteredOptions = this.buildItems(this.state.filteredOptions);
             this.buildSelectedOptions();
+            this.updateGroupSelection();
         }
     }
 
@@ -1487,6 +1516,7 @@ export default class SelecticStore {
             }
 
             state.totalFilteredOptions = total + nbGroups + dynOffset;
+            this.updateGroupSelection();
 
             if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
                 this.addStaticFilteredOptions(true);
@@ -1720,6 +1750,47 @@ export default class SelecticStore {
         }
     }
 
+    /** update group item, to mark them as selected if needed */
+    private updateGroupSelection() {
+        const state = this.state;
+
+        /* group selection is applied only in multiple mode */
+        if (!state.multiple) {
+            return;
+        }
+
+        const filteredOptions = state.filteredOptions;;
+        const groupIdx = new Map<OptionId, number>();
+        const groupAllSelected = new Map<OptionId, boolean>();
+        const groupNbItem = new Map<OptionId, number>();
+
+        filteredOptions.forEach((option, idx) => {
+            const groupId = option.group;
+
+            if (option.isGroup) {
+                const id = option.id;
+                groupIdx.set(id, idx);
+                groupAllSelected.set(id, true);
+            } else
+            if (groupId !== undefined) {
+                if (option.disabled || option.exclusive) {
+                    return;
+                }
+
+                groupNbItem.set(groupId, (groupNbItem.get(groupId) || 0) + 1)
+
+                if (!option.selected) {
+                    groupAllSelected.set(groupId, false);
+                }
+            }
+        });
+
+        for (const [id, idx] of groupIdx.entries()) {
+            const group = filteredOptions[idx];
+            group.selected = !!(groupAllSelected.get(id) && groupNbItem.get(id));
+        }
+    }
+
     /** assign new value to the filteredOptions and apply change depending on it */
     private setFilteredOptions(options: OptionItem[], add = false, length = 0) {
         if (!add) {
@@ -1729,6 +1800,8 @@ export default class SelecticStore {
             this.state.filteredOptions.push(...options);
             this.state.totalFilteredOptions += length || options.length;
         }
+
+        this.updateGroupSelection();
     }
 
     /* }}} */

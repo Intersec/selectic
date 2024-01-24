@@ -62,7 +62,7 @@ function getOptions(size, prefix, offset, groupName) {
         };
 
         if (groupName) {
-            obj.group = groupName;
+            obj.group = typeof groupName === 'function' ? groupName(index) : groupName;
         }
 
         options.push(obj);
@@ -120,13 +120,18 @@ function buildFetchCb({
                 }
             }
             const nb = Math.min(limit, total - offset);
-            let groupName;
-            group.every((g) => {
-                if (offset >= g.offset) {
-                    groupName = g.name;
-                    return true;
-                }
-            });
+            const groupName = group.length ? (index) => {
+                let name = undefined;
+
+                group.every((g) => {
+                    if (index >= g.offset) {
+                        name = g.name;
+                        return true;
+                    }
+                });
+
+                return name;
+            } : undefined;
 
             function resolveFetch() {
                 let result = {
