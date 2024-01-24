@@ -5,7 +5,7 @@
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
 
-import Store, { OptionId } from './Store';
+import Store, { OptionId, OptionItem } from './Store';
 import Filter from './Filter';
 import List from './List';
 
@@ -50,7 +50,8 @@ export default class ExtendedList extends Vue<Props> {
     /* }}} */
     /* {{{ data */
 
-    private topGroup = ' ';
+    private topGroupName = ' ';
+    private topGroupId: OptionId = null;
     private listHeight = 0;
     private listWidth = 200;
     private availableSpace = 0;
@@ -224,6 +225,32 @@ export default class ExtendedList extends Vue<Props> {
         `;
     }
 
+    get topGroup(): OptionItem | undefined {
+        const topGroupId = this.topGroupId;
+
+        if (!topGroupId) {
+            return undefined;
+        }
+
+        const group = this.store.state.filteredOptions.find((option) => {
+            return option.id === topGroupId;
+        });
+
+        return group;
+    }
+
+    get topGroupSelected(): boolean {
+        const group = this.topGroup;
+
+        return !!group?.selected;
+    }
+
+    get topGroupDisabled(): boolean {
+        const group = this.topGroup;
+
+        return !!group?.disabled;
+    }
+
     /* }}} */
     /* {{{ watch */
 
@@ -244,7 +271,8 @@ export default class ExtendedList extends Vue<Props> {
         const group = this.store.state.groups.get(id);
         const groupName = group || ' ';
 
-        this.topGroup = groupName;
+        this.topGroupName = groupName;
+        this.topGroupId = id;
     }
 
     private computeListSize() {
@@ -252,6 +280,10 @@ export default class ExtendedList extends Vue<Props> {
 
         this.listHeight = box.height;
         this.listWidth = box.width;
+    }
+
+    private clickHeaderGroup() {
+        this.store.selectGroup(this.topGroupId, !this.topGroupSelected);
     }
 
     /* }}} */
@@ -296,9 +328,24 @@ export default class ExtendedList extends Vue<Props> {
 
               {isGroup && (
                 <span
-                    class="selectic-item selectic-item--header selectic-item__is-group"
+                    class={[
+                        'selectic-item selectic-item--header selectic-item__is-group',
+                        {
+                            selected: this.topGroupSelected,
+                            selectable: this.store.state.multiple && !this.topGroupDisabled,
+                            disabled: this.topGroupDisabled,
+                        },
+                    ]}
+                    on={{
+                        click: () => this.clickHeaderGroup(),
+                    }}
                 >
-                    {this.topGroup}
+                  {this.topGroupSelected && (
+                    <span
+                        class="fa fa-fw fa-check selectic-item_icon"
+                    ></span>
+                  )}
+                    {this.topGroupName}
                 </span>
               )}
                 <List

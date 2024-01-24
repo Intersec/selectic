@@ -259,6 +259,10 @@
     cursor: default;
 }
 
+.selectic-item__is-group.selectable {
+    cursor: pointer;
+}
+
 .selectic-item.selected {
     color: var(--selectic-selected-item-color);
 }

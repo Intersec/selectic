@@ -141,7 +141,11 @@ export default class List extends Vue<Props> {
     /* {{{ methods */
 
     private click(option: OptionItem) {
-        if (option.disabled || option.isGroup) {
+        if (option.disabled) {
+            return;
+        }
+        if (option.isGroup) {
+            this.store.selectGroup(option.id, !option.selected);
             return;
         }
 
@@ -265,6 +269,7 @@ export default class List extends Vue<Props> {
                         }}
                         class={['selectic-item', option.className || '', {
                             'selected': option.selected,
+                            'selectable': this.isMultiple && option.isGroup && !option.disabled,
                             'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
                             'selectic-item__disabled': !!option.disabled,
                             'selectic-item__exclusive': !!option.exclusive,
