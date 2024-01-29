@@ -76,22 +76,22 @@ export interface EventChangeOptions extends EventOptions {
 }
 
 export interface ParamProps {
-    /* Method to call to fetch extra data */
+    /** Method to call to fetch extra data */
     fetchCallback?: FetchCallback;
 
-    /* Method to call to get specific items */
+    /** Method to call to get specific items */
     getItemsCallback?: GetCallback;
 
-    /* Number of elements to fetch.
+    /** Number of elements to fetch.
      * When scrolled too fast, a greater number of elements
      * are going to be requested.
      */
     pageSize?: number;
 
-    /* Hide the search control */
+    /** Hide the search control */
     hideFilter?: HideFilter;
 
-    /* Allow to reverse selection.
+    /** Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
      * If false, the action is never available.
      * If undefined, the action is available only when it is not needed to
@@ -99,22 +99,22 @@ export interface ParamProps {
      */
     allowRevert?: boolean;
 
-    /* If true, the "select All" is still available even if all data are not fetched yet. */
+    /** If true, the "select All" is still available even if all data are not fetched yet. */
     forceSelectAll?: SelectAllOption;
 
-    /* Allow user to clear the current selection */
+    /** Allow user to clear the current selection */
     allowClearSelection?: boolean;
 
-    /* If false, avoid selecting the first available option. */
+    /** If false, avoid selecting the first available option. */
     autoSelect?: boolean;
 
-    /* Disable the select if no or only one option is given and must be selected. */
+    /** Disable the select if no or only one option is given and must be selected. */
     autoDisabled?: boolean;
 
-    /* If true, value can be only in existing options. */
+    /** If true, value can be only in existing options. */
     strictValue?: boolean;
 
-    /* Define how to behave when selected items are too large for container.
+    /** Define how to behave when selected items are too large for container.
      *     collapsed (default): Items are reduced in width and an ellipsis
      *                          is displayed in their name.
      *     multiline: The container extends in height in order to display all
@@ -122,28 +122,28 @@ export interface ParamProps {
      */
     selectionOverflow?: SelectionOverflow;
 
-    /* In single mode, if no selection, this value is returned (default=null). */
+    /** In single mode, if no selection, this value is returned (default=null). */
     emptyValue?: SelectedValue;
 
-    /* Called when item is displayed in the list. */
+    /** Called when item is displayed in the list. */
     formatOption?: FormatCallback;
 
-    /* Called when item is displayed in the selection area. */
+    /** Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
 
-    /* Define where the list should be displayed.
+    /** Define where the list should be displayed.
      * With 'auto' it is displayed by default at bottom, but it can be at
      * top if there is not enough space below. */
     listPosition?: ListPosition;
 
-    /* Described behavior when options from several sources are set (static, dynamic, slots)
+    /** Described behavior when options from several sources are set (static, dynamic, slots)
      * It describe what to do (sort or force)
      * and the order (O → static options, D → dynamic options, E → slot elements)
      * Example: "sort-ODE"
      */
     optionBehavior?: string;
 
-    /* Keep this component open if another Selectic component opens */
+    /** Keep this component open if another Selectic component opens */
     keepOpenWithOtherSelectic?: boolean;
 
     /** Avoid click on group name to select all items in this group. */
@@ -162,47 +162,47 @@ export type GetMethodsCallback = (methods: {
 
 
 export interface Props {
-    /* Selectic's initial value */
+    /** Selectic's initial value */
     value?: SelectedValue;
 
-    /* If true, the effective selection is the opposite */
+    /** If true, the effective selection is the opposite */
     selectionIsExcluded?: boolean;
 
-    /* List of options to display */
+    /** List of options to display */
     options?: OptionProp[];
 
-    /* Define groups of items (similar to optGroup) */
+    /** Define groups of items (similar to optGroup) */
     groups?: GroupValue[];
 
-    /* Equivalent of <select>'s "multiple" attribute */
+    /** Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
 
-    /* Equivalent of <select>'s "disabled" attribute */
+    /** Equivalent of <select>'s "disabled" attribute */
     disabled?: boolean;
 
-    /* Equivalent of <input>'s "placeholder" attribute */
+    /** Equivalent of <input>'s "placeholder" attribute */
     placeholder?: string;
 
-    /* id of the HTML element */
+    /** id of the HTML element */
     id?: string;
 
-    /* CSS class of the HTML element */
+    /** CSS class of the HTML element */
     className?: string;
 
-    /* title on the HTML element */
+    /** title on the HTML element */
     title?: string;
 
-    /* Replace the default texts used in Selectic */
+    /** Replace the default texts used in Selectic */
     texts?: PartialMessages;
 
-    /* If enabled, it resets the dynamic cache when selectic opens */
+    /** If enabled, it resets the dynamic cache when selectic opens */
     noCache?: Boolean;
 
-    /* If true, the component opens (at start or if it is closed).
-     * If false, the components closes (if it is opened). */
+    /** If true, the component opens (at start or if it is closed).
+     *  If false, the components closes (if it is opened). */
     open?: Boolean;
 
-    /* Props which is not expected to change during the life time of the
+    /** Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
      * attributes of select.

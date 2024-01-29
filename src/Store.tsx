@@ -61,45 +61,45 @@ export type GetCallback = (_ids: OptionId[])
 export type FormatCallback = (_option: OptionItem) => OptionItem;
 
 export type SelectionOverflow =
-    /* Items are reduced in width and an ellipsis is displayed in their name. */
+    /** Items are reduced in width and an ellipsis is displayed in their name. */
     'collapsed'
     /* The container extends in height in order to display all items. */
   | 'multiline';
 
 export type ListPosition =
-    /* Display the list at bottom */
+    /** Display the list at bottom */
     'bottom'
-    /* Display the list at bottom */
+    /** Display the list at bottom */
   | 'top'
-    /* Display the list at bottom but if there is not enough space, display it at top */
+    /** Display the list at bottom but if there is not enough space, display it at top */
   | 'auto';
 
 export type HideFilter =
-    /* Display or hide the filter panel */
+    /** Display or hide the filter panel */
     boolean
-    /* The handler to open the filter panel is hidden only if there is less
+    /** The handler to open the filter panel is hidden only if there is less
      * than 10 options */
   | 'auto'
-    /* The panel filter is always open */
+    /** The panel filter is always open */
   | 'open';
 
 export type SelectAllOption =
-    /* Display the "select all" only when data are all fetched or allowRevert */
+    /** Display the "select all" only when data are all fetched or allowRevert */
     'auto'
-    /* Always display the "select all" in mulitple mode. */
+    /** Always display the "select all" in mulitple mode. */
   | 'visible';
 
 export interface SelecticStoreStateParams {
-    /* Equivalent of <select>'s "multiple" attribute */
+    /** Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
 
-    /* Equivalent of <input>'s "placeholder" attribute */
+    /** Equivalent of <input>'s "placeholder" attribute */
     placeholder?: string;
 
-    /* Hide filter component when enabled */
+    /** Hide filter component when enabled */
     hideFilter?: HideFilter;
 
-    /* Allow to reverse selection.
+    /** Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
      * If false, the action is never available.
      * If undefined, the action is available only when it is not needed to
@@ -107,26 +107,26 @@ export interface SelecticStoreStateParams {
      */
     allowRevert?: boolean;
 
-    /* Force the availability of the "select all" even if all data is not fetched yet. */
+    /** Force the availability of the "select all" even if all data is not fetched yet. */
     forceSelectAll?: SelectAllOption;
 
-    /* Allow user to clear current selection */
+    /** Allow user to clear current selection */
     allowClearSelection?: boolean;
 
-    /* Number of items to retrieve in fetch request  (it is possible
+    /** Number of items to retrieve in fetch request  (it is possible
      * to fetch more items at once if several pages are requested) */
     pageSize?: number;
 
-    /* Select the first available option */
+    /** Select the first available option */
     autoSelect?: boolean;
 
-    /* Disable the select if only one option is given and must be selected. */
+    /** Disable the select if only one option is given and must be selected. */
     autoDisabled?: boolean;
 
-    /* Accept only values which are in options */
+    /** Accept only values which are in options */
     strictValue?: boolean;
 
-    /* Define how the component should behave when selected items are too
+    /** Define how the component should behave when selected items are too
      * large for the container.
      *     collapsed (default): Items are reduced in width and an ellipsis
      *                          is displayed in their name.
@@ -135,69 +135,72 @@ export interface SelecticStoreStateParams {
      */
     selectionOverflow?: SelectionOverflow;
 
-    /* Called when item is displayed in the list. */
+    /** Called when item is displayed in the list. */
     formatOption?: FormatCallback;
 
-    /* Called when item is displayed in the selection area. */
+    /** Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
 
-    /* Described behavior when options from several sources are set (static, dynamic, slots)
+    /** Described behavior when options from several sources are set (static, dynamic, slots)
      * It describe what to do (sort or force)
      * and the order (O → static options, D → dynamic options, E → slot elements)
      * Example: "sort-ODE"
      */
     optionBehavior?: string;
 
-    /* Indicate where the list should be deployed */
+    /** Indicate where the list should be deployed */
     listPosition?: ListPosition;
 
-    /* If true, the component is open at start */
+    /** If true, the component is open at start */
     isOpen?: boolean;
+
+    /** Avoid selecting all items when clicking on group's header */
+    disableGroupSelection?: boolean;
 }
 
 export interface Props {
-    /* Selected value */
+    /** Selected value */
     value?: SelectedValue | null;
 
-    /* If true, the value represents the ones we don't want to select */
+    /** If true, the value represents the ones we don't want to select */
     selectionIsExcluded?: boolean;
 
-    /* Equivalent of "disabled" Select's attribute */
+    /** Equivalent of "disabled" Select's attribute */
     disabled?: boolean;
 
-    /* List of options to display */
+    /** List of options to display */
     options?: OptionProp[] | null;
 
-    /* List of options to display from child elements */
+    /** List of options to display from child elements */
     childOptions?: OptionValue[];
 
-    /* Define groups which will be used by items */
+    /** Define groups which will be used by items */
     groups?: GroupValue[];
 
-    /* Overwrite default texts */
+    /** Overwrite default texts */
     texts?: PartialMessages | null;
 
-    /* Keep this component open if another Selectic component opens */
+    /** Keep this component open if another Selectic component opens */
     keepOpenWithOtherSelectic?: boolean;
 
-    /* Selectic configuration */
+    /** Selectic configuration */
     params?: SelecticStoreStateParams;
 
-    /* Method to call to fetch extra data */
+    /** Method to call to fetch extra data */
     fetchCallback?: FetchCallback | null;
 
-    /* Method to call to get specific item */
+    /** Method to call to get specific item */
     getItemsCallback?: GetCallback | null;
 }
 
 type InternalProps = MandateProps<Props>;
 
 export interface Data {
-    /* Number of items displayed in a page (before scrolling) */
+    /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
 
     labels: Messages;
-    /* used to avoid checking and updating table while doing batch stuff */
+    /** used to avoid checking and updating table while doing batch stuff */
     doNotUpdate: boolean;
     cacheItem: Map<OptionId, OptionValue>;
     activeOrder: OptionBehaviorOrder;
@@ -205,28 +208,28 @@ export interface Data {
 }
 
 export interface SelecticStoreState {
-    /* The current selected values */
+    /** The current selected values */
     internalValue: SelectedValue;
 
-    /* If true, user wants to choose the opposite selection */
+    /** If true, user wants to choose the opposite selection */
     selectionIsExcluded: boolean;
 
-    /* If true, several value can be selected */
+    /** If true, several value can be selected */
     multiple: boolean;
 
-    /* If true, no change can be done by user */
+    /** If true, no change can be done by user */
     disabled: boolean;
 
-    /* Define the default text to display when there is no selection */
+    /** Define the default text to display when there is no selection */
     placeholder: string;
 
-    /* If true, filters and controls are hidden */
+    /** If true, filters and controls are hidden */
     hideFilter: boolean;
 
-    /* If true, the filter panel is always open */
+    /** If true, the filter panel is always open */
     keepFilterOpen: boolean;
 
-    /* Allow to reverse selection.
+    /** Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
      * If false, the action is never available.
      * If undefined, the action is available only when it is not needed to
@@ -234,100 +237,100 @@ export interface SelecticStoreState {
      */
     allowRevert?: boolean;
 
-    /* If true, user can clear current selection
+    /** If true, user can clear current selection
      * (if false, it is still possible to clear it programmatically) */
     allowClearSelection: boolean;
 
-    /* If false, do not select the first available option even if value is mandatory */
+    /** If false, do not select the first available option even if value is mandatory */
     autoSelect: boolean;
 
-    /* If true, Selectic is disabled if there is only one mandatory option. */
+    /** If true, Selectic is disabled if there is only one mandatory option. */
     autoDisabled: boolean;
 
-    /* If true, only values which are in options are accepted. */
+    /** If true, only values which are in options are accepted. */
     strictValue: boolean;
 
-    /* Define how to behave when selected items are too large for container. */
+    /** Define how to behave when selected items are too large for container. */
     selectionOverflow: SelectionOverflow;
 
-    /* If true, the list is displayed */
+    /** If true, the list is displayed */
     isOpen: boolean;
 
-    /* Text entered by user to look for options */
+    /** Text entered by user to look for options */
     searchText: string;
 
-    /* Contains all known options */
+    /** Contains all known options */
     allOptions: OptionValue[];
 
-    /* Contains all fetched dynamic options */
+    /** Contains all fetched dynamic options */
     dynOptions: OptionValue[];
 
-    /* Contains options which should be displayed */
+    /** Contains options which should be displayed */
     filteredOptions: OptionItem[];
 
-    /* Contains options which are selected */
+    /** Contains options which are selected */
     selectedOptions: OptionItem | OptionItem[] | null;
 
-    /* The total number of all options (static + dynamic + elements) without any filter */
+    /** The total number of all options (static + dynamic + elements) without any filter */
     totalAllOptions: number;
 
-    /* The total number of options which can be fetched (without any filter) */
+    /** The total number of options which can be fetched (without any filter) */
     totalDynOptions: number;
 
-    /* The total number of options which should be displayed (filter is applied) */
+    /** The total number of options which should be displayed (filter is applied) */
     totalFilteredOptions: number;
 
-    /* Description of groups (optGroup) */
+    /** Description of groups (optGroup) */
     groups: Map<OptionId, string>;
 
-    /* Starting index of options which are displayed */
+    /** Starting index of options which are displayed */
     offsetItem: number;
 
-    /* Index of active item */
+    /** Index of active item */
     activeItemIdx: number;
 
-    /* Number of items to fetch per page */
+    /** Number of items to fetch per page */
     pageSize: number;
 
-    /* Called when item is displayed in the list. */
+    /** Called when item is displayed in the list. */
     formatOption?: FormatCallback;
 
-    /* Called when item is displayed in the selection area. */
+    /** Called when item is displayed in the selection area. */
     formatSelection?: FormatCallback;
 
-    /* Operation to apply when there are several sources */
+    /** Operation to apply when there are several sources */
     optionBehaviorOperation: OptionBehaviorOperation;
 
-    /* Order of sources options */
+    /** Order of sources options */
     optionBehaviorOrder: OptionBehaviorOrder[];
 
-    /* Indicate where the list should be deployed */
+    /** Indicate where the list should be deployed */
     listPosition: ListPosition;
 
-    /* If true, the "select All" is still available even if all data are not fetched yet. */
+    /** If true, the "select All" is still available even if all data are not fetched yet. */
     forceSelectAll: SelectAllOption;
 
     /** Avoid selecting all items when clicking on group's header */
     disableGroupSelection: boolean;
 
-    /* Inner status which should be modified only by store */
+    /** Inner status which should be modified only by store */
     status: {
-        /* If true, a search is currently done */
+        /** If true, a search is currently done */
         searching: boolean;
 
-        /* If not empty, an error happens */
+        /** If not empty, an error happens */
         errorMessage: string;
 
-        /* If true it means that all options are selected */
+        /** If true it means that all options are selected */
         areAllSelected: boolean;
 
-        /* If true, a change has been done by user */
+        /** If true, a change has been done by user */
         hasChanged: boolean;
 
-        /* If true, it means the current change has been done automatically by Selectic */
+        /** If true, it means the current change has been done automatically by Selectic */
         automaticChange: boolean;
 
-        /* If true, it means the current close has been done automatically by Selectic */
+        /** If true, it means the current close has been done automatically by Selectic */
         automaticClose: boolean;
     };
 }
@@ -405,7 +408,7 @@ export default class SelecticStore {
     /* }}} */
     /* {{{ computed */
 
-    /* Number of item to pre-display */
+    /** Number of item to pre-display */
     public marginSize: ComputedRef<number>;
 
     /** If true, it is possible to click on group to select all items inside */
@@ -446,47 +449,45 @@ export default class SelecticStore {
         /* {{{ data */
 
         this.state = reactive<SelecticStoreState>({
-            multiple: false,
-            disabled: false,
-            placeholder: '',
-            hideFilter: false,
-            keepFilterOpen: false,
-            allowRevert: undefined,
-            allowClearSelection: false,
-            autoSelect: true,
-            autoDisabled: true,
-            strictValue: false,
-            selectionOverflow: 'collapsed',
-
-            disableGroupSelection: false,
-            internalValue: null,
-            isOpen: false,
-            searchText: '',
-            selectionIsExcluded: false,
-            forceSelectAll: 'auto',
+            activeItemIdx: -1,
             allOptions: [],
+            allowClearSelection: false,
+            allowRevert: undefined,
+            autoDisabled: true,
+            autoSelect: true,
+            disabled: false,
+            disableGroupSelection: false,
             dynOptions: [],
             filteredOptions: [],
+            forceSelectAll: 'auto',
+            groups: new Map(),
+            hideFilter: false,
+            internalValue: null,
+            isOpen: false,
+            keepFilterOpen: false,
+            listPosition: 'auto',
+            multiple: false,
+            offsetItem: 0,
+            optionBehaviorOperation: 'sort',
+            optionBehaviorOrder: ['O', 'D', 'E'],
+            pageSize: 100,
+            placeholder: '',
+            searchText: '',
             selectedOptions: null,
+            selectionIsExcluded: false,
+            selectionOverflow: 'collapsed',
+            strictValue: false,
             totalAllOptions: Infinity,
             totalDynOptions: Infinity,
             totalFilteredOptions: Infinity,
-            groups: new Map(),
-            offsetItem: 0,
-            activeItemIdx: -1,
-            pageSize: 100,
-            listPosition: 'auto',
-
-            optionBehaviorOperation: 'sort',
-            optionBehaviorOrder: ['O', 'D', 'E'],
 
             status: {
-                searching: false,
-                errorMessage: '',
                 areAllSelected: false,
-                hasChanged: false,
                 automaticChange: false,
                 automaticClose: false,
+                errorMessage: '',
+                hasChanged: false,
+                searching: false,
             },
         });
 
