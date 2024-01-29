@@ -269,7 +269,7 @@ export default class List extends Vue<Props> {
                         }}
                         class={['selectic-item', option.className || '', {
                             'selected': option.selected,
-                            'selectable': this.isMultiple && option.isGroup && !option.disabled,
+                            'selectable': unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
                             'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
                             'selectic-item__disabled': !!option.disabled,
                             'selectic-item__exclusive': !!option.exclusive,

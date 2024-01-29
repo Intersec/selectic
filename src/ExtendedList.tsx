@@ -4,6 +4,7 @@
  */
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import { unref } from 'vue';
 
 import Store, { OptionId, OptionItem } from './Store';
 import Filter from './Filter';
@@ -332,7 +333,7 @@ export default class ExtendedList extends Vue<Props> {
                         'selectic-item selectic-item--header selectic-item__is-group',
                         {
                             selected: this.topGroupSelected,
-                            selectable: this.store.state.multiple && !this.topGroupDisabled,
+                            selectable: unref(this.store.allowGroupSelection) && !this.topGroupDisabled,
                             disabled: this.topGroupDisabled,
                         },
                     ]}

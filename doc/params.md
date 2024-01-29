@@ -13,6 +13,7 @@ This property is an object with several attributes which are listed below.
 * [allowRevert](params.md#allowrevert)
 * [autoDisabled](params.md#autodisabled)
 * [autoSelect](params.md#autoselect)
+* [disableGroupSelection](params.md#disableGroupSelection)
 * [emptyValue](params.md#emptyvalue)
 * [fetchCallback](params.md#fetchcallback)
 * [forceSelectAll](params.md#forceselectall)
@@ -111,6 +112,52 @@ By default, it is set to `true` if `multiple` is not set, to `false` otherwise.
     :options="optionList"
 />
 ```
+
+## disableGroupSelection
+
+Type: `boolean`
+
+In multiple mode, if there are groups. It is possible to select all items
+under this group by clicking only on the group name.
+
+If `disableGroupSelection` is set to `true`, it will not be possible to click on the group (and so it will not select the items inside it).
+
+By default, it is set to `false`.
+
+Note: Enabling this option may improve performance with long list of options.
+
+```html
+<selectic
+    :params="{
+        autoSelect: false,
+    }"
+    :options="optionList"
+/>
+```
+
+### group selection
+
+Clicking on a group name, will select all items inside it.
+
+If all items are already selected, then they all become unselected.
+
+This behavior works only with the following condition:
+
+* multiple mode should be enabled: we should be able to select several items.
+
+* the component should be in static mode: otherwise it will not be possible to know which items are not loaded yet.
+
+* the group should not be disabled: this is a way to forbid this action on some groups.
+
+* the parameter `disableGroupSelection` should not be `true`: this is to disabled this behavior.
+
+Moreover in the group some items may be not (un)selected:
+
+* The item should not be disabled: it should not be possible to select a disabled item
+
+* The item should not use exclusive mode: because otherwise only this one should be selected.
+
+* Only items that matches the search will be selected: only visible items are (un)selected.
 
 ## emptyValue
 

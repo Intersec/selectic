@@ -145,6 +145,9 @@ export interface ParamProps {
 
     /* Keep this component open if another Selectic component opens */
     keepOpenWithOtherSelectic?: boolean;
+
+    /** Avoid click on group name to select all items in this group. */
+    disableGroupSelection?: boolean;
 }
 
 export type OnCallback = (event: string, ...args: any[]) => void;
@@ -813,6 +816,7 @@ export default class Selectic extends Vue<Props> {
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior, /* it can be undefined */
                 isOpen: (this.open ?? false) !== false,
+                disableGroupSelection: this.params.disableGroupSelection,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,

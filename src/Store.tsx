@@ -307,6 +307,9 @@ export interface SelecticStoreState {
     /* If true, the "select All" is still available even if all data are not fetched yet. */
     forceSelectAll: SelectAllOption;
 
+    /** Avoid selecting all items when clicking on group's header */
+    disableGroupSelection: boolean;
+
     /* Inner status which should be modified only by store */
     status: {
         /* If true, a search is currently done */
@@ -405,6 +408,9 @@ export default class SelecticStore {
     /* Number of item to pre-display */
     public marginSize: ComputedRef<number>;
 
+    /** If true, it is possible to click on group to select all items inside */
+    public allowGroupSelection: ComputedRef<boolean>;
+
     public isPartial: ComputedRef<boolean>;
     public hasAllItems: ComputedRef<boolean>;
     public hasFetchedAllItems: ComputedRef<boolean>;
@@ -452,6 +458,7 @@ export default class SelecticStore {
             strictValue: false,
             selectionOverflow: 'collapsed',
 
+            disableGroupSelection: false,
             internalValue: null,
             isOpen: false,
             searchText: '',
@@ -537,6 +544,10 @@ export default class SelecticStore {
 
         this.elementOptions = computed(() => {
             return this.getElementOptions();
+        });
+
+        this.allowGroupSelection = computed(() => {
+            return this.state.multiple && !this.isPartial.value && !this.state.disableGroupSelection;
         });
 
         /* }}} */
@@ -787,7 +798,7 @@ export default class SelecticStore {
     public selectGroup(id: OptionId, itemsSelected: boolean) {
         const state = this.state;
 
-        if (!state.multiple || unref(this.isPartial)) {
+        if (!unref(this.allowGroupSelection)) {
             return;
         }
 
@@ -1754,8 +1765,7 @@ export default class SelecticStore {
     private updateGroupSelection() {
         const state = this.state;
 
-        /* group selection is applied only in multiple mode */
-        if (!state.multiple) {
+        if (!unref(this.allowGroupSelection)) {
             return;
         }
 

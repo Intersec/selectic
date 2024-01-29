@@ -17,6 +17,7 @@ function getInitialState(replacedAttributes) {
         strictValue: false,
         selectionOverflow: 'collapsed',
 
+        disableGroupSelection: false,
         internalValue: null,
         isOpen: false,
         searchText: '',
