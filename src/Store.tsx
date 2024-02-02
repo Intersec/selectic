@@ -180,6 +180,12 @@ export interface Props {
     /** Overwrite default texts */
     texts?: PartialMessages | null;
 
+    /** Overwrite default icons */
+    icons?: PartialIcons | null;
+
+    /** Overwrite default icon family */
+    iconFamily?: IconFamily | null;
+
     /** Keep this component open if another Selectic component opens */
     keepOpenWithOtherSelectic?: boolean;
 
@@ -200,6 +206,8 @@ export interface Data {
     itemsPerPage: number;
 
     labels: Messages;
+    icons: PartialIcons;
+    iconFamily: IconFamily;
     /** used to avoid checking and updating table while doing batch stuff */
     doNotUpdate: boolean;
     cacheItem: Map<OptionId, OptionValue>;
@@ -335,6 +343,36 @@ export interface SelecticStoreState {
     };
 }
 
+export type IconFamily = ''
+    | 'selectic'
+    | 'font-awesome-4'
+    | 'font-awesome-5'
+    | 'font-awesome-6'
+    | 'raw'
+    | `prefix:${string}`
+;
+
+export type IconKey =
+    | 'caret-down'
+    | 'caret-up'
+    | 'check'
+    | 'search'
+    | 'spinner'
+    | 'strikethrough'
+    | 'times'
+    | 'question'
+    | 'spin'
+;
+
+export type IconValue =
+    | `selectic:${IconKey}${'' | ':spin'}`
+    | `raw:${string}`
+    | `current:${IconKey}${'' | ':spin'}`
+    | string
+;
+export type Icons = Record<IconKey, IconValue>;
+export type PartialIcons = { [K in IconKey]?: Icons[K] };
+
 interface Messages {
     noFetchMethod: string;
     searchPlaceholder: string;
@@ -364,6 +402,14 @@ export function changeTexts(texts: PartialMessages) {
     messages = Object.assign(messages, texts);
 }
 
+export function changeIcons(newIcons: PartialIcons, newFamilyIcon?: IconFamily) {
+    icons = Object.assign(icons, newIcons);
+
+    if (newFamilyIcon) {
+        defaultFamilyIcon = newFamilyIcon;
+    }
+}
+
 /* }}} */
 
 let messages: Messages = {
@@ -384,6 +430,10 @@ let messages: Messages = {
     moreSelectedItems: '+%d others',
     unknownPropertyValue: 'property "%s" has incorrect values.',
     wrongQueryResult: 'Query did not return all results.',
+};
+
+let defaultFamilyIcon: IconFamily = 'selectic';
+let icons: PartialIcons = {
 };
 
 let closePreviousSelectic: undefined | voidCaller;
@@ -437,6 +487,8 @@ export default class SelecticStore {
             childOptions: [],
             groups: [],
             texts: null,
+            icons: null,
+            iconFamily: null,
             params: {},
             fetchCallback: null,
             getItemsCallback: null,
@@ -493,6 +545,8 @@ export default class SelecticStore {
 
         this.data = reactive({
             labels: Object.assign({}, messages),
+            icons: Object.assign({}, icons),
+            iconFamily: defaultFamilyIcon,
             itemsPerPage: 10,
             doNotUpdate: false,
             cacheItem: new Map(),
@@ -657,6 +711,9 @@ export default class SelecticStore {
 
         if (this.props.texts) {
             this.changeTexts(this.props.texts);
+        }
+        if (this.props.icons || this.props.iconFamily) {
+            this.changeIcons(this.props.icons, this.props.iconFamily);
         }
 
         this.addGroups(this.props.groups);
@@ -995,6 +1052,16 @@ export default class SelecticStore {
 
     public changeTexts(texts: PartialMessages) {
         this.data.labels = Object.assign({}, this.data.labels, texts);
+    }
+
+    public changeIcons(icons: PartialIcons | null, family?: IconFamily | null) {
+        if (icons) {
+            this.data.icons = Object.assign({}, this.data.icons, icons);
+        }
+
+        if (typeof family === 'string') {
+            this.data.iconFamily = family;
+        }
     }
 
     /* }}} */

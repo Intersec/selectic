@@ -9,7 +9,7 @@ There are 3 ways to changes these texts:
 * Change the `texts` property. It changes texts only for the component.
 * Call the `changeTexts()` method on the component. It changes texts only for the component.
 
-_Changes done locally are prioritary on changes done globally_.
+_Changes made locally take precedence over changes made globally._.
 
 Changing texts on the component with property or with `changeTexts()` are equivalent.
 

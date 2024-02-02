@@ -5,6 +5,7 @@
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
+import Icon from './Icon';
 
 export interface Props {
     store: Store;
@@ -379,8 +380,9 @@ export default class MainInput extends Vue<Props> {
                     ref="selectedItems"
                 >
                     {this.isSelectionReversed && (
-                        <span
-                            class="fa fa-strikethrough selectic-input__reverse-icon"
+                        <Icon
+                            icon="strikethrough"
+                            store={this.store} class="selectic-input__reverse-icon"
                             title={this.reverseSelectionLabel}
                         />
                     )}
@@ -400,12 +402,14 @@ export default class MainInput extends Vue<Props> {
                                     { item.text }
                                 </span>
                                 {!this.isDisabled && (
-                                    <span
-                                        class="fa fa-times selectic-input__selected-items__icon"
+                                    <Icon
+                                        icon="times"
+                                        class="selectic-input__selected-items__icon"
+                                        store={this.store}
                                         on={{
                                             'click.prevent.stop': () => this.selectItem(item.id),
                                         }}
-                                    ></span>
+                                    />
                                 )}
                             </div>
                         )
@@ -421,11 +425,13 @@ export default class MainInput extends Vue<Props> {
                 </div>
             )}
             {this.showClearAll && (
-                <span
-                    class="fa fa-times selectic-input__clear-icon"
+                <Icon
+                    icon="times"
+                    class="selectic-input__clear-icon"
                     title={this.clearedLabel}
+                    store={this.store}
                     on={{ 'click.prevent.stop': this.clearSelection }}
-                ></span>
+                />
             )}
             </div>
             <div
@@ -438,9 +444,7 @@ export default class MainInput extends Vue<Props> {
                     'click.prevent.stop': () => this.toggleFocus(),
                 }}
             >
-                <span
-                    class="fa fa-caret-down selectic-icon"
-                ></span>
+                <Icon icon="caret-down" class="selectic-icon" store={this.store} />
             </div>
         </div>
         );

@@ -10,6 +10,7 @@ import Store, {
     OptionItem,
     OptionId,
 } from './Store';
+import Icon from './Icon';
 
 export interface Props {
     store: Store;
@@ -71,7 +72,7 @@ export default class List extends Vue<Props> {
                 text: '',
                 disabled: true,
                 selected: false,
-                icon: 'fa fa-spinner fa-spin',
+                icon: 'current:spinner:spin',
                 isGroup: false,
             });
         }
@@ -281,12 +282,12 @@ export default class List extends Vue<Props> {
                         key={'selectic-item-' + (idx + this.startIndex)}
                     >
                     {this.isMultiple && (
-                        <span
-                            class="fa fa-fw fa-check selectic-item_icon"
-                        ></span>
+                        <Icon icon="check" store={this.store} class="selectic-item_icon" />
                     )}
                     {option.icon && (
-                        <span class={option.icon}></span>
+                        option.icon.includes(':')
+                            ? <Icon icon={option.icon} store={this.store} />
+                            : <Icon icon={`raw:${option.icon}`} store={this.store} />
                     )}
                         {option.text}
                     </li>

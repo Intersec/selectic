@@ -26,6 +26,7 @@ import { deepClone } from './tools';
 
 import Store, {
     changeTexts as storeChangeTexts,
+    changeIcons as storeChangeIcons,
     OptionProp,
     OptionId,
     StrictOptionId,
@@ -41,6 +42,8 @@ import Store, {
     ListPosition,
     HideFilter,
     SelectAllOption,
+    PartialIcons,
+    IconFamily,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -154,6 +157,7 @@ export type OnCallback = (event: string, ...args: any[]) => void;
 export type GetMethodsCallback = (methods: {
     clearCache: Selectic['clearCache'];
     changeTexts: Selectic['changeTexts'];
+    changeIcons: Selectic['changeIcons'];
     getValue: Selectic['getValue'];
     getSelectedItems: Selectic['getSelectedItems'];
     isEmpty: Selectic['isEmpty'];
@@ -195,6 +199,12 @@ export interface Props {
     /** Replace the default texts used in Selectic */
     texts?: PartialMessages;
 
+    /** Replace the default icons used in Selectic */
+    icons?: PartialIcons;
+
+    /** Replace the default icon family used in Selectic */
+    iconFamily?: IconFamily;
+
     /** If enabled, it resets the dynamic cache when selectic opens */
     noCache?: Boolean;
 
@@ -223,6 +233,10 @@ export interface Props {
 
 export function changeTexts(texts: PartialMessages) {
     storeChangeTexts(texts);
+}
+
+export function changeIcons(icons: PartialIcons, iconFamily?: IconFamily) {
+    storeChangeIcons(icons, iconFamily);
 }
 
 @Component
@@ -266,6 +280,12 @@ export default class Selectic extends Vue<Props> {
 
     @Prop()
     public texts?: PartialMessages;
+
+    @Prop()
+    public icons?: PartialIcons;
+
+    @Prop()
+    public iconFamily?: IconFamily;
 
     @Prop({ default: false })
     public noCache: boolean;
@@ -394,17 +414,22 @@ export default class Selectic extends Vue<Props> {
     /* {{{ methods */
     /* {{{ public methods */
 
-    /* Reset the inner cache (mainly for dynamic mode if context has changed) */
+    /** Reset the inner cache (mainly for dynamic mode if context has changed) */
     public clearCache(forceReset = false) {
         this.store.clearCache(forceReset);
     }
 
-    /* Allow to change all text of the component */
+    /** Allow to change all text of the component */
     public changeTexts(texts: PartialMessages) {
         this.store.changeTexts(texts);
     }
 
-    /* Return the current selection */
+    /** Allow to change all icons of the component */
+    public changeIcons(icons: PartialIcons, iconFamily?: IconFamily) {
+        this.store.changeIcons(icons, iconFamily);
+    }
+
+    /** Return the current selection */
     public getValue(): SelectedValue {
         const value = this.store.state.internalValue;
         if (value === null && typeof this.params.emptyValue !== 'undefined') {
@@ -413,7 +438,7 @@ export default class Selectic extends Vue<Props> {
         return value;
     }
 
-    /* Return the current selection in Item format */
+    /** Return the current selection in Item format */
     public getSelectedItems(): OptionValue | OptionValue[] {
         const values = this.store.state.internalValue;
 
@@ -431,7 +456,7 @@ export default class Selectic extends Vue<Props> {
         return this.store.getItem(values);
     }
 
-    /* Check if there are Options available in the components */
+    /** Check if there are Options available in the components */
     public isEmpty() {
         const total = this.store.state.totalAllOptions;
 
@@ -578,6 +603,15 @@ export default class Selectic extends Vue<Props> {
         if (texts) {
             this.changeTexts(texts);
         }
+    }
+
+    @Watch('iconFamily')
+    @Watch('icons', { deep: true })
+    public onIconsChange() {
+        const icons = this.icons;
+        const iconFamily = this.iconFamily;
+
+        this.changeIcons(icons ?? {}, iconFamily);
     }
 
     @Watch('disabled')
@@ -794,6 +828,8 @@ export default class Selectic extends Vue<Props> {
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
             texts: this.texts,
+            icons: this.icons,
+            iconFamily: this.iconFamily,
             groups: deepClone(this.groups),
             keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
@@ -826,6 +862,7 @@ export default class Selectic extends Vue<Props> {
             this._getMethods({
                 clearCache: this.clearCache.bind(this),
                 changeTexts: this.changeTexts.bind(this),
+                changeIcons: this.changeIcons.bind(this),
                 getValue: this.getValue.bind(this),
                 getSelectedItems: this.getSelectedItems.bind(this),
                 isEmpty: this.isEmpty.bind(this),

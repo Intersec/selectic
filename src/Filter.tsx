@@ -6,6 +6,7 @@ import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import { unref } from 'vue';
 
 import Store from './Store';
+import Icon from './Icon';
 
 export interface Props {
     store: Store;
@@ -185,9 +186,11 @@ export default class FilterPanel extends Vue<Props> {
                             }}
                             ref="filterInput"
                         />
-                        <span class="fa fa-search selectic-search-scope
-                                     form-control-feedback"
-                        ></span>
+                        <Icon
+                            icon="search"
+                            store={this.store}
+                            class="selectic-search-scope form-control-feedback"
+                        />
                     </div>
                     {state.multiple && (
                         <div class="toggle-selectic">
@@ -236,12 +239,11 @@ export default class FilterPanel extends Vue<Props> {
                          'click.prevent.stop': this.togglePanel,
                      }}
                 >
-                    <span class="fa fa-search"></span>
-                    <span class={{
-                        'fa': true,
-                        'fa-caret-down': this.closed,
-                        'fa-caret-up': !this.closed,
-                    }}></span>
+                    <Icon icon="search" store={this.store} />
+                    <Icon
+                        icon={this.closed ? 'caret-down' : 'caret-up'}
+                        store={this.store}
+                    />
                 </div>
                 )}
            </div>

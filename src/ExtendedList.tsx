@@ -9,6 +9,7 @@ import { unref } from 'vue';
 import Store, { OptionId, OptionItem } from './Store';
 import Filter from './Filter';
 import List from './List';
+import Icon from './Icon';
 
 export interface Props {
     store: Store;
@@ -342,9 +343,7 @@ export default class ExtendedList extends Vue<Props> {
                     }}
                 >
                   {this.topGroupSelected && (
-                    <span
-                        class="fa fa-fw fa-check selectic-item_icon"
-                    ></span>
+                    <Icon icon="check" store={this.store} class="selectic-item_icon" />
                   )}
                     {this.topGroupName}
                 </span>
@@ -362,7 +361,7 @@ export default class ExtendedList extends Vue<Props> {
               )}
               {this.searching && (
                 <div class="selectic__message">
-                    <span class="fa fa-spinner fa-spin"></span>
+                    <Icon icon="spinner" store={this.store} spin />
                     {this.searchingLabel}
                 </div>
               )}
