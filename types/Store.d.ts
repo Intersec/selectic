@@ -247,7 +247,7 @@ export interface SelecticStoreState {
     };
 }
 export declare type IconFamily = '' | 'selectic' | 'font-awesome-4' | 'font-awesome-5' | 'font-awesome-6' | 'raw' | `prefix:${string}`;
-export declare type IconKey = 'caret-down' | 'caret-up' | 'check' | 'search' | 'spinner' | 'strikethrough' | 'times' | 'question' | 'spin';
+export declare type IconKey = 'caret-down' | 'caret-up' | 'check' | 'dot' | 'search' | 'spinner' | 'strikethrough' | 'times' | 'question' | 'spin';
 export declare type IconValue = `selectic:${IconKey}${'' | ':spin'}` | `raw:${string}` | `current:${IconKey}${'' | ':spin'}` | string;
 export declare type Icons = Record<IconKey, IconValue>;
 export declare type PartialIcons = {
