@@ -32,7 +32,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n.selectic__extended-list__list-container{\n    overflow: auto;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n.selectic .form-control-feedback.fa.selectic-search-scope {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* }}} */\n";
+var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n.selectic__extended-list__list-container{\n    overflow: auto;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n.selectic .form-control-feedback.fa.selectic-search-scope {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n";
 styleInject(css_248z);
 
 /**
@@ -149,6 +149,12 @@ function compareOptions(oldOptions, newOptions) {
 function changeTexts$1(texts) {
     messages = Object.assign(messages, texts);
 }
+function changeIcons$1(newIcons, newFamilyIcon) {
+    icons = Object.assign(icons, newIcons);
+    if (newFamilyIcon) {
+        defaultFamilyIcon = newFamilyIcon;
+    }
+}
 /* }}} */
 let messages = {
     noFetchMethod: 'Fetch callback is missing: it is not possible to retrieve data.',
@@ -169,6 +175,8 @@ let messages = {
     unknownPropertyValue: 'property "%s" has incorrect values.',
     wrongQueryResult: 'Query did not return all results.',
 };
+let defaultFamilyIcon = 'selectic';
+let icons = {};
 let closePreviousSelectic;
 /* }}} */
 let uid = 0;
@@ -186,6 +194,8 @@ class SelecticStore {
             childOptions: [],
             groups: [],
             texts: null,
+            icons: null,
+            iconFamily: null,
             params: {},
             fetchCallback: null,
             getItemsCallback: null,
@@ -196,47 +206,50 @@ class SelecticStore {
         /* }}} */
         /* {{{ data */
         this.state = vue.reactive({
-            multiple: false,
-            disabled: false,
-            placeholder: '',
-            hideFilter: false,
-            keepFilterOpen: false,
-            allowRevert: undefined,
-            allowClearSelection: false,
-            autoSelect: true,
-            autoDisabled: true,
-            strictValue: false,
-            selectionOverflow: 'collapsed',
-            internalValue: null,
-            isOpen: false,
-            searchText: '',
-            selectionIsExcluded: false,
-            forceSelectAll: 'auto',
+            activeItemIdx: -1,
             allOptions: [],
+            allowClearSelection: false,
+            allowRevert: undefined,
+            autoDisabled: true,
+            autoSelect: true,
+            disabled: false,
+            disableGroupSelection: false,
             dynOptions: [],
             filteredOptions: [],
+            forceSelectAll: 'auto',
+            groups: new Map(),
+            hideFilter: false,
+            internalValue: null,
+            isOpen: false,
+            keepFilterOpen: false,
+            listPosition: 'auto',
+            multiple: false,
+            offsetItem: 0,
+            optionBehaviorOperation: 'sort',
+            optionBehaviorOrder: ['O', 'D', 'E'],
+            pageSize: 100,
+            placeholder: '',
+            searchText: '',
             selectedOptions: null,
+            selectionIsExcluded: false,
+            selectionOverflow: 'collapsed',
+            strictValue: false,
             totalAllOptions: Infinity,
             totalDynOptions: Infinity,
             totalFilteredOptions: Infinity,
-            groups: new Map(),
-            offsetItem: 0,
-            activeItemIdx: -1,
-            pageSize: 100,
-            listPosition: 'auto',
-            optionBehaviorOperation: 'sort',
-            optionBehaviorOrder: ['O', 'D', 'E'],
             status: {
-                searching: false,
-                errorMessage: '',
                 areAllSelected: false,
-                hasChanged: false,
                 automaticChange: false,
                 automaticClose: false,
+                errorMessage: '',
+                hasChanged: false,
+                searching: false,
             },
         });
         this.data = vue.reactive({
             labels: Object.assign({}, messages),
+            icons: Object.assign({}, icons),
+            iconFamily: defaultFamilyIcon,
             itemsPerPage: 10,
             doNotUpdate: false,
             cacheItem: new Map(),
@@ -276,6 +289,9 @@ class SelecticStore {
         });
         this.elementOptions = vue.computed(() => {
             return this.getElementOptions();
+        });
+        this.allowGroupSelection = vue.computed(() => {
+            return this.state.multiple && !this.isPartial.value && !this.state.disableGroupSelection;
         });
         /* }}} */
         /* {{{ watch */
@@ -359,6 +375,9 @@ class SelecticStore {
         this.checkHideFilter();
         if (this.props.texts) {
             this.changeTexts(this.props.texts);
+        }
+        if (this.props.icons || this.props.iconFamily) {
+            this.changeIcons(this.props.icons, this.props.iconFamily);
         }
         this.addGroups(this.props.groups);
         this.assertValueType();
@@ -477,17 +496,38 @@ class SelecticStore {
         }
         return this.buildSelectedItems(ids);
     }
+    selectGroup(id, itemsSelected) {
+        const state = this.state;
+        if (!vue.unref(this.allowGroupSelection)) {
+            return;
+        }
+        const selectItem = this.selectItem.bind(this);
+        let hasChanged = false;
+        this.data.doNotUpdate = true;
+        const items = state.filteredOptions.filter((item) => {
+            const isInGroup = item.group === id && !item.exclusive && !item.disabled;
+            if (isInGroup) {
+                hasChanged = selectItem(item.id, itemsSelected, true) || hasChanged;
+            }
+            return isInGroup;
+        });
+        this.data.doNotUpdate = false;
+        if (hasChanged && items.length) {
+            this.updateFilteredOptions();
+        }
+        return;
+    }
     selectItem(id, selected, keepOpen = false) {
         const state = this.state;
         let hasChanged = false;
         const item = state.allOptions.find((opt) => opt.id === id);
         /* Check that item is not disabled */
         if (item === null || item === void 0 ? void 0 : item.disabled) {
-            return;
+            return hasChanged;
         }
         if (state.strictValue && !this.hasValue(id)) {
             /* reject invalid values */
-            return;
+            return hasChanged;
         }
         if (state.multiple) {
             /* multiple = true */
@@ -535,12 +575,12 @@ class SelecticStore {
             }
             if (!selected) {
                 if (id !== oldValue) {
-                    return;
+                    return hasChanged;
                 }
                 id = null;
             }
             else if (id === oldValue) {
-                return;
+                return hasChanged;
             }
             if (keepOpen) {
                 /* if keepOpen is true it means that it is an automatic change */
@@ -552,6 +592,7 @@ class SelecticStore {
         if (hasChanged) {
             state.status.hasChanged = true;
         }
+        return hasChanged;
     }
     toggleSelectAll() {
         if (!this.state.multiple) {
@@ -620,6 +661,14 @@ class SelecticStore {
     }
     changeTexts(texts) {
         this.data.labels = Object.assign({}, this.data.labels, texts);
+    }
+    changeIcons(icons, family) {
+        if (icons) {
+            this.data.icons = Object.assign({}, this.data.icons, icons);
+        }
+        if (typeof family === 'string') {
+            this.data.iconFamily = family;
+        }
     }
     /* }}} */
     /* {{{ private methods */
@@ -725,6 +774,7 @@ class SelecticStore {
         if (!this.data.doNotUpdate) {
             this.state.filteredOptions = this.buildItems(this.state.filteredOptions);
             this.buildSelectedOptions();
+            this.updateGroupSelection();
         }
     }
     addGroups(groups) {
@@ -732,7 +782,7 @@ class SelecticStore {
             this.state.groups.set(group.id, group.text);
         });
     }
-    /* This method is for the computed property listOptions */
+    /** This method is for the computed property listOptions */
     getListOptions() {
         const options = deepClone(this.props.options, ['data']);
         const listOptions = [];
@@ -883,13 +933,11 @@ class SelecticStore {
             /* Do not fetch again just build filteredOptions */
             const search = this.state.searchText;
             if (!search) {
-                this.state.filteredOptions = this.buildGroupItems(allOptions);
-                this.state.totalFilteredOptions = this.state.filteredOptions.length;
+                this.setFilteredOptions(this.buildGroupItems(allOptions));
                 return;
             }
             const options = this.filterOptions(allOptions, search);
-            this.state.filteredOptions = options;
-            this.state.totalFilteredOptions = this.state.filteredOptions.length;
+            this.setFilteredOptions(options);
         }
     }
     async buildFilteredOptions() {
@@ -911,13 +959,11 @@ class SelecticStore {
         /* Check if all options have been fetched */
         if (hasFetchedAllItems) {
             if (!search) {
-                this.state.filteredOptions = this.buildGroupItems(allOptions);
-                this.state.totalFilteredOptions = this.state.filteredOptions.length;
+                this.setFilteredOptions(this.buildGroupItems(allOptions));
                 return;
             }
             const options = this.filterOptions(allOptions, search);
-            this.state.filteredOptions = options;
-            this.state.totalFilteredOptions = this.state.filteredOptions.length;
+            this.setFilteredOptions(options);
             return;
         }
         /* When we only have partial options */
@@ -928,8 +974,7 @@ class SelecticStore {
             return;
         }
         if (!search && endIndex <= allOptionsLength) {
-            this.state.filteredOptions = this.buildGroupItems(allOptions);
-            this.state.totalFilteredOptions = totalAllOptions + this.state.groups.size;
+            this.setFilteredOptions(this.buildGroupItems(allOptions), false, totalAllOptions + this.state.groups.size);
             const isPartial = vue.unref(this.isPartial);
             if (isPartial && this.state.totalDynOptions === Infinity) {
                 this.fetchData();
@@ -1043,7 +1088,7 @@ class SelecticStore {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
                      */
-                    if (!this.hasFetchedAllItems) {
+                    if (!vue.unref(this.hasFetchedAllItems)) {
                         /* Display error if all items are not fetch
                          * We can have the case where old value and result
                          * are the same but total is correct when the
@@ -1067,6 +1112,10 @@ class SelecticStore {
                 const previousItem = state.filteredOptions[filteredOptionsLength - 1];
                 const options = this.buildGroupItems(result, previousItem);
                 const nbGroups1 = this.nbGroups(options);
+                /* replace existing options by what have been received
+                 * or add received options.
+                 * This allow to manage requests received in different orders.
+                 */
                 state.filteredOptions.splice(offset + dynOffset, limit + nbGroups1, ...options);
             }
             let nbGroups = state.groups.size;
@@ -1074,6 +1123,7 @@ class SelecticStore {
                 nbGroups = this.nbGroups(state.filteredOptions);
             }
             state.totalFilteredOptions = total + nbGroups + dynOffset;
+            this.updateGroupSelection();
             if (search && state.totalFilteredOptions <= state.filteredOptions.length) {
                 this.addStaticFilteredOptions(true);
             }
@@ -1122,8 +1172,7 @@ class SelecticStore {
                     options = this.filterOptions(vue.unref(this.elementOptions), search);
                     break;
             }
-            this.state.filteredOptions.push(...options);
-            this.state.totalFilteredOptions += options.length;
+            this.setFilteredOptions(options, true);
         }
     }
     buildSelectedItems(ids) {
@@ -1265,7 +1314,367 @@ class SelecticStore {
             state.hideFilter = state.totalAllOptions <= this.data.itemsPerPage;
         }
     }
+    /** update group item, to mark them as selected if needed */
+    updateGroupSelection() {
+        const state = this.state;
+        if (!vue.unref(this.allowGroupSelection)) {
+            return;
+        }
+        const filteredOptions = state.filteredOptions;
+        const groupIdx = new Map();
+        const groupAllSelected = new Map();
+        const groupNbItem = new Map();
+        filteredOptions.forEach((option, idx) => {
+            const groupId = option.group;
+            if (option.isGroup) {
+                const id = option.id;
+                groupIdx.set(id, idx);
+                groupAllSelected.set(id, true);
+            }
+            else if (groupId !== undefined) {
+                if (option.disabled || option.exclusive) {
+                    return;
+                }
+                groupNbItem.set(groupId, (groupNbItem.get(groupId) || 0) + 1);
+                if (!option.selected) {
+                    groupAllSelected.set(groupId, false);
+                }
+            }
+        });
+        for (const [id, idx] of groupIdx.entries()) {
+            const group = filteredOptions[idx];
+            group.selected = !!(groupAllSelected.get(id) && groupNbItem.get(id));
+        }
+    }
+    /** assign new value to the filteredOptions and apply change depending on it */
+    setFilteredOptions(options, add = false, length = 0) {
+        if (!add) {
+            this.state.filteredOptions = options;
+            this.state.totalFilteredOptions = length || options.length;
+        }
+        else {
+            this.state.filteredOptions.push(...options);
+            this.state.totalFilteredOptions += length || options.length;
+        }
+        this.updateGroupSelection();
+    }
 }
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$d = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconCaretDown = class IconCaretDown extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7,10L12,15L17,10H7Z" })));
+    }
+};
+IconCaretDown = __decorate$d([
+    vtyx.Component
+], IconCaretDown);
+var IconCaretDown$1 = IconCaretDown;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$c = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconCaretUp = class IconCaretUp extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7,15L12,10L17,15H7Z" })));
+    }
+};
+IconCaretUp = __decorate$c([
+    vtyx.Component
+], IconCaretUp);
+var IconCaretUp$1 = IconCaretUp;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$b = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconCheck = class IconCheck extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" })));
+    }
+};
+IconCheck = __decorate$b([
+    vtyx.Component
+], IconCheck);
+var IconCheck$1 = IconCheck;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$a = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconQuestion = class IconQuestion extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z" })));
+    }
+};
+IconQuestion = __decorate$a([
+    vtyx.Component
+], IconQuestion);
+var IconQuestion$1 = IconQuestion;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$9 = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconSearch = class IconSearch extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" })));
+    }
+};
+IconSearch = __decorate$9([
+    vtyx.Component
+], IconSearch);
+var IconSearch$1 = IconSearch;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$8 = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconSpinner = class IconSpinner extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" })));
+    }
+};
+IconSpinner = __decorate$8([
+    vtyx.Component
+], IconSpinner);
+var IconSpinner$1 = IconSpinner;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$7 = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconStrikeThrough = class IconStrikeThrough extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7.2 9.8C6 7.5 7.7 4.8 10.1 4.3C13.2 3.3 17.7 4.7 17.6 8.5H14.6C14.6 8.2 14.5 7.9 14.5 7.7C14.3 7.1 13.9 6.8 13.3 6.6C12.5 6.3 11.2 6.4 10.5 6.9C9 8.2 10.4 9.5 12 10H7.4C7.3 9.9 7.3 9.8 7.2 9.8M21 13V11H3V13H12.6C12.8 13.1 13 13.1 13.2 13.2C13.8 13.5 14.3 13.7 14.5 14.3C14.6 14.7 14.7 15.2 14.5 15.6C14.3 16.1 13.9 16.3 13.4 16.5C11.6 17 9.4 16.3 9.5 14.1H6.5C6.4 16.7 8.6 18.5 11 18.8C14.8 19.6 19.3 17.2 17.3 12.9L21 13Z" })));
+    }
+};
+IconStrikeThrough = __decorate$7([
+    vtyx.Component
+], IconStrikeThrough);
+var IconStrikeThrough$1 = IconStrikeThrough;
+
+/* This icon is from <https://github.com/Templarian/MaterialDesign>,
+ * distributed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) license
+ */
+var __decorate$6 = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let IconTimes = class IconTimes extends vtyx.Vue {
+    render() {
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" })));
+    }
+};
+IconTimes = __decorate$6([
+    vtyx.Component
+], IconTimes);
+var IconTimes$1 = IconTimes;
+
+/* File Purpose:
+ * Display the wanted icon.
+ */
+var __decorate$5 = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+let Icon = class Icon extends vtyx.Vue {
+    /* }}} */
+    /* {{{ computed */
+    get rawIconValue() {
+        const key = this.icon;
+        const icon = this.store.data.icons[key];
+        if (icon === undefined) {
+            return key;
+        }
+        return icon;
+    }
+    get family() {
+        const iconValue = this.rawIconValue;
+        if (iconValue.startsWith('selectic:')) {
+            return 'selectic';
+        }
+        if (iconValue.startsWith('raw:')) {
+            return 'raw';
+        }
+        return this.store.data.iconFamily;
+    }
+    get iconValue() {
+        const key = this.rawIconValue;
+        if (key.includes(':')) {
+            /* This is to retrieve value from string such as
+             * 'selectic:spinner:spin' (and get only 'spinner') */
+            const value = key.split(':');
+            return value[1];
+        }
+        return key;
+    }
+    get vueIcon() {
+        switch (this.icon) {
+            case 'caret-down':
+                return IconCaretDown$1;
+            case 'caret-up':
+                return IconCaretUp$1;
+            case 'check':
+                return IconCheck$1;
+            case 'search':
+                return IconSearch$1;
+            case 'spinner':
+                return IconSpinner$1;
+            case 'strikethrough':
+                return IconStrikeThrough$1;
+            case 'times':
+                return IconTimes$1;
+            case 'question':
+            default:
+                return IconQuestion$1;
+        }
+    }
+    get spinClass() {
+        var _a;
+        let value = this.store.data.icons.spin;
+        if (typeof value === 'string') {
+            if (value.startsWith('selectic:')) {
+                return 'selectic-spin';
+            }
+            if (value.includes(':')) {
+                value = (_a = value.split(':')[1]) !== null && _a !== void 0 ? _a : 'spin';
+            }
+        }
+        else {
+            value = 'spin';
+        }
+        const family = this.family;
+        let prefix = '';
+        switch (family) {
+            case 'font-awesome-4':
+                prefix = 'fa-';
+                break;
+            case 'font-awesome-5':
+                prefix = 'fa-';
+                break;
+            case 'font-awesome-6':
+                prefix = 'fa-';
+                break;
+            case '':
+            case 'selectic':
+                prefix = 'selectic-';
+                break;
+            case 'raw':
+                prefix = '';
+                break;
+            default:
+                prefix = 'selectic-';
+        }
+        return `${prefix}${value}`;
+    }
+    get spinActive() {
+        return this.spin || this.rawIconValue.endsWith(':spin');
+    }
+    /* }}} */
+    renderInnerIcon() {
+        const component = this.vueIcon;
+        return vtyx.h(component, {
+            class: {
+                'selectic__icon': true,
+                [this.spinClass]: this.spinActive,
+            },
+            title: this.title,
+        });
+    }
+    renderSpanIcon(prefix) {
+        const classSpin = this.spinActive && this.spinClass || '';
+        return (vtyx.h("span", { class: `${prefix}${this.iconValue} ${classSpin}`, title: this.title }));
+    }
+    render() {
+        const family = this.family;
+        switch (family) {
+            case '':
+            case 'selectic':
+                return this.renderInnerIcon();
+            case 'font-awesome-4':
+                return this.renderSpanIcon('fa fa-fw fa-');
+            case 'font-awesome-5':
+                return this.renderSpanIcon('fas fa-fw fa-');
+            case 'font-awesome-4':
+                return this.renderSpanIcon('fa-solid fa-fw fa-');
+            case 'raw':
+                return this.renderSpanIcon('');
+            default:
+                if (family.startsWith('prefix:')) {
+                    return this.renderSpanIcon(family.slice(7));
+                }
+                return this.renderInnerIcon();
+        }
+    }
+};
+__decorate$5([
+    vtyx.Prop()
+], Icon.prototype, "store", void 0);
+__decorate$5([
+    vtyx.Prop()
+], Icon.prototype, "icon", void 0);
+__decorate$5([
+    vtyx.Prop()
+], Icon.prototype, "spin", void 0);
+__decorate$5([
+    vtyx.Prop()
+], Icon.prototype, "title", void 0);
+Icon = __decorate$5([
+    vtyx.Component
+], Icon);
+var Icon$1 = Icon;
 
 /* File Purpose:
  * It displays the core element which is always visible (where selection is
@@ -1531,16 +1940,16 @@ let MainInput = class MainInput extends vtyx.Vue {
                         'selectic-item_text',
                     ], title: this.store.state.placeholder }, this.store.state.placeholder)),
                 this.store.state.multiple && (vtyx.h("div", { class: "selectic-input__selected-items", ref: "selectedItems" },
-                    this.isSelectionReversed && (vtyx.h("span", { class: "fa fa-strikethrough selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
+                    this.isSelectionReversed && (vtyx.h(Icon$1, { icon: "strikethrough", store: this.store, class: "selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
                     this.showSelectedOptions.map((item) => (vtyx.h("div", { class: "single-value", style: item.style, title: item.title || item.text, on: {
                             click: () => this.$emit('item:click', item.id),
                         } },
                         vtyx.h("span", { class: "selectic-input__selected-items__value" }, item.text),
-                        !this.isDisabled && (vtyx.h("span", { class: "fa fa-times selectic-input__selected-items__icon", on: {
+                        !this.isDisabled && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, on: {
                                 'click.prevent.stop': () => this.selectItem(item.id),
                             } }))))),
                     this.moreSelectedNb && (vtyx.h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb)))),
-                this.showClearAll && (vtyx.h("span", { class: "fa fa-times selectic-input__clear-icon", title: this.clearedLabel, on: { 'click.prevent.stop': this.clearSelection } }))),
+                this.showClearAll && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__clear-icon", title: this.clearedLabel, store: this.store, on: { 'click.prevent.stop': this.clearSelection } }))),
             vtyx.h("div", { class: [
                     'selectic__icon-container',
                     'form-control-feedback',
@@ -1548,7 +1957,7 @@ let MainInput = class MainInput extends vtyx.Vue {
                 ], on: {
                     'click.prevent.stop': () => this.toggleFocus(),
                 } },
-                vtyx.h("span", { class: "fa fa-caret-down selectic-icon" }))));
+                vtyx.h(Icon$1, { icon: "caret-down", class: "selectic-icon", store: this.store }))));
     }
 };
 __decorate$4([
@@ -1696,7 +2105,7 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
                     vtyx.h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, value: state.searchText, on: {
                             'input.stop.prevent': this.onInput,
                         }, ref: "filterInput" }),
-                    vtyx.h("span", { class: "fa fa-search selectic-search-scope\n                                     form-control-feedback" })),
+                    vtyx.h(Icon$1, { icon: "search", store: this.store, class: "selectic-search-scope form-control-feedback" })),
                 state.multiple && (vtyx.h("div", { class: "toggle-selectic" },
                     vtyx.h("label", { class: ['control-label', {
                                 'selectic__label-disabled': this.disableSelectAll,
@@ -1716,12 +2125,8 @@ let FilterPanel = class FilterPanel extends vtyx.Vue {
             !state.keepFilterOpen && (vtyx.h("div", { class: "curtain-handler", on: {
                     'click.prevent.stop': this.togglePanel,
                 } },
-                vtyx.h("span", { class: "fa fa-search" }),
-                vtyx.h("span", { class: {
-                        'fa': true,
-                        'fa-caret-down': this.closed,
-                        'fa-caret-up': !this.closed,
-                    } })))));
+                vtyx.h(Icon$1, { icon: "search", store: this.store }),
+                vtyx.h(Icon$1, { icon: this.closed ? 'caret-down' : 'caret-up', store: this.store })))));
     }
 };
 __decorate$3([
@@ -1781,7 +2186,7 @@ let List = class List extends vtyx.Vue {
                 text: '',
                 disabled: true,
                 selected: false,
-                icon: 'fa fa-spinner fa-spin',
+                icon: 'current:spinner:spin',
                 isGroup: false,
             });
         }
@@ -1831,7 +2236,11 @@ let List = class List extends vtyx.Vue {
     /* }}} */
     /* {{{ methods */
     click(option) {
-        if (option.disabled || option.isGroup) {
+        if (option.disabled) {
+            return;
+        }
+        if (option.isGroup) {
+            this.store.selectGroup(option.id, !option.selected);
             return;
         }
         this.store.selectItem(option.id);
@@ -1919,14 +2328,17 @@ let List = class List extends vtyx.Vue {
                         'mouseover': () => this.onMouseOver(idx),
                     }, class: ['selectic-item', option.className || '', {
                             'selected': option.selected,
+                            'selectable': vue.unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
                             'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
                             'selectic-item__disabled': !!option.disabled,
                             'selectic-item__exclusive': !!option.exclusive,
                             'selectic-item__is-in-group': !!option.group,
                             'selectic-item__is-group': option.isGroup,
                         }], style: option.style, title: option.title, key: 'selectic-item-' + (idx + this.startIndex) },
-                    this.isMultiple && (vtyx.h("span", { class: "fa fa-fw fa-check selectic-item_icon" })),
-                    option.icon && (vtyx.h("span", { class: option.icon })),
+                    this.isMultiple && (vtyx.h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
+                    option.icon && (option.icon.includes(':')
+                        ? vtyx.h(Icon$1, { icon: option.icon, store: this.store })
+                        : vtyx.h(Icon$1, { icon: `raw:${option.icon}`, store: this.store })),
                     option.text))),
                 !!this.bottomOffset && (vtyx.h("li", { class: "selectic-item", style: `height:${this.bottomOffset}px;` })))));
     }
@@ -1971,7 +2383,8 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         super(...arguments);
         /* }}} */
         /* {{{ data */
-        this.topGroup = ' ';
+        this.topGroupName = ' ';
+        this.topGroupId = null;
         this.listHeight = 0;
         this.listWidth = 200;
         this.availableSpace = 0;
@@ -2115,6 +2528,24 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
             --availableSpace: ${availableSpace}px;
         `;
     }
+    get topGroup() {
+        const topGroupId = this.topGroupId;
+        if (!topGroupId) {
+            return undefined;
+        }
+        const group = this.store.state.filteredOptions.find((option) => {
+            return option.id === topGroupId;
+        });
+        return group;
+    }
+    get topGroupSelected() {
+        const group = this.topGroup;
+        return !!(group === null || group === void 0 ? void 0 : group.selected);
+    }
+    get topGroupDisabled() {
+        const group = this.topGroup;
+        return !!(group === null || group === void 0 ? void 0 : group.disabled);
+    }
     /* }}} */
     /* {{{ watch */
     onFilteredOptionsChange() {
@@ -2128,12 +2559,16 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
     getGroup(id) {
         const group = this.store.state.groups.get(id);
         const groupName = group || ' ';
-        this.topGroup = groupName;
+        this.topGroupName = groupName;
+        this.topGroupId = id;
     }
     computeListSize() {
         const box = this.$el.getBoundingClientRect();
         this.listHeight = box.height;
         this.listWidth = box.width;
+    }
+    clickHeaderGroup() {
+        this.store.selectGroup(this.topGroupId, !this.topGroupSelected);
     }
     /* }}} */
     /* {{{ Life cycles */
@@ -2160,13 +2595,24 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
                 `selectic-position-${this.position}`,
             ] },
             !state.hideFilter && (vtyx.h(Filter, { store: this.store })),
-            isGroup && (vtyx.h("span", { class: "selectic-item selectic-item--header selectic-item__is-group" }, this.topGroup)),
+            isGroup && (vtyx.h("span", { class: [
+                    'selectic-item selectic-item--header selectic-item__is-group',
+                    {
+                        selected: this.topGroupSelected,
+                        selectable: vue.unref(this.store.allowGroupSelection) && !this.topGroupDisabled,
+                        disabled: this.topGroupDisabled,
+                    },
+                ], on: {
+                    click: () => this.clickHeaderGroup(),
+                } },
+                this.topGroupSelected && (vtyx.h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
+                this.topGroupName)),
             vtyx.h(List$1, { store: store, on: {
                     groupId: this.getGroup,
                 } }),
             this.infoMessage && (vtyx.h("div", { class: "selectic__message alert-info" }, this.infoMessage)),
             this.searching && (vtyx.h("div", { class: "selectic__message" },
-                vtyx.h("span", { class: "fa fa-spinner fa-spin" }),
+                vtyx.h(Icon$1, { icon: "spinner", store: this.store, spin: true }),
                 this.searchingLabel)),
             this.errorMessage && (vtyx.h("div", { class: "selectic__message alert-danger", on: { click: () => store.resetErrorMessage() } }, this.errorMessage))));
     }
@@ -2214,6 +2660,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 function changeTexts(texts) {
     changeTexts$1(texts);
+}
+function changeIcons(icons, iconFamily) {
+    changeIcons$1(icons, iconFamily);
 }
 let Selectic = class Selectic extends vtyx.Vue {
     constructor() {
@@ -2303,15 +2752,19 @@ let Selectic = class Selectic extends vtyx.Vue {
     /* }}} */
     /* {{{ methods */
     /* {{{ public methods */
-    /* Reset the inner cache (mainly for dynamic mode if context has changed) */
+    /** Reset the inner cache (mainly for dynamic mode if context has changed) */
     clearCache(forceReset = false) {
         this.store.clearCache(forceReset);
     }
-    /* Allow to change all text of the component */
+    /** Allow to change all text of the component */
     changeTexts(texts) {
         this.store.changeTexts(texts);
     }
-    /* Return the current selection */
+    /** Allow to change all icons of the component */
+    changeIcons(icons, iconFamily) {
+        this.store.changeIcons(icons, iconFamily);
+    }
+    /** Return the current selection */
     getValue() {
         const value = this.store.state.internalValue;
         if (value === null && typeof this.params.emptyValue !== 'undefined') {
@@ -2319,7 +2772,7 @@ let Selectic = class Selectic extends vtyx.Vue {
         }
         return value;
     }
-    /* Return the current selection in Item format */
+    /** Return the current selection in Item format */
     getSelectedItems() {
         const values = this.store.state.internalValue;
         if (values === null) {
@@ -2333,7 +2786,7 @@ let Selectic = class Selectic extends vtyx.Vue {
         }
         return this.store.getItem(values);
     }
-    /* Check if there are Options available in the components */
+    /** Check if there are Options available in the components */
     isEmpty() {
         const total = this.store.state.totalAllOptions;
         return total === 0;
@@ -2445,6 +2898,11 @@ let Selectic = class Selectic extends vtyx.Vue {
         if (texts) {
             this.changeTexts(texts);
         }
+    }
+    onIconsChange() {
+        const icons = this.icons;
+        const iconFamily = this.iconFamily;
+        this.changeIcons(icons !== null && icons !== void 0 ? icons : {}, iconFamily);
     }
     onDisabledChange() {
         this.store.props.disabled = this.disabled;
@@ -2618,6 +3076,8 @@ let Selectic = class Selectic extends vtyx.Vue {
             selectionIsExcluded: this.selectionIsExcluded,
             disabled: this.disabled,
             texts: this.texts,
+            icons: this.icons,
+            iconFamily: this.iconFamily,
             groups: deepClone(this.groups),
             keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
             params: {
@@ -2640,6 +3100,7 @@ let Selectic = class Selectic extends vtyx.Vue {
                 listPosition: this.params.listPosition || 'auto',
                 optionBehavior: this.params.optionBehavior,
                 isOpen: ((_c = this.open) !== null && _c !== void 0 ? _c : false) !== false,
+                disableGroupSelection: this.params.disableGroupSelection,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
@@ -2648,6 +3109,7 @@ let Selectic = class Selectic extends vtyx.Vue {
             this._getMethods({
                 clearCache: this.clearCache.bind(this),
                 changeTexts: this.changeTexts.bind(this),
+                changeIcons: this.changeIcons.bind(this),
                 getValue: this.getValue.bind(this),
                 getSelectedItems: this.getSelectedItems.bind(this),
                 isEmpty: this.isEmpty.bind(this),
@@ -2737,6 +3199,12 @@ __decorate([
     vtyx.Prop()
 ], Selectic.prototype, "texts", void 0);
 __decorate([
+    vtyx.Prop()
+], Selectic.prototype, "icons", void 0);
+__decorate([
+    vtyx.Prop()
+], Selectic.prototype, "iconFamily", void 0);
+__decorate([
     vtyx.Prop({ default: false })
 ], Selectic.prototype, "noCache", void 0);
 __decorate([
@@ -2768,6 +3236,10 @@ __decorate([
     vtyx.Watch('texts', { deep: true })
 ], Selectic.prototype, "onTextsChange", null);
 __decorate([
+    vtyx.Watch('iconFamily'),
+    vtyx.Watch('icons', { deep: true })
+], Selectic.prototype, "onIconsChange", null);
+__decorate([
     vtyx.Watch('disabled')
 ], Selectic.prototype, "onDisabledChange", null);
 __decorate([
@@ -2793,5 +3265,6 @@ Selectic = __decorate([
 ], Selectic);
 var Selectic$1 = Selectic;
 
+exports.changeIcons = changeIcons;
 exports.changeTexts = changeTexts;
 exports["default"] = Selectic$1;

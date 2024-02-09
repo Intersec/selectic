@@ -1,5 +1,5 @@
 import { Vue, h } from 'vtyx';
-import Store from './Store';
+import Store, { OptionItem } from './Store';
 export interface Props {
     store: Store;
     width: number;
@@ -15,7 +15,8 @@ export default class ExtendedList extends Vue<Props> {
     private elementTop;
     private elementBottom;
     private width;
-    private topGroup;
+    private topGroupName;
+    private topGroupId;
     private listHeight;
     private listWidth;
     private availableSpace;
@@ -30,10 +31,14 @@ export default class ExtendedList extends Vue<Props> {
     get position(): 'top' | 'bottom';
     get horizontalStyle(): string;
     get positionStyle(): string;
+    get topGroup(): OptionItem | undefined;
+    get topGroupSelected(): boolean;
+    get topGroupDisabled(): boolean;
     onFilteredOptionsChange(): void;
     onHideFilterChange(): void;
     private getGroup;
     private computeListSize;
+    private clickHeaderGroup;
     mounted(): void;
     unmounted(): void;
     render(): h.JSX.Element;
