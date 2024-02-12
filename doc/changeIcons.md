@@ -5,10 +5,10 @@
 There are some icons in selectic. But sometimes it is useful to change them (because you want to use yours or the same of your favorite theme).
 
 There are 3 ways to changes these icons:
-* Call the static `changeIcons()` method. It changes icons for all selectic components.
+* Call the static `changeIcons(icons, iconFamily)` method. It changes icons for all selectic components.
 * Change the `icons` property. It changes icons only for the component.
 * Change the `iconFamily` property. It changes the icons origin only for the component.
-* Call the `changeIcons()` method on the component. It changes icons only for the component.
+* Call the `changeIcons(icons, iconFamily)` method on the component. It changes icons only for the component.
 
 _Changes made locally take precedence over changes made globally_.
 
@@ -115,4 +115,10 @@ this.$refs.selectic.changeIcons({
 /* For this selectic instance, the selected icon will be displayed:
  * <span class="fa fa-thumbs-o-up"></span>
  */
+```
+
+It is possible to change only the icon family:
+```javascript
+// change icons for all selectic components to use FA-6 icons
+Selectic.changeIcons(null, 'font-awesome-6');
 ```
