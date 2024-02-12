@@ -3,7 +3,7 @@ const _ = require('../tools.js');
 const StoreFile = require('../dist/Store.js');
 const Store = StoreFile.default;
 
-tape.only('changeIcons()', (sTest) => {
+tape.test('changeIcons()', (sTest) => {
     sTest.test('should have default icons', (t) => {
         const store = new Store();
 
