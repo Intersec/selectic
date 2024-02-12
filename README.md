@@ -112,13 +112,3 @@ Run unitary tests:
 ```console
 $ npm run test
 ```
-
-## Migration information
-
-### From 3.0 to 3.1
-
-Selectic no more depends on Font-awesome. It embeds its own icons (from Material Design Icons).
-
-It is still possible to use Font-awesome icons (or from any other libraries).
-
-Read [the documentation section related to changing icons](./doc/changeIcons.md) for more information on how to handle them.

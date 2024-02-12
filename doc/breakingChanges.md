@@ -7,6 +7,14 @@ version which want to upgrade them to latest version.
 
 **This is not something you have to read to understand and to use Selectic.**
 
+## 3.0.x → 3.1.x
+
+Selectic no more depends on Font-awesome. It embeds its own icons (from Material Design Icons).
+
+It is still possible to use Font-awesome icons (or from any other libraries).
+
+Read [the documentation section related to changing icons](./changeIcons.md) for more information on how to handle them.
+
 ## 1.3.x → 3.x
 
 ### Vue2 → Vue3
