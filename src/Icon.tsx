@@ -30,7 +30,7 @@ export default class Icon extends Vue<Props> {
     private store: Store;
 
     @Prop()
-    private icon: IconKey;
+    private icon: string;
 
     @Prop()
     private spin?: boolean;
@@ -42,7 +42,7 @@ export default class Icon extends Vue<Props> {
     /* {{{ computed */
 
     private get rawIconValue(): IconValue {
-        const key = this.icon;
+        const key = this.icon as IconKey;
         const icon = this.store.data.icons[key];
 
         if (icon === undefined) {

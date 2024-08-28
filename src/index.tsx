@@ -206,11 +206,11 @@ export interface Props {
     iconFamily?: IconFamily;
 
     /** If enabled, it resets the dynamic cache when selectic opens */
-    noCache?: Boolean;
+    noCache?: boolean;
 
     /** If true, the component opens (at start or if it is closed).
      *  If false, the components closes (if it is opened). */
-    open?: Boolean;
+    open?: boolean;
 
     /** Props which is not expected to change during the life time of the
      * component.

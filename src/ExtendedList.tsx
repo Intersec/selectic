@@ -13,13 +13,13 @@ import Icon from './Icon';
 
 export interface Props {
     store: Store;
-    width: number;
+    width?: number;
 
     /* positions of the main element related to current window */
-    elementTop: number;
-    elementBottom: number;
-    elementLeft: number;
-    elementRight: number;
+    elementTop?: number;
+    elementBottom?: number;
+    elementLeft?: number;
+    elementRight?: number;
 }
 
 /* list estimation height

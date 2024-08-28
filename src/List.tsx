@@ -14,10 +14,6 @@ import Icon from './Icon';
 
 export interface Props {
     store: Store;
-
-    options?: any[];
-    nbItems?: number;
-    multiple?: boolean;
 }
 
 @Component
