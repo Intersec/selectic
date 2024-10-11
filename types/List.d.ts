@@ -2,9 +2,6 @@ import { Vue, h } from 'vtyx';
 import Store, { OptionItem } from './Store';
 export interface Props {
     store: Store;
-    options?: any[];
-    nbItems?: number;
-    multiple?: boolean;
 }
 export default class List extends Vue<Props> {
     $refs: {

@@ -30,10 +30,15 @@ export interface GroupValue {
     id: StrictOptionId;
     text: string;
 }
-export declare type FetchCallback = (_search: string, _offsetItem: number, _pageSize: number) => Promise<{
+export declare type RequestResult = {
+    /** The total number of expecting options.
+     * Needed to know if there are more items to fetch, and to size the scrollbar.
+     */
     total: number;
+    /** The list of the options. */
     result: OptionValue[];
-}>;
+};
+export declare type FetchCallback = (_search: string, _offsetItem: number, _pageSize: number) => Promise<RequestResult>;
 export declare type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
 export declare type FormatCallback = (_option: OptionItem) => OptionItem;
 export declare type SelectionOverflow = 
@@ -277,6 +282,8 @@ export default class SelecticStore {
     state: SelecticStoreState;
     data: Data;
     private requestId;
+    private requestSearchId;
+    private isRequesting;
     private cacheRequest;
     private closeSelectic;
     /** Number of item to pre-display */
@@ -309,14 +316,20 @@ export default class SelecticStore {
     private convertTypeValue;
     private assertValueType;
     private assertCorrectValue;
+    /** Reset the display cache in order to rebuild it */
+    private clearDisplay;
+    /** rebuild the state filteredOptions to normalize their values */
     private updateFilteredOptions;
     private addGroups;
     /** This method is for the computed property listOptions */
     private getListOptions;
+    /** This method is for the computed property elementOptions */
     private getElementOptions;
+    /** Generate the list of all options by combining the 3 option lists */
     private buildAllOptions;
     private buildFilteredOptions;
     private buildSelectedOptions;
+    private fetchRequest;
     private fetchData;
     private filterOptions;
     private addStaticFilteredOptions;

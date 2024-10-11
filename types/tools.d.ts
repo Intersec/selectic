@@ -25,3 +25,7 @@ export declare function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array
  * @returns true if there are no difference
  */
 export declare function compareOptions(oldOptions: OptionValue[], newOptions: OptionValue[]): boolean;
+export declare function debug(fName: string, step: string, ...args: any[]): void;
+export declare namespace debug {
+    var enable: (display: boolean) => void;
+}

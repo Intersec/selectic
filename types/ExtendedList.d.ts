@@ -2,11 +2,11 @@ import { Vue, h } from 'vtyx';
 import Store, { OptionItem } from './Store';
 export interface Props {
     store: Store;
-    width: number;
-    elementTop: number;
-    elementBottom: number;
-    elementLeft: number;
-    elementRight: number;
+    width?: number;
+    elementTop?: number;
+    elementBottom?: number;
+    elementLeft?: number;
+    elementRight?: number;
 }
 export default class ExtendedList extends Vue<Props> {
     private store;
