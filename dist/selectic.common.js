@@ -2566,42 +2566,6 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         }
         return '';
     }
-    get onKeyDown() {
-        return (evt) => {
-            const key = evt.key;
-            if (key === 'Escape') {
-                this.store.commit('isOpen', false);
-            }
-            else if (key === 'Enter') {
-                const index = this.store.state.activeItemIdx;
-                if (index !== -1) {
-                    const item = this.store.state.filteredOptions[index];
-                    if (!item.disabled && !item.isGroup) {
-                        this.store.selectItem(item.id);
-                    }
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            }
-            else if (key === 'ArrowUp') {
-                const index = this.store.state.activeItemIdx;
-                if (index > 0) {
-                    this.store.commit('activeItemIdx', index - 1);
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            }
-            else if (key === 'ArrowDown') {
-                const index = this.store.state.activeItemIdx;
-                const max = this.store.state.totalFilteredOptions - 1;
-                if (index < max) {
-                    this.store.commit('activeItemIdx', index + 1);
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            }
-        };
-    }
     get bestPosition() {
         const windowHeight = window.innerHeight;
         const isFullyEstimated = this.isFullyEstimated;
@@ -2716,6 +2680,40 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
     }
     clickHeaderGroup() {
         this.store.selectGroup(this.topGroupId, !this.topGroupSelected);
+    }
+    onKeyDown(evt) {
+        const key = evt.key;
+        if (key === 'Escape') {
+            this.store.commit('isOpen', false);
+        }
+        else if (key === 'Enter') {
+            const index = this.store.state.activeItemIdx;
+            if (index !== -1) {
+                const item = this.store.state.filteredOptions[index];
+                if (!item.disabled && !item.isGroup) {
+                    this.store.selectItem(item.id);
+                }
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
+        else if (key === 'ArrowUp') {
+            const index = this.store.state.activeItemIdx;
+            if (index > 0) {
+                this.store.commit('activeItemIdx', index - 1);
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
+        else if (key === 'ArrowDown') {
+            const index = this.store.state.activeItemIdx;
+            const max = this.store.state.totalFilteredOptions - 1;
+            if (index < max) {
+                this.store.commit('activeItemIdx', index + 1);
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
     }
     /* }}} */
     /* {{{ Life cycles */

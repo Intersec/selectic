@@ -26,7 +26,6 @@ export default class ExtendedList extends Vue<Props> {
     get searching(): boolean;
     get errorMessage(): string;
     get infoMessage(): string;
-    get onKeyDown(): (evt: KeyboardEvent) => void;
     get bestPosition(): 'top' | 'bottom';
     get position(): 'top' | 'bottom';
     get horizontalStyle(): string;
@@ -39,6 +38,7 @@ export default class ExtendedList extends Vue<Props> {
     private getGroup;
     private computeListSize;
     private clickHeaderGroup;
+    private onKeyDown;
     mounted(): void;
     unmounted(): void;
     render(): h.JSX.Element;
