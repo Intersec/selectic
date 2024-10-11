@@ -6,7 +6,7 @@ export interface Props {
 }
 export default class MainInput extends Vue<Props> {
     $refs: {
-        selectedItems: HTMLDivElement;
+        selectedItems?: HTMLDivElement;
     };
     private store;
     private id;
@@ -14,6 +14,7 @@ export default class MainInput extends Vue<Props> {
     private domObserver;
     get isDisabled(): boolean;
     get hasValue(): boolean;
+    get disabledList(): OptionItem[];
     get displayPlaceholder(): boolean;
     get canBeCleared(): boolean;
     get showClearAll(): boolean;

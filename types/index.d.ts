@@ -133,7 +133,7 @@ export declare function changeIcons(icons: PartialIcons, iconFamily?: IconFamily
 export default class Selectic extends Vue<Props> {
     $refs: {
         mainInput: MainInput;
-        extendedList: ExtendedList;
+        extendedList?: ExtendedList;
     };
     value?: SelectedValue;
     selectionIsExcluded: boolean;

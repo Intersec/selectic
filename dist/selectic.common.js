@@ -32,7 +32,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n.selectic__extended-list__list-container{\n    overflow: auto;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n.selectic .form-control-feedback.fa.selectic-search-scope {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n";
+var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n.selectic .has-feedback {\n    position: relative;\n}\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: space-between;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n.selectic-input__clear-icon {\n    align-self: center;\n    margin-left: 3px;\n    cursor: pointer;\n}\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n.selectic__extended-list__list-container{\n    overflow: auto;\n}\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-input-height) * 10);\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: calc(var(--selectic-input-height) - 3px);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n.selectic-search-scope {\n    color: #e0e0e0;\n    left: auto;\n    right: 10px;\n}\n.selectic .form-control-feedback.fa.selectic-search-scope {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .panelclosed {\n    max-height: 0px;\n    transition: max-height 0.3s ease-out;\n    overflow: hidden;\n}\n\n.panelopened {\n    max-height: 200px;\n    transition: max-height 0.3s ease-in;\n    overflow: hidden;\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    padding-bottom: 10px;\n    margin-bottom: 0px;\n}\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .checkbox-filter {\n    padding: 5px;\n    text-align: center;\n}\n\n.selectic .curtain-handler {\n    text-align: center;\n}\n\n.selectic .toggle-selectic {\n    margin: 5px;\n    padding-left: 0px;\n    padding-right: 0px;\n}\n\n.selectic .toggle-boolean-select-all-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .toggle-boolean-excluding-toggle {\n    display: inline;\n    margin-right: 15px;\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"value icon\" 1fr / max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__label-disabled {\n    opacity: 0.5;\n    transition: opacity 400ms;\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n";
 styleInject(css_248z);
 
 /**
@@ -558,25 +558,54 @@ class SelecticStore {
             if (selected === undefined) {
                 selected = !isAlreadySelected;
             }
+            const selectedOptions = Array.isArray(state.selectedOptions)
+                ? state.selectedOptions
+                : [];
             if (id === null) {
-                state.internalValue = [];
-                hasChanged = internalValue.length > 0;
+                /* Keep disabled items: we cannot removed them because they
+                 * are disabled */
+                const newSelection = selectedOptions.reduce((list, item) => {
+                    if (item.disabled && item.id) {
+                        list.push(item.id);
+                    }
+                    return list;
+                }, []);
+                state.internalValue = newSelection;
+                hasChanged = internalValue.length > newSelection.length;
             }
             else if (selected && !isAlreadySelected) {
+                let addItem = true;
                 if (item === null || item === void 0 ? void 0 : item.exclusive) {
-                    /* clear the current selection because the item is exclusive */
-                    internalValue.splice(0, Infinity);
+                    const hasDisabledSelected = selectedOptions.some((opt) => {
+                        return opt.disabled;
+                    });
+                    if (hasDisabledSelected) {
+                        /* do not remove disabled item from selection */
+                        addItem = false;
+                    }
+                    else {
+                        /* clear the current selection because the item is exclusive */
+                        internalValue.splice(0, Infinity);
+                    }
                 }
                 else if (internalValue.length === 1) {
                     const selectedId = internalValue[0];
                     const selectedItem = state.allOptions.find((opt) => opt.id === selectedId);
                     if (selectedItem === null || selectedItem === void 0 ? void 0 : selectedItem.exclusive) {
-                        /* clear the current selection because the old item was exclusive */
-                        internalValue.pop();
+                        if (selectedItem.disabled) {
+                            /* If selected item is disabled and exclusive do not change the selection */
+                            addItem = false;
+                        }
+                        else {
+                            /* clear the current selection because the old item was exclusive */
+                            internalValue.pop();
+                        }
                     }
                 }
-                internalValue.push(id);
-                hasChanged = true;
+                if (addItem) {
+                    internalValue.push(id);
+                    hasChanged = true;
+                }
             }
             else if (!selected && isAlreadySelected) {
                 internalValue.splice(internalValue.indexOf(id), 1);
@@ -597,6 +626,11 @@ class SelecticStore {
             }
             if (!selected) {
                 if (id !== oldValue) {
+                    return hasChanged;
+                }
+                const oldOption = state.selectedOptions;
+                if (oldOption === null || oldOption === void 0 ? void 0 : oldOption.disabled) {
+                    /* old selection is disabled so do not unselect it */
                     return hasChanged;
                 }
                 id = null;
@@ -1368,15 +1402,23 @@ class SelecticStore {
         if (doNotCheck || !hasFetchedAllItems) {
             return;
         }
+        const selectedOptions = state.selectedOptions;
         const enabledOptions = state.allOptions.filter((opt) => !opt.disabled);
-        const nb = enabledOptions.length;
+        const nbEnabled = enabledOptions.length;
         const value = state.internalValue;
         const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
-        const hasValidValue = hasValue && (Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
+        const hasDisabledSelected = Array.isArray(selectedOptions)
+            ? selectedOptions.some((opt) => opt.disabled)
+            : false;
+        const hasOnlyValidValue = hasValue && !hasDisabledSelected && (Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
             this.hasValue(value));
-        const isEmpty = nb === 0;
-        const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
-        if (hasOnlyOneOption || isEmpty) {
+        const isEmpty = nbEnabled === 0;
+        const hasOnlyOneOption = nbEnabled === 1 && hasOnlyValidValue && !state.allowClearSelection;
+        const isExclusiveDisabledItem = Array.isArray(selectedOptions) /* which means "multiple" mode */
+            && selectedOptions.length === 1
+            && selectedOptions[0].exclusive
+            && selectedOptions[0].disabled;
+        if (hasOnlyOneOption || isEmpty || isExclusiveDisabledItem) {
             if (state.isOpen) {
                 this.setAutomaticClose();
                 this.commit('isOpen', false);
@@ -1796,6 +1838,18 @@ let MainInput = class MainInput extends vtyx.Vue {
             ? Array.isArray(value) && value.length > 0
             : value !== null;
     }
+    get disabledList() {
+        const state = this.store.state;
+        const isMultiple = state.multiple;
+        const value = state.selectedOptions;
+        if (!isMultiple || !value) {
+            return [];
+        }
+        const disabledValues = value.filter((option) => {
+            return option.disabled;
+        });
+        return disabledValues;
+    }
     get displayPlaceholder() {
         const placeholder = this.store.state.placeholder;
         const hasValue = this.hasValue;
@@ -1814,10 +1868,12 @@ let MainInput = class MainInput extends vtyx.Vue {
         const state = this.store.state;
         const isMultiple = state.multiple;
         const value = state.internalValue;
-        const hasOnlyOneValue = Array.isArray(value) && value.length === 1;
+        const nbSelection = (Array.isArray(value) && value.length) || 0;
+        const hasOnlyOneValue = nbSelection === 1;
+        const hasOnlyDisabled = nbSelection <= this.disabledList.length;
         /* Should not display the clear action if there is only one selected
          * item in multiple (as this item has already its remove icon) */
-        return !isMultiple || !hasOnlyOneValue;
+        return !isMultiple || !hasOnlyOneValue || !hasOnlyDisabled;
     }
     get clearedLabel() {
         const isMultiple = this.store.state.multiple;
@@ -1935,6 +1991,9 @@ let MainInput = class MainInput extends vtyx.Vue {
         /* Check if there is enough space to display items like there are
          * currently shown */
         const el = this.$refs.selectedItems;
+        if (!el) {
+            return;
+        }
         const parentEl = el.parentElement;
         if (!document.contains(parentEl)) {
             /* The element is currently not in DOM */
@@ -2033,7 +2092,7 @@ let MainInput = class MainInput extends vtyx.Vue {
                             click: () => this.$emit('item:click', item.id),
                         } },
                         vtyx.h("span", { class: "selectic-input__selected-items__value" }, item.text),
-                        !this.isDisabled && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, on: {
+                        !this.isDisabled && !item.disabled && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, on: {
                                 'click.prevent.stop': () => this.selectItem(item.id),
                             } }))))),
                     this.moreSelectedNb && (vtyx.h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb)))),
@@ -2787,7 +2846,8 @@ let Selectic = class Selectic extends vtyx.Vue {
             const store = this.store;
             const keepOpenWithOtherSelectic = this.params.keepOpenWithOtherSelectic;
             const extendedList = this.$refs.extendedList;
-            if (!extendedList) {
+            const extendedListEl = extendedList === null || extendedList === void 0 ? void 0 : extendedList.$el;
+            if (!extendedListEl) {
                 /* this component is not focused anymore */
                 if (!keepOpenWithOtherSelectic) {
                     this.removeListeners();
@@ -2796,7 +2856,7 @@ let Selectic = class Selectic extends vtyx.Vue {
                 return;
             }
             const target = evt.target;
-            if (!extendedList.$el.contains(target) && !this.$el.contains(target)) {
+            if (!extendedListEl.contains(target) && !this.$el.contains(target)) {
                 store.commit('isOpen', false);
             }
         };
@@ -2889,14 +2949,23 @@ let Selectic = class Selectic extends vtyx.Vue {
     /* }}} */
     /* {{{ private methods */
     computeWidth() {
-        const el = this.$refs.mainInput.$el;
-        this.width = el.offsetWidth;
-    }
-    computeOffset(doNotAddListener = false) {
-        const mainInput = this.$refs.mainInput;
+        var _a;
+        const mainInput = (_a = this.$refs) === null || _a === void 0 ? void 0 : _a.mainInput;
         const mainEl = mainInput === null || mainInput === void 0 ? void 0 : mainInput.$el;
         if (!mainEl) {
-            /* This method has been called too soon (before render function) */
+            /* This method has been called too soon (before render function)
+             * or too late (after unmount) */
+            return;
+        }
+        this.width = mainEl.offsetWidth;
+    }
+    computeOffset(doNotAddListener = false) {
+        var _a;
+        const mainInput = (_a = this.$refs) === null || _a === void 0 ? void 0 : _a.mainInput;
+        const mainEl = mainInput === null || mainInput === void 0 ? void 0 : mainInput.$el;
+        if (!mainEl) {
+            /* This method has been called too soon (before render function)
+             * or too late (after unmount) */
             return;
         }
         const _elementsListeners = this._elementsListeners;
@@ -3030,13 +3099,14 @@ let Selectic = class Selectic extends vtyx.Vue {
     checkFocus() {
         /* Await that focused element becomes active */
         setTimeout(() => {
+            var _a;
             const focusedEl = document.activeElement;
-            const extendedList = this.$refs.extendedList;
+            const extendedList = (_a = this.$refs) === null || _a === void 0 ? void 0 : _a.extendedList;
             /* check if there is a focused element (if none the body is
              * selected) and if it is inside current Selectic */
             if (focusedEl === document.body
                 || this.$el.contains(focusedEl)
-                || (extendedList && extendedList.$el.contains(focusedEl))) {
+                || (extendedList === null || extendedList === void 0 ? void 0 : extendedList.$el.contains(focusedEl))) {
                 return;
             }
             this.store.commit('isOpen', false);
