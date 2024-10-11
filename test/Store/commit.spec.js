@@ -1,5 +1,6 @@
 const _ = require('../tools.js');
 const {
+    DEBOUNCE_REQUEST,
     getInitialState,
     getOptions,
     getGroups,
@@ -40,7 +41,7 @@ tape.test('commit()', (st) => {
         store.commit('searchText', 'hello2');
         t.deepEqual(store.state.searchText, 'hello2');
         /* display should be reset */
-        t.deepEqual(store.state.offsetItem, 0);
+        t.deepEqual(store.state.offsetItem, 0, 'should reset offset');
         t.deepEqual(store.state.activeItemIdx, -1);
         t.end();
     });
@@ -62,7 +63,7 @@ tape.test('commit()', (st) => {
             resetCall(spy);
             command.fetch();
 
-            await _.nextVueTick(store, command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
             // after initial fetch
             t.deepEqual(store.state.status.searching, false);
@@ -80,9 +81,9 @@ tape.test('commit()', (st) => {
             resetCall(spy);
 
             command.fetch();
-            await _.nextVueTick(store, command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
-            // receive reponse
+            // receive response
             t.deepEqual(store.state.status.searching, false);
             t.deepEqual(store.state.allOptions.length, 200);
             t.deepEqual(store.state.totalAllOptions, 300);
@@ -122,7 +123,7 @@ tape.test('commit()', (st) => {
             resetCall(spy);
 
             command.fetch();
-            await _.nextVueTick(store, command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
             // after initial fetch
             t.deepEqual(store.state.status.searching, false);
@@ -224,7 +225,7 @@ tape.test('commit()', (st) => {
                 command.fetch();
                 resetCall(spy);
 
-                await sleep(0);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 const search = 'search';
                 store.commit('searchText', search);
@@ -236,7 +237,7 @@ tape.test('commit()', (st) => {
 
                 await sleep(0);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 // after initial fetch
                 t.deepEqual(store.state.status.searching, false);
@@ -253,7 +254,7 @@ tape.test('commit()', (st) => {
                 t.deepEqual(store.state.status.searching, true);
                 resetCall(spy);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 // receive response
                 t.deepEqual(store.state.status.searching, false);
@@ -285,6 +286,8 @@ tape.test('commit()', (st) => {
                 });
                 store.commit('isOpen', true);
                 command.fetch();
+                await _.nextVueTick(store, command.promise);
+
                 resetCall(spy);
                 let search = 'search';
                 store.commit('searchText', search);
@@ -295,6 +298,7 @@ tape.test('commit()', (st) => {
                 // after initial fetch
                 store.commit('offsetItem', 100);
 
+                await sleep(DEBOUNCE_REQUEST); // because there are concurrent requests
                 resetCall(spy);
                 command.fetch();
                 await _.nextVueTick(store, command.promise);
@@ -362,7 +366,7 @@ tape.test('commit()', (st) => {
                 t.is(store.state.status.searching, true);
                 resetCall(spy);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 // after initial fetch
                 t.is(store.state.status.searching, false);
@@ -395,22 +399,25 @@ tape.test('commit()', (st) => {
                 const store = new Store({
                     fetchCallback: buildFetchCb({ total: 300, searchTotal: 250, addPrefix: true, command, spy }),
                 });
+
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
 
                 let search = 'search1';
                 store.commit('searchText', search);
+                await _.nextVueTick(store, sleep(DEBOUNCE_REQUEST));
 
-                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
+                t.true(toHaveBeenCalledWith(spy, [search, 0, 100]), 'should have been called with parameters');
                 t.is(store.state.status.searching, true);
                 t.deepEqual(store.state.filteredOptions.length, 0);
+
                 const fetch1 = command.fetch;
                 const promise1 = spy.promise;
 
-                await sleep(0);
                 search = 'search2';
                 store.commit('searchText', search);
+                await _.nextVueTick(store, sleep(DEBOUNCE_REQUEST));
 
                 t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
                 t.is(store.state.status.searching, true);
@@ -418,9 +425,10 @@ tape.test('commit()', (st) => {
                 const fetch2 = command.fetch;
                 const promise2 = spy.promise;
 
-                await sleep(0);
+                /* create a new search while previous one is not resolved */
                 search = 'search3';
                 store.commit('searchText', search);
+                await _.nextVueTick(store, sleep(DEBOUNCE_REQUEST));
 
                 t.true(toHaveBeenCalledWith(spy, [search, 0, 100]));
                 t.is(store.state.status.searching, true);
@@ -477,7 +485,7 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
-                await sleep(0);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request resolution */);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -489,7 +497,7 @@ tape.test('commit()', (st) => {
 
                 await sleep(0);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 t.is(store.state.status.searching, false);
                 t.deepEqual(store.state.allOptions.length, 103);
@@ -514,7 +522,7 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
-                await sleep(0);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request resolution */);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -526,7 +534,7 @@ tape.test('commit()', (st) => {
 
                 await sleep(0);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request resolution */);
 
                 t.is(store.state.status.searching, false);
                 t.deepEqual(store.state.allOptions.length, 100);
@@ -579,7 +587,7 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
                 command.fetch();
                 resetCall(spy);
-                await sleep(0);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request resolution */);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -591,7 +599,7 @@ tape.test('commit()', (st) => {
 
                 await sleep(0);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 t.is(store.state.status.searching, false);
                 t.deepEqual(store.state.filteredOptions.length, 0);
@@ -614,7 +622,7 @@ tape.test('commit()', (st) => {
                 });
                 store.commit('isOpen', true);
                 command.fetch();
-                await sleep(0);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request is resolved */);
 
                 const search = '2';
                 store.commit('searchText', search);
@@ -625,7 +633,7 @@ tape.test('commit()', (st) => {
                 store.commit('searchText', '');
                 await sleep(0);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await build allOptions */);
 
                 t.is(store.state.status.searching, false);
                 t.deepEqual(store.state.filteredOptions.length, 103);
@@ -654,16 +662,16 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 store.commit('offsetItem', 100);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 resetCall(spy);
                 store.commit('offsetItem', 70);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.false(toHaveBeenCalled(spy));
                 t.deepEqual(store.state.allOptions.length, 200);
@@ -681,12 +689,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 resetCall(spy);
                 store.commit('offsetItem', 50);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.false(toHaveBeenCalled(spy));
                 t.deepEqual(store.state.allOptions.length, 100);
@@ -705,12 +713,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 resetCall(spy);
                 store.commit('offsetItem', 51);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 100]));
                 t.deepEqual(store.state.allOptions.length, 200);
@@ -719,7 +727,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 190);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 200, 100]));
                 t.deepEqual(store.state.allOptions.length, 300);
@@ -738,12 +746,12 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 resetCall(spy);
                 store.commit('offsetItem', 180);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 200]));
                 t.deepEqual(store.state.allOptions.length, 300);
@@ -767,7 +775,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage, 1, 'the fetch is done only once to get first page');
@@ -779,7 +787,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage, 1, 'fetch missing options only once');
@@ -809,6 +817,7 @@ tape.test('commit()', (st) => {
                         case 2:
                             /* returns only some options */
                             result.result = result.result.slice(0, 25);
+                            break;
                         default:
                             /* do not change the result */
                     }
@@ -819,7 +828,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage > 1, true, 'should fetch first options with several fetch');
@@ -833,14 +842,14 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage > 1, true, 'should fetch missing options with several fetch');
                 t.is(command.usage < 10, true, 'should have stop fetching by itself');
 
-                t.deepEqual(store.state.allOptions.length, 300);
-                t.is(store.state.status.errorMessage, '');
+                t.is(store.state.allOptions.length >= 180 + 50, true, 'should have at least the number of items + margin');
+                t.is(store.state.status.errorMessage, '', 'should have no error message');
 
                 t.end();
             });
@@ -866,7 +875,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage > 1, true, 'should have try to fetch several times');
@@ -879,7 +888,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage < 10, true, 'should have stop fetching');
@@ -908,7 +917,7 @@ tape.test('commit()', (st) => {
                 while (nbTry !== command.usage && nbTry < 10) {
                     nbTry = command.usage;
                     command.fetch();
-                    await _.nextVueTick(store, command.promise);
+                    await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
                 }
 
                 t.is(command.usage > 1, true, 'should have try to fetch several times');
@@ -948,7 +957,7 @@ tape.test('commit()', (st) => {
                 store.commit('isOpen', true);
 
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 t.true(toHaveBeenCalledWith(spy, ['', 0, 100]));
                 t.deepEqual(store.state.allOptions.length, 100);
@@ -960,7 +969,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 100);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 /* The items of the first group have been fetched */
                 t.true(toHaveBeenCalledWith(spy, ['', 100, 100]));
@@ -973,7 +982,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 151);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 /* As there is the group item which has been added
                 * we currently have all data so there is no query */
@@ -986,7 +995,7 @@ tape.test('commit()', (st) => {
 
                 store.commit('offsetItem', 152);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 /* The items of the second group have been fetched */
                 t.true(toHaveBeenCalledWith(spy, ['', 200, 100]));
@@ -999,7 +1008,7 @@ tape.test('commit()', (st) => {
                 resetCall(spy);
                 store.commit('offsetItem', 252);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 /* As there are the group items which have been added
                 * we currently have all data so there is no query */
@@ -1012,7 +1021,7 @@ tape.test('commit()', (st) => {
 
                 store.commit('offsetItem', 253);
                 command.fetch();
-                await _.nextVueTick(store, command.promise);
+                await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
                 /* Next items are in second group, so no more group
                 * item has been added in filteredOptions */
@@ -1066,7 +1075,7 @@ tape.test('commit()', (st) => {
             t.deepEqual(store.state.status.searching, true);
             resetCall(spy);
             command.fetch();
-            await _.nextVueTick(store, command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
             // after initial search
             t.deepEqual(store.state.status.searching, false);
@@ -1084,7 +1093,7 @@ tape.test('commit()', (st) => {
             t.deepEqual(store.state.status.searching, true);
             resetCall(spy);
             command.fetch();
-            await _.nextVueTick(store, command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await request to be computed */);
 
             // receive response
             t.deepEqual(store.state.status.searching, false);

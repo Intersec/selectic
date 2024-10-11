@@ -788,7 +788,7 @@ tape.test('Store creation', (subT) => {
 
             /* Load data */
             store.commit('isOpen', true);
-            await _.nextVueTick(store, spy.promise);
+            await _.nextVueTick(store, spy.promise, sleep(0) /* await request resolution */);
             store.commit('isOpen', false);
             await sleep(0);
 
@@ -1343,7 +1343,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 0);
                 command1.fetch();
-                await _.nextVueTick(store1, spy1.promise);
+                await _.nextVueTick(store1, spy1.promise, sleep(0) /* await request resolution */);
 
                 t.is(store1.state.filteredOptions.length, 4);
 
@@ -1385,7 +1385,7 @@ tape.test('Store creation', (subT) => {
                 store1.commit('isOpen', true);
                 await sleep(0);
                 command1.fetch();
-                await _.nextVueTick(store1, spy1.promise);
+                await _.nextVueTick(store1, spy1.promise, sleep(0) /* await request resolution */);
 
                 t.is(store1.state.filteredOptions.length, 3, 'should contain the groups');
 
@@ -1405,7 +1405,7 @@ tape.test('Store creation', (subT) => {
                 store2.commit('isOpen', true);
                 await sleep(0);
                 command2.fetch();
-                await _.nextVueTick(store2, spy2.promise);
+                await _.nextVueTick(store2, spy2.promise, sleep(0) /* await request resolution */);
 
                 t.is(store2.state.filteredOptions.length, 4);
 
@@ -1425,7 +1425,7 @@ tape.test('Store creation', (subT) => {
                 store3.commit('isOpen', true);
                 await sleep(0);
                 command3.fetch();
-                await _.nextVueTick(store3, spy3.promise);
+                await _.nextVueTick(store3, spy3.promise, sleep(0) /* await request resolution */);
 
                 t.is(store3.state.filteredOptions.length, 2);
                 t.end();
@@ -1449,7 +1449,7 @@ tape.test('Store creation', (subT) => {
                 store1.commit('isOpen', true);
                 await sleep(0);
                 command1.fetch();
-                await _.nextVueTick(store1, spy1.promise);
+                await _.nextVueTick(store1, spy1.promise, sleep(0) /* await request resolution */);
 
                 t.is(store1.state.filteredOptions.length, 3);
 
@@ -1470,7 +1470,7 @@ tape.test('Store creation', (subT) => {
                 store2.commit('isOpen', true);
                 await sleep(0);
                 command2.fetch();
-                await _.nextVueTick(store2, spy2.promise);
+                await _.nextVueTick(store2, spy2.promise, sleep(0) /* await request resolution */);
 
                 t.is(store2.state.filteredOptions.length, 4);
 
@@ -1491,7 +1491,7 @@ tape.test('Store creation', (subT) => {
                 store3.commit('isOpen', true);
                 await sleep(0);
                 command3.fetch();
-                await _.nextVueTick(store3, spy3.promise);
+                await _.nextVueTick(store3, spy3.promise, sleep(0) /* await request resolution */);
 
                 t.is(store3.state.filteredOptions.length, 2);
                 t.end();
@@ -1540,7 +1540,7 @@ tape.test('Store creation', (subT) => {
                 await sleep(0);
                 t.is(store1.state.filteredOptions.length, 0);
                 command1.fetch();
-                await _.nextVueTick(store1, spy1.promise);
+                await _.nextVueTick(store1, spy1.promise, sleep(0) /* await request resolution */);
 
                 t.is(store1.state.filteredOptions.length, 9);
                 t.end();
@@ -1565,7 +1565,7 @@ tape.test('Store creation', (subT) => {
                 t.is(store.state.filteredOptions.length, 5); // previous options should be displayed
                 t.true(toHaveBeenCalledWith(spy, ['', 0, 100])); // dynamic index should always start at 0
                 command.fetch();
-                await _.nextVueTick(store, spy.promise);
+                await _.nextVueTick(store, spy.promise, sleep(0) /* await request resolution */);
 
                 t.is(store.state.filteredOptions.length, 9); // finally all options should be displayed
                 t.end();
@@ -1590,7 +1590,7 @@ tape.test('Store creation', (subT) => {
                 t.true(toHaveBeenCalledWith(spy1, ['', 0, 100]));
 
                 command1.fetch();
-                await _.nextVueTick(store1, spy1.promise);
+                await _.nextVueTick(store1, spy1.promise, sleep(0) /* await request resolution */);
 
                 t.is(store1.state.allOptions.length, 104);
                 t.is(store1.state.filteredOptions.length, 104);
@@ -1675,7 +1675,7 @@ tape.test('Store creation', (subT) => {
             t.true(toHaveBeenCalled(spy));
 
             command.fetch();
-            await _.nextVueTick(store, spy.promise);
+            await _.nextVueTick(store, spy.promise, sleep(0) /* await request resolution */);
 
             t.is(store.state.isOpen, true);
             t.is(store.state.filteredOptions.length, 4);

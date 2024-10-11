@@ -233,6 +233,9 @@ function resetCall(spy, keepValue = false) {
     }
 }
 
+/* parameter sets in store */
+const DEBOUNCE_REQUEST = 250;
+
 module.exports = {
     sleep,
     getInitialState,
@@ -243,4 +246,5 @@ module.exports = {
     toHaveBeenCalled,
     toHaveBeenCalledWith,
     resetCall,
+    DEBOUNCE_REQUEST,
 };

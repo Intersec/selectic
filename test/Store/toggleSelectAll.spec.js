@@ -1,5 +1,6 @@
 const _ = require('../tools.js');
 const {
+    DEBOUNCE_REQUEST,
     getOptions,
     sleep,
     buildFetchCb,
@@ -173,7 +174,7 @@ tape.test('toggleSelectAll()', (st) => {
             store.commit('isOpen', true);
 
             command.fetch();
-            await _.deferPromise(command.promise);
+            await _.nextVueTick(store, command.promise, sleep(0) /* await request resolution */);
 
             t.deepEqual([store.state.totalFilteredOptions, store.state.filteredOptions.length], [20, 10]);
             store.toggleSelectAll();
@@ -255,10 +256,14 @@ tape.test('toggleSelectAll()', (st) => {
                     fetchCallback: buildFetchCb({total: 20, searchTotal: 20, command, spy}),
                 });
                 await sleep(0);
+
                 store.commit('isOpen', true);
                 store.commit('searchText', '1');
 
+                await sleep(DEBOUNCE_REQUEST); // await request is sent
+
                 command.fetch();
+
                 await _.deferPromise(command.promise);
 
                 t.deepEqual([store.state.totalFilteredOptions, store.state.filteredOptions.length], [20, 10]);

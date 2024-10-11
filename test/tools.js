@@ -56,11 +56,15 @@ async function deferPromise(promise, waitAtStart = false) {
     return result;
 }
 
-function nextVueTick(_vueComponent, afterPromise) {
+function nextVueTick(_vueComponent, afterPromise, after2ndPromise) {
     const promise = new Promise(async (resolve) => {
         if (afterPromise) {
             await afterPromise;
         }
+        if (after2ndPromise) {
+            await after2ndPromise;
+        }
+
         // next tick is now deprecated
         await sleep(0);
         resolve();

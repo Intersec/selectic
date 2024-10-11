@@ -61,8 +61,21 @@ export interface GroupValue {
     text: string;
 }
 
+export type RequestResult = {
+    /** The total number of expecting options.
+     * Needed to know if there are more items to fetch, and to size the scrollbar.
+     */
+    total: number;
+
+    /** The list of the options. */
+    result: OptionValue[];
+};
+
+/** false means that the request is deprecated */
+type FetchResult = RequestResult & { deprecated: boolean; } | false;
+
 export type FetchCallback = (_search: string, _offsetItem: number, _pageSize: number)
-    => Promise<{total: number, result: OptionValue[]}>;
+    => Promise<RequestResult>;
 
 export type GetCallback = (_ids: OptionId[])
     => Promise<OptionValue[]>;
@@ -447,6 +460,12 @@ let icons: PartialIcons = {
 
 let closePreviousSelectic: undefined | voidCaller;
 
+/**
+ * Time to wait before considering there is no other requests.
+ * This time is await only if there is already a requested request.
+ */
+const DEBOUNCE_REQUEST = 250;
+
 /* }}} */
 
 let uid = 0;
@@ -461,6 +480,8 @@ export default class SelecticStore {
 
     /* Do not need reactivity */
     private requestId: number = 0;
+    private requestSearchId: number = 0; /* Used for search request */
+    private isRequesting: boolean = false;
     private cacheRequest: Map<string, Promise<OptionValue[]>>;
     private closeSelectic: () => void;
 
@@ -621,6 +642,7 @@ export default class SelecticStore {
             this.data.cacheItem.clear();
             this.setAutomaticClose();
             this.commit('isOpen', false);
+            this.clearDisplay();
             this.buildAllOptions(true);
             this.buildSelectedOptions();
         }, { deep: true });
@@ -755,8 +777,8 @@ export default class SelecticStore {
           case 'searchText':
             this.state.offsetItem = 0;
             this.state.activeItemIdx = -1;
-            this.state.filteredOptions = [];
-            this.state.totalFilteredOptions = Infinity;
+            this.clearDisplay();
+
             if (value) {
                 this.buildFilteredOptions();
             } else {
@@ -1036,8 +1058,7 @@ export default class SelecticStore {
         this.state.totalAllOptions = total;
         this.state.totalDynOptions = total;
 
-        this.state.filteredOptions = [];
-        this.state.totalFilteredOptions = Infinity;
+        this.clearDisplay();
 
         this.state.status.errorMessage = '';
         this.state.status.hasChanged = false;
@@ -1196,6 +1217,14 @@ export default class SelecticStore {
         }
     }
 
+    /** Reset the display cache in order to rebuild it */
+    private clearDisplay() {
+        debug('clearDisplay', 'start');
+        this.state.filteredOptions = [];
+        this.state.totalFilteredOptions = Infinity;
+    }
+
+    /** rebuild the state filteredOptions to normalize their values */
     private updateFilteredOptions() {
         if (!this.data.doNotUpdate) {
             this.state.filteredOptions = this.buildItems(this.state.filteredOptions);
@@ -1256,7 +1285,7 @@ export default class SelecticStore {
         return listOptions;
     }
 
-    /* This method is for the computed property elementOptions */
+    /** This method is for the computed property elementOptions */
     private getElementOptions(): OptionValue[] {
         const options = deepClone(this.props.childOptions, ['data']);
         const childOptions: OptionValue[] = [];
@@ -1295,6 +1324,7 @@ export default class SelecticStore {
         return childOptions;
     }
 
+    /** Generate the list of all options by combining the 3 option lists */
     private buildAllOptions(keepFetched = false, stopFetch = false) {
         debug('buildAllOptions', 'start', 'keepFetched', keepFetched, 'stopFetch', stopFetch);
         const allOptions: OptionValue[] = [];
@@ -1374,9 +1404,6 @@ export default class SelecticStore {
         }
 
         if (!stopFetch) {
-            this.state.filteredOptions = [];
-            this.state.totalFilteredOptions = Infinity;
-
             this.buildFilteredOptions().then(() => {
                 /* XXX: To recompute for strict mode and auto-select */
                 this.assertCorrectValue();
@@ -1396,16 +1423,18 @@ export default class SelecticStore {
     }
 
     private async buildFilteredOptions() {
-        if (!this.state.isOpen) {
+        const state = this.state;
+
+        if (!state.isOpen) {
             /* Do not try to fetch anything while the select is not open */
             return;
         }
 
-        const allOptions = this.state.allOptions;
-        const search = this.state.searchText;
-        const totalAllOptions = this.state.totalAllOptions;
+        const allOptions = state.allOptions;
+        const search = state.searchText;
+        const totalAllOptions = state.totalAllOptions;
         const allOptionsLength = allOptions.length;
-        let filteredOptionsLength = this.state.filteredOptions.length;
+        let filteredOptionsLength = state.filteredOptions.length;
         const hasAllItems = unref(this.hasAllItems);
 
         debug('buildFilteredOptions', 'start', 'hasAllItems:', hasAllItems, 'allOptions', allOptions.length, 'search:', search, 'filteredOptionsLength:', filteredOptionsLength);
@@ -1430,7 +1459,7 @@ export default class SelecticStore {
 
         /* When we only have partial options */
 
-        const offsetItem = this.state.offsetItem;
+        const offsetItem = state.offsetItem;
         const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
 
@@ -1442,9 +1471,10 @@ export default class SelecticStore {
         }
 
         if (!search && endIndex <= allOptionsLength) {
-            this.setFilteredOptions(this.buildGroupItems(allOptions), false, totalAllOptions + this.state.groups.size);
+            this.setFilteredOptions(this.buildGroupItems(allOptions), false, totalAllOptions + state.groups.size);
+
             const isPartial = unref(this.isPartial);
-            if (isPartial && this.state.totalDynOptions === Infinity) {
+            if (isPartial && state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
             return;
@@ -1524,6 +1554,53 @@ export default class SelecticStore {
         }
     }
 
+    private async fetchRequest(fetchCallback: FetchCallback, search: string, offset: number, limit: number): Promise<FetchResult> {
+        const searchRqId = ++this.requestSearchId;
+
+        if (!search) {
+            ++this.requestId
+        }
+
+        const requestId = this.requestId;
+
+        debug('fetchRequest', 'start', 'search:', search, 'offset:', offset, 'limit:', limit, 'requestId:', requestId, 'requestSearchId:', searchRqId, 'isRequesting:', this.isRequesting);
+
+        if (this.isRequesting) {
+            debug('fetchRequest', `await ${DEBOUNCE_REQUEST}ms`);
+
+            /* debounce the call to avoid sending too much requests */
+            await new Promise((resolve) => {
+                setTimeout(resolve, DEBOUNCE_REQUEST);
+            });
+
+            /* Check if there are other requested requests, in such case drop this one */
+            if (requestId !== this.requestId || (search && searchRqId !== this.requestSearchId)) {
+                debug('fetchRequest', '××deprecated××', requestId, searchRqId);
+                return false;
+            }
+        }
+
+        this.isRequesting = true;
+        const response = await fetchCallback(search, offset, limit);
+
+        /* Check if request is obsolete */
+        if (requestId !== this.requestId || (search && searchRqId !== this.requestSearchId)) {
+            debug('fetchRequest', '×××deprecated×××', requestId, searchRqId);
+            return false;
+        }
+
+        this.isRequesting = false;
+
+        const deprecated = searchRqId !== this.requestSearchId;
+        debug('fetchRequest', 'end', response.result.length, response.total, deprecated);
+
+        return {
+            ...response,
+            /* this is to fulfill the cache */
+            deprecated: deprecated,
+        };
+    }
+
     private async fetchData() {
         const state = this.state;
         const labels = this.data.labels;
@@ -1553,8 +1630,15 @@ export default class SelecticStore {
         debug('fetchData', 'start', 'search:', search, 'offset:', offset, 'limit:', limit);
 
         try {
-            const requestId = ++this.requestId;
-            const {total: rTotal, result} = await fetchCallback(search, offset, limit);
+            const response = await this.fetchRequest(fetchCallback, search, offset, limit);
+
+            if (!response) {
+                debug('fetchData', '×× deprecated ××', search, offset, limit);
+                return;
+            }
+
+            const {total: rTotal, result, deprecated} = response;
+
             let total = rTotal;
             let errorMessage = '';
 
@@ -1576,7 +1660,8 @@ export default class SelecticStore {
             if (!search) {
                 /* update cache */
                 state.totalDynOptions = total;
-                const old = state.dynOptions.splice(offset, limit, ...result);
+                const old = state.dynOptions.splice(offset, result.length, ...result);
+
                 if (compareOptions(old, result)) {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
@@ -1604,8 +1689,9 @@ export default class SelecticStore {
                 }
             }
 
-            /* Check request is not obsolete */
-            if (requestId !== this.requestId) {
+            /* Check request (without search) is not obsolete */
+            if (deprecated) {
+                debug('fetchData', '××× deprecated ×××', search, offset, limit);
                 return;
             }
 
