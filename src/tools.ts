@@ -117,3 +117,16 @@ export function compareOptions(oldOptions: OptionValue[], newOptions: OptionValu
         });
     });
 }
+
+let displayLog = false;
+export function debug(fName: string, step: string, ...args: any[]) {
+    if (!displayLog) {
+        return;
+    }
+
+    console.log('--%s-- [%s]', fName, step, ...args);
+}
+/** Enable logs for debugging */
+debug.enable = (display: boolean) => {
+    displayLog = display;
+};

@@ -5,7 +5,16 @@
  */
 
 import { reactive, watch, unref, computed, ComputedRef } from 'vue';
-import { convertToRegExp, assignObject, deepClone, compareOptions } from './tools';
+import {
+    assignObject,
+    compareOptions,
+    convertToRegExp,
+    debug,
+    deepClone,
+} from './tools';
+
+/* For debugging */
+debug.enable(false);
 
 /* {{{ Types definitions */
 
@@ -734,6 +743,8 @@ export default class SelecticStore {
     {
         const oldValue = this.state[name];
 
+        debug('commit', 'start', name, value, 'oldValue:', oldValue);
+
         if (oldValue === value) {
             return;
         }
@@ -793,6 +804,7 @@ export default class SelecticStore {
             }
             break;
         }
+        debug('commit', '(done)', name);
     }
 
     public setAutomaticChange() {
@@ -1014,6 +1026,7 @@ export default class SelecticStore {
     }
 
     public clearCache(forceReset = false) {
+        debug('clearCache', 'start', forceReset);
         const isPartial = unref(this.isPartial);
         const total = isPartial ? Infinity : 0;
 
@@ -1283,6 +1296,7 @@ export default class SelecticStore {
     }
 
     private buildAllOptions(keepFetched = false, stopFetch = false) {
+        debug('buildAllOptions', 'start', 'keepFetched', keepFetched, 'stopFetch', stopFetch);
         const allOptions: OptionValue[] = [];
         let listOptions: OptionValue[] = [];
         let elementOptions: OptionValue[] = [];
@@ -1377,6 +1391,8 @@ export default class SelecticStore {
             const options = this.filterOptions(allOptions, search);
             this.setFilteredOptions(options);
         }
+
+        debug('buildAllOptions', 'end', 'allOptions:', this.state.allOptions.length, 'totalAllOptions:', this.state.totalAllOptions);
     }
 
     private async buildFilteredOptions() {
@@ -1391,6 +1407,8 @@ export default class SelecticStore {
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = this.state.filteredOptions.length;
         const hasAllItems = unref(this.hasAllItems);
+
+        debug('buildFilteredOptions', 'start', 'hasAllItems:', hasAllItems, 'allOptions', allOptions.length, 'search:', search, 'filteredOptionsLength:', filteredOptionsLength);
 
         if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
@@ -1416,6 +1434,9 @@ export default class SelecticStore {
         const marginSize = unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
 
+
+        debug('buildFilteredOptions', 'partial options', 'offsetItem:',offsetItem, 'marginSize:',marginSize, 'filteredOptionsLength', filteredOptionsLength);
+
         if (endIndex <= filteredOptionsLength) {
             return;
         }
@@ -1439,6 +1460,7 @@ export default class SelecticStore {
             }
         }
 
+        debug('buildFilteredOptions', 'end', '(will call fetchData)', this.state.filteredOptions.length);
         await this.fetchData();
     }
 
@@ -1528,6 +1550,8 @@ export default class SelecticStore {
         const nbItems = endIndex - offset;
         const limit = Math.ceil(nbItems / pageSize) * pageSize;
 
+        debug('fetchData', 'start', 'search:', search, 'offset:', offset, 'limit:', limit);
+
         try {
             const requestId = ++this.requestId;
             const {total: rTotal, result} = await fetchCallback(search, offset, limit);
@@ -1557,6 +1581,9 @@ export default class SelecticStore {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
                      */
+
+                    debug('fetchData', 'no new values');
+
                     if (!unref(this.hasFetchedAllItems)) {
                         /* Display error if all items are not fetch
                          * We can have the case where old value and result
@@ -1564,9 +1591,16 @@ export default class SelecticStore {
                          * total is 0 */
                         errorMessage = labels.wrongQueryResult;
                     }
-                    setTimeout(() => this.buildAllOptions(true, true), 0);
+
+                    setTimeout(() => {
+                        debug('fetchData', 'before buildAllOptions (stopped)', 'offsetItem:', this.state.offsetItem, 'allOptions:', this.state.allOptions.length);
+                        this.buildAllOptions(true, true)
+                    }, 0);
                 } else {
-                    setTimeout(() => this.buildAllOptions(true), 0);
+                    setTimeout(() => {
+                        debug('fetchData', 'before buildAllOptions', 'offsetItem:', this.state.offsetItem, 'allOptions:', this.state.allOptions.length);
+                        this.buildAllOptions(true)
+                     }, 0);
                 }
             }
 
@@ -1604,6 +1638,8 @@ export default class SelecticStore {
             state.status.errorMessage = errorMessage;
         } catch (e) {
             state.status.errorMessage = (e as Error).message;
+            debug('fetchData', 'error', (e as Error).message);
+
             if (!search) {
                 state.totalDynOptions = 0;
                 this.buildAllOptions(true, true);
@@ -1611,9 +1647,13 @@ export default class SelecticStore {
         }
 
         this.state.status.searching = false;
+
+        debug('fetchData', 'end');
     }
 
     private filterOptions(options: OptionValue[], search: string): OptionItem[] {
+        debug('filterOptions', 'start', 'options:', options.length, 'search:', search);
+
         if (!search) {
             return this.buildGroupItems(options);
         }
@@ -1628,6 +1668,8 @@ export default class SelecticStore {
     private addStaticFilteredOptions(fromDynamic = false) {
         const search = this.state.searchText;
         let continueLoop = fromDynamic;
+
+        debug('addStaticFilteredOptions', 'start', 'fromDynamic:', fromDynamic, 'optionBehaviorOperation:', this.state.optionBehaviorOperation);
 
         if (this.state.optionBehaviorOperation !== 'sort') {
             return;
@@ -1655,6 +1697,8 @@ export default class SelecticStore {
             }
             this.setFilteredOptions(options, true);
         }
+
+        debug('addStaticFilteredOptions', 'end');
     }
 
     private buildSelectedItems(ids: OptionId[]): OptionItem[] {
@@ -1709,6 +1753,8 @@ export default class SelecticStore {
     {
         let previousGroupId = previousItem && previousItem.group;
 
+        debug('buildGroupItems', 'start', 'options:', options.length, 'previousGroupId:', previousGroupId);
+
         const list = this.buildItems(options).reduce((items: OptionItem[], item) => {
             if (item.group !== previousGroupId) {
                 const groupId = item.group as StrictOptionId;
@@ -1729,6 +1775,8 @@ export default class SelecticStore {
 
             return items;
         }, []);
+
+        debug('buildGroupItems', 'end', list.length);
 
         return list;
     }
@@ -1871,6 +1919,8 @@ export default class SelecticStore {
 
     /** assign new value to the filteredOptions and apply change depending on it */
     private setFilteredOptions(options: OptionItem[], add = false, length = 0) {
+        debug('setFilteredOptions', 'start', 'options:', options.length, 'add', add, 'length', length);
+
         if (!add) {
             this.state.filteredOptions = options;
             this.state.totalFilteredOptions = length || options.length;
