@@ -17,7 +17,7 @@ export interface Props {
 @Component
 export default class MainInput extends Vue<Props> {
     public $refs: {
-        selectedItems: HTMLDivElement;
+        selectedItems?: HTMLDivElement;
     };
 
     /* {{{ props */
@@ -239,6 +239,11 @@ export default class MainInput extends Vue<Props> {
         /* Check if there is enough space to display items like there are
          * currently shown */
         const el = this.$refs.selectedItems;
+
+        if (!el) {
+            return;
+        }
+
         const parentEl = el.parentElement as HTMLDivElement;
 
         if (!document.contains(parentEl)) {

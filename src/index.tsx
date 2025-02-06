@@ -243,7 +243,7 @@ export function changeIcons(icons: PartialIcons, iconFamily?: IconFamily) {
 export default class Selectic extends Vue<Props> {
     public $refs: {
         mainInput: MainInput;
-        extendedList: ExtendedList;
+        extendedList?: ExtendedList;
     };
 
     /* {{{ props */
@@ -349,19 +349,21 @@ export default class Selectic extends Vue<Props> {
             const store = this.store;
             const keepOpenWithOtherSelectic = this.params.keepOpenWithOtherSelectic;
             const extendedList = this.$refs.extendedList;
+            const extendedListEl: HTMLElement | undefined = extendedList?.$el;
 
-            if (!extendedList) {
+            if (!extendedListEl) {
                 /* this component is not focused anymore */
                 if (!keepOpenWithOtherSelectic) {
                     this.removeListeners();
                     this.store.commit('isOpen', false);
                 }
+
                 return;
             }
 
             const target =  evt.target as Node;
 
-            if (!extendedList.$el.contains(target) && !this.$el.contains(target)) {
+            if (!extendedListEl.contains(target) && !this.$el.contains(target)) {
                 store.commit('isOpen', false);
             }
         };
@@ -477,18 +479,27 @@ export default class Selectic extends Vue<Props> {
     /* {{{ private methods */
 
     private computeWidth() {
-        const el = this.$refs.mainInput.$el as HTMLElement;
+        const mainInput = this.$refs?.mainInput;
 
-        this.width = el.offsetWidth;
+        const mainEl: HTMLElement | undefined = mainInput?.$el;
+
+        if (!mainEl) {
+            /* This method has been called too soon (before render function)
+             * or too late (after unmount) */
+            return;
+        }
+
+        this.width = mainEl.offsetWidth;
     }
 
     private computeOffset(doNotAddListener = false) {
-        const mainInput = this.$refs.mainInput;
+        const mainInput = this.$refs?.mainInput;
 
-        const mainEl = mainInput?.$el as HTMLElement;
+        const mainEl: HTMLElement | undefined = mainInput?.$el;
 
         if (!mainEl) {
-            /* This method has been called too soon (before render function) */
+            /* This method has been called too soon (before render function)
+             * or too late (after unmount) */
             return;
         }
 
@@ -669,13 +680,13 @@ export default class Selectic extends Vue<Props> {
         /* Await that focused element becomes active */
         setTimeout(() => {
             const focusedEl = document.activeElement;
-            const extendedList = this.$refs.extendedList;
+            const extendedList = this.$refs?.extendedList;
 
             /* check if there is a focused element (if none the body is
              * selected) and if it is inside current Selectic */
             if (focusedEl === document.body
             ||  this.$el.contains(focusedEl)
-            ||  (extendedList && extendedList.$el.contains(focusedEl)))
+            ||  extendedList?.$el.contains(focusedEl))
             {
                 return;
             }
