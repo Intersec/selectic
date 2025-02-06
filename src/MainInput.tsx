@@ -406,7 +406,7 @@ export default class MainInput extends Vue<Props> {
                                 >
                                     { item.text }
                                 </span>
-                                {!this.isDisabled && (
+                                {!this.isDisabled && !item.disabled && (
                                     <Icon
                                         icon="times"
                                         class="selectic-input__selected-items__icon"

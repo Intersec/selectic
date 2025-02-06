@@ -244,6 +244,9 @@
 .selectic-item__active:not(.selected) .selectic-item_icon {
     opacity: 0.2;
 }
+.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {
+    opacity: 0;
+}
 
 .selectic-item__disabled {
     color: var(--selectic-color-disabled);
