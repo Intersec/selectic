@@ -53,6 +53,22 @@ export default class MainInput extends Vue<Props> {
              : value !== null;
     }
 
+    get disabledList(): OptionItem[] {
+        const state = this.store.state;
+        const isMultiple = state.multiple;
+        const value = state.selectedOptions;
+
+        if (!isMultiple || !value) {
+            return [];
+        }
+
+        const disabledValues = (value as OptionItem[]).filter((option) => {
+            return option.disabled;
+        });
+
+        return disabledValues;
+    }
+
     get displayPlaceholder(): boolean {
         const placeholder = this.store.state.placeholder;
         const hasValue = this.hasValue;
@@ -76,11 +92,13 @@ export default class MainInput extends Vue<Props> {
         const state = this.store.state;
         const isMultiple = state.multiple;
         const value = state.internalValue;
-        const hasOnlyOneValue = Array.isArray(value) && value.length === 1;
+        const nbSelection = (Array.isArray(value) && value.length) || 0;
+        const hasOnlyOneValue = nbSelection === 1;
+        const hasOnlyDisabled = nbSelection <= this.disabledList.length;
 
         /* Should not display the clear action if there is only one selected
          * item in multiple (as this item has already its remove icon) */
-        return !isMultiple || !hasOnlyOneValue;
+        return !isMultiple || !hasOnlyOneValue || !hasOnlyDisabled;
     }
 
     get clearedLabel(): string {

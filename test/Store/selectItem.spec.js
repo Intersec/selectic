@@ -31,7 +31,7 @@ tape.test('selectItem()', (st) => {
             const result1 = store.selectItem(2, true);
             t.is(store.state.internalValue, 2);
             t.is(store.state.status.hasChanged, true);
-            t.is(result1, true, 'should return if a change occurs');
+            t.is(result1, true, 'should return true if a change occurs');
 
             /* reset status to check that it is modified */
             store.state.status.hasChanged = false;
@@ -39,7 +39,17 @@ tape.test('selectItem()', (st) => {
             const result2 = store.selectItem(5, true);
             t.is(store.state.internalValue, 5);
             t.is(store.state.status.hasChanged, true);
-            t.is(result2, true, 'should return if a change occurs');
+            t.is(result2, true, 'should return true if a change occurs');
+
+            /* Should replace a disabled selected item */
+            store.commit('internalValue', 4);
+            store.state.status.hasChanged = false;
+
+            const result3 = store.selectItem(3);
+            t.is(store.state.internalValue, 3);
+            t.is(store.state.status.hasChanged, true);
+            t.is(result3, true, 'should return true if a change occurs');
+
             t.end();
         });
 
@@ -50,12 +60,24 @@ tape.test('selectItem()', (st) => {
             /* reset status to check that it is modified */
             store.state.status.hasChanged = false;
 
-            const result = store.selectItem(2, false);
+            const result1 = store.selectItem(2, false);
             t.is(store.state.internalValue, null);
             t.is(store.state.status.hasChanged, true);
 
             t.is(store.state.selectionIsExcluded, false);
-            t.is(result, true, 'should return if a change occurs');
+            t.is(result1, true, 'should return true if a change occurs');
+
+            /* Should not deselect a disabled selected item */
+            store.commit('internalValue', 4);
+            store.state.status.hasChanged = false;
+
+            const result2 = store.selectItem(4, false);
+            t.is(store.state.internalValue, 4);
+            t.is(store.state.status.hasChanged, false);
+
+            t.is(store.state.selectionIsExcluded, false);
+            t.is(result2, false, 'should return false if no change occurs');
+
             t.end();
         });
 
@@ -173,31 +195,40 @@ tape.test('selectItem()', (st) => {
         sTest.test('should clear selection', (t) => {
             const store = getStore();
             store.commit('isOpen', true);
-            store.state.internalValue = 1;
+            store.commit('internalValue', 1);
 
             const result1 = store.selectItem(null);
             t.is(store.state.isOpen, false);
             t.is(store.state.internalValue, null);
             t.is(store.state.status.hasChanged, true);
-            t.is(result1, true, 'should return if a change occurs');
+            t.is(result1, true, 'should return true if a change occurs');
 
+            store.commit('internalValue', 2);
             store.state.status.hasChanged = false;
-            store.state.internalValue = 2;
 
             /* applied also when selectic is closed */
             const result2 = store.selectItem(null);
             t.is(store.state.internalValue, null);
             t.is(store.state.status.hasChanged, true);
-            t.is(result2, true, 'should return if a change occurs');
+            t.is(result2, true, 'should return true if a change occurs');
 
+            store.commit('internalValue', 3);
             store.state.status.hasChanged = false;
-            store.state.internalValue = 3;
 
             /* ignore the selected argument */
             const result3 = store.selectItem(null, false);
             t.is(store.state.internalValue, null);
             t.is(store.state.status.hasChanged, true);
-            t.is(result3, true, 'should return if a change occurs');
+            t.is(result3, true, 'should return true if a change occurs');
+
+            /* Should removed a disabled selected item */
+            store.commit('internalValue', 4);
+            store.state.status.hasChanged = false;
+
+            const result4 = store.selectItem(null, false);
+            t.is(store.state.internalValue, null);
+            t.is(store.state.status.hasChanged, true);
+            t.is(result4, true, 'should return true if a change occurs');
 
             t.end();
         });
@@ -225,10 +256,12 @@ tape.test('selectItem()', (st) => {
 
     st.test('when "multiple" is true', (sTest) => {
         function getStore() {
-            const options = getOptions(8);
+            const options = getOptions(9);
             options[4].disabled = true;
             options[6].exclusive = true;
             options[7].exclusive = true;
+            options[8].disabled = true;
+            options[8].exclusive = true;
 
             const store = new Store({
                 options: options,
@@ -410,24 +443,24 @@ tape.test('selectItem()', (st) => {
 
         sTest.test('should clear selection', (t) => {
             const store = getStore();
-            store.state.internalValue = [1, 4];
+            store.commit('internalValue', [1, 3]);
 
             const result1 = store.selectItem(null);
             t.deepEqual(store.state.internalValue, []);
             t.is(store.state.status.hasChanged, true);
-            t.is(result1, true, 'should return if a change occurs');
+            t.is(result1, true, 'should return true if a change occurs');
 
+            store.commit('internalValue', [2, 3]);
             store.state.status.hasChanged = false;
-            store.state.internalValue = [2, 4];
 
             /* ignore the selected argument */
             const result2 = store.selectItem(null, false);
             t.deepEqual(store.state.internalValue, []);
             t.is(store.state.status.hasChanged, true);
-            t.is(result2, true, 'should return if a change occurs');
+            t.is(result2, true, 'should return true if a change occurs');
 
+            store.commit('internalValue', [3, 5]);
             store.state.status.hasChanged = false;
-            store.state.internalValue = [3, 4];
 
             /* applied also when selectic is open */
             store.commit('isOpen', true);
@@ -435,7 +468,33 @@ tape.test('selectItem()', (st) => {
             t.is(store.state.isOpen, true);
             t.deepEqual(store.state.internalValue, []);
             t.is(store.state.status.hasChanged, true);
-            t.is(result3, true, 'should return if a change occurs');
+            t.is(result3, true, 'should return true if a change occurs');
+            t.end();
+        });
+
+        sTest.test('should clear selection with disabled item', (t) => {
+            const store = getStore();
+            store.commit('internalValue', [1, 4]);
+
+            const result1 = store.selectItem(null);
+            t.deepEqual(store.state.internalValue, [4], 'should keep disabled item in selection');
+            t.is(store.state.status.hasChanged, true);
+            t.is(result1, true, 'should return true if a change occurs');
+
+            store.state.status.hasChanged = false;
+
+            /* With only disabled item in selection */
+            const result2 = store.selectItem(null);
+            t.deepEqual(store.state.internalValue, [4]);
+            t.is(store.state.status.hasChanged, false);
+            t.is(result2, false, 'should return false if no change occurs');
+
+            store.state.status.hasChanged = false;
+
+            /* Assert disabled items can be removed by changing the selection */
+            store.commit('internalValue', [3, 2]);
+            t.deepEqual(store.state.internalValue, [3, 2], 'should remove disabled item');
+
             t.end();
         });
 
@@ -466,29 +525,56 @@ tape.test('selectItem()', (st) => {
 
         sTest.test('should keep only exclusive item', (t) => {
             const store = getStore();
-            store.state.internalValue = [1, 4, 5];
+            store.commit('internalValue', [1, 3, 5]);
 
             const result1 = store.selectItem(6, true);
             t.deepEqual(store.state.internalValue, [6]);
             t.is(store.state.status.hasChanged, true);
-            t.is(result1, true, 'should return if a change occurs');
+            t.is(result1, true, 'should return true if a change occurs');
 
             const result2 = store.selectItem(7, true);
             t.deepEqual(store.state.internalValue, [7]);
             t.is(store.state.status.hasChanged, true);
-            t.is(result2, true, 'should return if a change occurs');
+            t.is(result2, true, 'should return true if a change occurs');
 
             const result3 = store.selectItem(1, true);
             t.deepEqual(store.state.internalValue, [1]);
             t.is(store.state.status.hasChanged, true);
-            t.is(result3, true, 'should return if a change occurs');
+            t.is(result3, true, 'should return true if a change occurs');
 
             const result4 = store.selectItem(5, true);
             t.deepEqual(store.state.internalValue, [1, 5]);
             t.is(store.state.status.hasChanged, true);
-            t.is(result4, true, 'should return if a change occurs');
+            t.is(result4, true, 'should return true if a change occurs');
 
             t.is(store.state.selectionIsExcluded, false);
+            t.end();
+        });
+
+        sTest.test('should manage exclusive item with disabled item', (t) => {
+            const store = getStore();
+            store.commit('internalValue', [1, 4, 5]);
+
+            const result1 = store.selectItem(6, true);
+            t.deepEqual(store.state.internalValue, [1, 4, 5]);
+            t.is(store.state.status.hasChanged, false);
+            t.is(result1, false, 'should return false if no change occurs');
+
+            /* With exclusive and disabled item selected */
+            store.commit('internalValue', [8]);
+
+            const result2 = store.selectItem(6, true);
+            t.deepEqual(store.state.internalValue, [8]);
+            t.is(store.state.status.hasChanged, false);
+            t.is(result2, false, 'should return false if no change occurs');
+
+            const result3 = store.selectItem(1, true);
+            t.deepEqual(store.state.internalValue, [8]);
+            t.is(store.state.status.hasChanged, false);
+            t.is(result3, false, 'should return false if no change occurs');
+
+            t.is(store.state.selectionIsExcluded, false);
+
             t.end();
         });
     });

@@ -939,24 +939,58 @@ export default class SelecticStore {
                 selected = !isAlreadySelected;
             }
 
+            const selectedOptions = Array.isArray(state.selectedOptions)
+                ? state.selectedOptions
+                : [];
+
             if (id === null) {
-                state.internalValue = [];
-                hasChanged = internalValue.length > 0;
+                /* Keep disabled items: we cannot removed them because they
+                 * are disabled */
+                const newSelection = selectedOptions.reduce((list, item) => {
+                    if (item.disabled && item.id) {
+                        list.push(item.id);
+                    }
+
+                    return list;
+                }, [] as StrictOptionId[]);
+
+                state.internalValue = newSelection;
+                hasChanged = internalValue.length > newSelection.length;
             } else
             if (selected && !isAlreadySelected) {
+                let addItem = true;
+
                 if (item?.exclusive) {
-                    /* clear the current selection because the item is exclusive */
-                    internalValue.splice(0, Infinity);
+                    const hasDisabledSelected = selectedOptions.some((opt) => {
+                        return opt.disabled;
+                    });
+
+                    if (hasDisabledSelected) {
+                        /* do not remove disabled item from selection */
+                        addItem = false;
+                    } else {
+                        /* clear the current selection because the item is exclusive */
+                        internalValue.splice(0, Infinity);
+                    }
                 } else if (internalValue.length === 1) {
                     const selectedId = internalValue[0];
                     const selectedItem = state.allOptions.find((opt) => opt.id === selectedId);
+
                     if (selectedItem?.exclusive) {
-                        /* clear the current selection because the old item was exclusive */
-                        internalValue.pop();
+                        if (selectedItem.disabled) {
+                            /* If selected item is disabled and exclusive do not change the selection */
+                            addItem = false;
+                        } else {
+                            /* clear the current selection because the old item was exclusive */
+                            internalValue.pop();
+                        }
                     }
                 }
-                internalValue.push(id);
-                hasChanged = true;
+
+                if (addItem) {
+                    internalValue.push(id);
+                    hasChanged = true;
+                }
             } else
             if (!selected && isAlreadySelected) {
                 internalValue.splice(internalValue.indexOf(id), 1);
@@ -982,6 +1016,14 @@ export default class SelecticStore {
                 if (id !== oldValue) {
                     return hasChanged;
                 }
+
+                const oldOption = state.selectedOptions as OptionItem | null;
+
+                if (oldOption?.disabled) {
+                    /* old selection is disabled so do not unselect it */
+                    return hasChanged;
+                }
+
                 id = null;
             } else
             if (id === oldValue) {

@@ -28,12 +28,13 @@ It is possible to define the `option` more precisely.
 * **text** {`string`} _(mandatory)_: The text which is displayed to select the option or when it is selected.
 * **title** {`string`}: Text displayed in `title` when cursor is over the option (default: `''`).
 * **disabled** {`boolean`}: if `true`, this option cannot be selected (default: `false`).
+In "multiple" mode, if the option is already selected, it cannot be removed from selection (it can always be removed by changing `value` of the component).
 * **className** {`string`}: `class` that are applied on the option (default: `''`).
 * **style** {`string`}: css style which are applied on the option (default: `''`).
 * **icon** {`string`}: class names which are applied on a `<span>` before text in the option to display an icon (default: `''`).
 * **options** {`options[]`}: an other list of options. The current option is considered as a group (equivalent of `optgroup`) (default: `undefined`).
 * **group** {`string | number`}: If set, the option is part of the given group. This property is needed only in dynamic mode if the option is part of an optgroup (default: `null`).
-* **exclusive** {`boolean`}: If set to `true`, in multiple mode, this option will be the only one selected. It means that it clears the previous selected options, and if another option is selected, this option is no more selected.
+* **exclusive** {`boolean`}: If set to `true`, in "multiple" mode, this option will be the only one selected. It means that it clears the previous selected options, and if another option is selected, this option is no more selected.
 * **data** {`any`}: You can store any information here, it will be provided when getting selected options. _It is not used by selectic so it can be anything you want_ (default: `undefined`).
 
 ```javascript
