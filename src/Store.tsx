@@ -1967,18 +1967,27 @@ export default class SelecticStore {
             return;
         }
 
+        const selectedOptions = state.selectedOptions;
         const enabledOptions = state.allOptions.filter((opt) => !opt.disabled);
-        const nb = enabledOptions.length;
+        const nbEnabled = enabledOptions.length;
         const value = state.internalValue;
         const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
-        const hasValidValue = hasValue && (
+        const hasDisabledSelected = Array.isArray(selectedOptions)
+            ? selectedOptions.some((opt) => opt.disabled)
+            : false;
+        const hasOnlyValidValue = hasValue && !hasDisabledSelected && (
             Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
             this.hasValue(value)
         );
-        const isEmpty = nb === 0;
-        const hasOnlyOneOption = nb === 1 && hasValidValue && !state.allowClearSelection;
 
-        if (hasOnlyOneOption || isEmpty) {
+        const isEmpty = nbEnabled === 0;
+        const hasOnlyOneOption = nbEnabled === 1 && hasOnlyValidValue && !state.allowClearSelection;
+        const isExclusiveDisabledItem = Array.isArray(selectedOptions) /* which means "multiple" mode */
+            && selectedOptions.length === 1
+            && selectedOptions[0].exclusive
+            && selectedOptions[0].disabled;
+
+        if (hasOnlyOneOption || isEmpty || isExclusiveDisabledItem) {
             if (state.isOpen) {
                 this.setAutomaticClose();
                 this.commit('isOpen', false);

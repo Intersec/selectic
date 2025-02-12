@@ -699,6 +699,80 @@ tape.test('Store creation', (subT) => {
             t.end();
         });
 
+        sTest.test('should disable multiple select with the only enabled value selected', async (t) => {
+            const options = getOptions(3);
+            options[0].disabled = true;
+            options[1].disabled = true;
+
+            const store = new Store({
+                options: options,
+                disabled: false,
+                value: [2],
+                params: {
+                    multiple: true,
+                    autoDisabled: true,
+                    allowClearSelection: false,
+                },
+            });
+
+            await sleep(0);
+
+            t.is(store.state.disabled, true);
+            t.deepEqual(store.state.internalValue, [2]);
+
+            t.end();
+        });
+
+        sTest.test('should not disable multiple select when it is possible to remove selected value', async (t) => {
+            const options = getOptions(3);
+            options[0].disabled = true;
+            options[1].disabled = true;
+
+            const store = new Store({
+                options: options,
+                disabled: false,
+                value: [1, 2],
+                params: {
+                    multiple: true,
+                    autoDisabled: true,
+                    allowClearSelection: false,
+                },
+            });
+
+            await sleep(0);
+
+            /* It is possible to remove the item "2" because there is another value */
+            t.is(store.state.disabled, false);
+            t.deepEqual(store.state.internalValue, [1, 2]);
+
+            t.end();
+        });
+
+        sTest.test('should disable multiple select when exclusive disabled item is selected', async (t) => {
+            const options = getOptions(3);
+            options[1].disabled = true;
+            options[1].exclusive = true;
+
+            const store = new Store({
+                options: options,
+                disabled: false,
+                value: [1],
+                params: {
+                    multiple: true,
+                    autoDisabled: true,
+                    allowClearSelection: false,
+                },
+            });
+
+            await sleep(0);
+
+            /* It is not possible to change the value */
+            t.is(store.state.disabled, true);
+            t.deepEqual(store.state.internalValue, [1]);
+
+            t.end();
+        });
+
         sTest.test('should not disable select without autoDisabled', async (t) => {
             const store = new Store({
                 options: getOptions(1),
