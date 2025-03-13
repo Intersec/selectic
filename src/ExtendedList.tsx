@@ -97,48 +97,6 @@ export default class ExtendedList extends Vue<Props> {
         return '';
     }
 
-    get onKeyDown() {
-        return (evt: KeyboardEvent) => {
-            const key = evt.key;
-
-            if (key === 'Escape') {
-                this.store.commit('isOpen', false);
-            } else
-            if (key === 'Enter') {
-                const index = this.store.state.activeItemIdx;
-
-                if (index !== -1) {
-                    const item = this.store.state.filteredOptions[index];
-
-                    if (!item.disabled && !item.isGroup) {
-                        this.store.selectItem(item.id);
-                    }
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            } else
-            if (key === 'ArrowUp') {
-                const index = this.store.state.activeItemIdx;
-
-                if (index > 0) {
-                    this.store.commit('activeItemIdx', index - 1);
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            } else
-            if (key === 'ArrowDown') {
-                const index = this.store.state.activeItemIdx;
-                const max = this.store.state.totalFilteredOptions - 1;
-
-                if (index < max) {
-                    this.store.commit('activeItemIdx', index + 1);
-                }
-                evt.stopPropagation();
-                evt.preventDefault();
-            }
-        };
-    }
-
     get bestPosition(): 'top' | 'bottom' {
         const windowHeight = window.innerHeight;
         const isFullyEstimated = this.isFullyEstimated;
@@ -286,6 +244,46 @@ export default class ExtendedList extends Vue<Props> {
 
     private clickHeaderGroup() {
         this.store.selectGroup(this.topGroupId, !this.topGroupSelected);
+    }
+
+    private onKeyDown(evt: KeyboardEvent) {
+        const key = evt.key;
+
+        if (key === 'Escape') {
+            this.store.commit('isOpen', false);
+        } else
+        if (key === 'Enter') {
+            const index = this.store.state.activeItemIdx;
+
+            if (index !== -1) {
+                const item = this.store.state.filteredOptions[index];
+
+                if (!item.disabled && !item.isGroup) {
+                    this.store.selectItem(item.id);
+                }
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        } else
+        if (key === 'ArrowUp') {
+            const index = this.store.state.activeItemIdx;
+
+            if (index > 0) {
+                this.store.commit('activeItemIdx', index - 1);
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        } else
+        if (key === 'ArrowDown') {
+            const index = this.store.state.activeItemIdx;
+            const max = this.store.state.totalFilteredOptions - 1;
+
+            if (index < max) {
+                this.store.commit('activeItemIdx', index + 1);
+            }
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
     }
 
     /* }}} */
