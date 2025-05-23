@@ -560,7 +560,7 @@ export default class Selectic extends Vue<Props> {
         } else {
             this.removeListeners();
             if (state.status.hasChanged) {
-                this.$emit('change', this.getValue(), state.selectionIsExcluded, this);
+                this.emit('change', this.getValue(), state.selectionIsExcluded);
                 this.store.resetChange();
             }
             this.emit('close');
