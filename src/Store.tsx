@@ -7,7 +7,7 @@
 import { reactive, watch, unref, computed, ComputedRef } from 'vue';
 import {
     assignObject,
-    compareOptions,
+    isDeepEqual,
     convertToRegExp,
     debug,
     deepClone,
@@ -1704,7 +1704,7 @@ export default class SelecticStore {
                 state.totalDynOptions = total;
                 const old = state.dynOptions.splice(offset, result.length, ...result);
 
-                if (compareOptions(old, result)) {
+                if (isDeepEqual(old, result)) {
                     /* Added options are the same as previous ones.
                      * Stop fetching to avoid infinite loop
                      */

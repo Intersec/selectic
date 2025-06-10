@@ -5,6 +5,7 @@ const {
     assignObject,
     convertToRegExp,
     deepClone,
+    isDeepEqual,
 } = toolFile;
 
 tape.test('assignObject()', (st) => {
@@ -399,6 +400,156 @@ tape.test('deepClone()', (st) => {
         tst.is(result.not, 42, 'should keep primitive');
         tst.is(result.deep.noCopy, noCopy3, 'should keep nested original reference');
 
+        tst.end();
+    });
+});
+
+tape.test('isDeepEqual()', (st) => {
+    const fn = () => {};
+    const obj = {
+        a: 1,
+        b: 'b',
+        c: false,
+        d: undefined,
+        e: null,
+        f: {},
+        g: fn,
+        spe1: NaN,
+        spe2: Infinity,
+        spe3: '',
+        spe4: [],
+    };
+
+    st.test('should compare simple objects', (tst) => {
+        const objA = obj;
+        const objB = deepClone(obj);
+
+        tst.is(isDeepEqual(objB, objA), true, 'should be equal');
+
+        objB.a = objB.a.toString();
+        tst.is(isDeepEqual(objA, objB), false, 'should not be equal');
+        tst.end();
+    });
+
+    st.test('should compare nested objects', (tst) => {
+        const deep1 = obj;
+        const deep2 = {
+            deep: deep1,
+            added: 'a value',
+        };
+        const objA = {
+            d: deep2,
+        }
+        const objB = deepClone(objA);
+
+        tst.is(isDeepEqual(objA, objB), true, 'should be equal');
+        tst.end();
+    });
+
+    st.test('with arrays', (tst) => {
+        const nestedArray1 = [
+            obj,
+            { a: 'value' },
+            null,
+            undefined,
+            42,
+            'value',
+        ];
+        const nestedArray2 = deepClone(nestedArray1);
+        const arrayA = [
+            {
+                deep: nestedArray1,
+            },
+            nestedArray2,
+            42, 'value', null, undefined, [[]],
+        ];
+        const arrayB = deepClone(arrayA);
+
+        tst.is(isDeepEqual(arrayA, arrayB), true, 'should be equal');
+        tst.end();
+    });
+
+    st.test('with RegExp', (tst) => {
+        const regA1 = /hello?/gi;
+        const regA2 = /.* [aA]+?/;
+
+        const regB1 = deepClone(regA1);
+        const regB2 = {rgx: regA2};
+
+        tst.is(isDeepEqual(regA1, regB1), true, 'should be equal');
+        tst.is(isDeepEqual(regA2, regB2), false, 'should not be equal');
+        tst.end();
+    });
+
+    st.test('with Date', (tst) => {
+        const dateA = new Date('1996-06-27');
+        const dateB = new Date('1996-06-27');
+
+        tst.is(isDeepEqual(dateA, dateB), true, 'should be equal');
+        tst.end();
+    });
+
+    st.test('with functions', (tst) => {
+        const fn1 = fn;
+        const fn2 = () => {};
+
+        tst.is(isDeepEqual(fn1, fn), true, 'should be equal');
+        tst.is(isDeepEqual(fn2, fn), false, 'should not be equal');
+        tst.end();
+    });
+
+    st.test('with primitives', (tst) => {
+        tst.is(isDeepEqual(10%3, 1), true, 'should be equal');
+        tst.is(isDeepEqual('Bingo'[0], 'B'), true, 'should be equal');
+        tst.is(isDeepEqual(!true, false), true, 'should be equal');
+        tst.is(isDeepEqual(obj.e, null), true, 'should be equal');
+        tst.is(isDeepEqual(obj.d, undefined), true, 'should be equal');
+        tst.end();
+    });
+
+    st.test('with circular references', (tst) => {
+        const obj1 = {
+            a: 'a',
+        }
+        const obj2 = {
+            b: 'b',
+        }
+        obj1.child = obj1;
+        obj1.sibling = obj2;
+        obj2.sibling = obj1;
+
+        const objA = [obj1, obj2];
+        const objB = deepClone(objA);
+
+        tst.is(isDeepEqual(objA, objB), true, 'should be equal');
+        tst.end();
+    });
+
+    st.test('can ignore some attributes', (tst) => {
+        const noCompare1 = {
+            ref: 1,
+        };
+        const noCompare2 = new Set(['alpha', 'omega']);
+        const noCompare3 = new Map([[1, 'alpha'], [22, 'omega']]);
+        const deep1 = {
+            a: 'alpha',
+            noCompare: noCompare3,
+        };
+        const objA = {
+            id: 'ref',
+            noCopy: noCompare1,
+            nop: noCompare2,
+            not: 42,
+            deep: deep1,
+        };
+        const objB = deepClone(objA);
+        objB.not = 24;
+
+        const result1 = isDeepEqual(objA, objB, ['noCopy', 'nothing', 'nop', 'not']);
+        const result2 = isDeepEqual(objA, objB, ['noCopy', 'nothing', 'nop']);
+
+        tst.is(result1, true, 'should be equal');
+        tst.is(result2, false, 'should not be equal');
         tst.end();
     });
 });
