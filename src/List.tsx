@@ -3,7 +3,7 @@
  * It handles interactions with these items.
  */
 
-import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import { Vue, Component, Prop, Watch, h } from 'vtyx';
 import { unref } from 'vue';
 
 import Store, {
@@ -11,6 +11,7 @@ import Store, {
     OptionId,
 } from './Store';
 import Icon from './Icon';
+import { isDeepEqual } from './tools';
 
 export interface Props {
     store: Store;
@@ -222,8 +223,10 @@ export default class List extends Vue<Props> {
     }
 
     @Watch('filteredOptions', { deep: true })
-    public onFilteredOptionsChange() {
-        this.checkOffset();
+    public onFilteredOptionsChange(oldVal: OptionItem[], newVal: OptionItem[]) {
+        if (!isDeepEqual(oldVal, newVal)) {
+            this.checkOffset();
+        }
     }
 
     @Watch('groupId')
