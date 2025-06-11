@@ -30,7 +30,7 @@ export default class List extends Vue<Props> {
     private onMouseOver;
     onIndexChange(): void;
     onOffsetChange(): void;
-    onFilteredOptionsChange(): void;
+    onFilteredOptionsChange(oldVal: OptionItem[], newVal: OptionItem[]): void;
     onGroupIdChange(): void;
     mounted(): void;
     render(): h.JSX.Element;
