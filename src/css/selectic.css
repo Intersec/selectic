@@ -254,6 +254,10 @@
     opacity: 0.2;
 }
 
+.selectic-item__active:not(.selected) .single-select_icon {
+    opacity: 0;
+}
+
 .selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {
     opacity: 0;
 }
