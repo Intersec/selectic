@@ -283,6 +283,9 @@ export default class List extends Vue<Props> {
                     {this.isMultiple && (
                         <Icon icon="check" store={this.store} class="selectic-item_icon" />
                     )}
+                    {!this.isMultiple && (
+                        <Icon icon="dot" store={this.store} class="selectic-item_icon" />
+                    )}
                     {option.icon && (
                         option.icon.includes(':')
                             ? <Icon icon={option.icon} store={this.store} />

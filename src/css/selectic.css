@@ -60,9 +60,11 @@
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
+
 .selectic .has-feedback {
     position: relative;
 }
+
 .selectic .has-feedback .form-control {
     padding-right: calc(var(--selectic-input-height) + 4px);
 }
@@ -141,11 +143,13 @@
     margin-right: 3px;
     cursor: default;
 }
+
 .selectic-input__clear-icon {
     align-self: center;
     margin-left: 3px;
     cursor: pointer;
 }
+
 .selectic-input__clear-icon:hover {
     color: var(--selectic-selected-item-color);
 }
@@ -159,6 +163,7 @@
     cursor: var(--selectic-cursor-disabled);
     background-color: var(--selectic-bg-disabled);
 }
+
 .selectic-input.disabled .more-items {
 	background-color: var(--selectic-more-items-bg-disabled);
 }
@@ -197,12 +202,15 @@
     display: grid;
     grid-template-rows: minmax(0, max-content) 1fr;
 }
+
 .selectic__extended-list.selectic-position-top {
     box-shadow: 2px -3px 12px 0px #888888;
 }
+
 .selectic__extended-list__list-container{
     overflow: auto;
 }
+
 .selectic__extended-list__list-items {
     max-height: calc(var(--selectic-input-height) * 10);
     min-width: max-content;
@@ -241,9 +249,11 @@
     background-color: var(--selectic-active-item-bg);
     color: var(--selectic-active-item-color);
 }
+
 .selectic-item__active:not(.selected) .selectic-item_icon {
     opacity: 0.2;
 }
+
 .selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {
     opacity: 0;
 }
@@ -269,11 +279,13 @@
 .selectic-item.selected {
     color: var(--selectic-selected-item-color);
 }
+
 .selectic-search-scope {
     color: #e0e0e0;
     left: auto;
     right: 10px;
 }
+
 .selectic .form-control-feedback.fa.selectic-search-scope {
     width: calc(var(--selectic-input-height) * 0.75);
     height: calc(var(--selectic-input-height) * 0.75);
@@ -311,6 +323,7 @@
     padding-bottom: 10px;
     margin-bottom: 0px;
 }
+
 .selectic .filter-input {
     height: calc(var(--selectic-input-height) * 0.75);
 }
@@ -375,6 +388,7 @@
     color: var(--selectic-more-items-color, var(--selectic-info-color));
     cursor: help;
 }
+
 .selectic-input__selected-items__value {
     grid-area: value;
     align-self: center;
@@ -390,6 +404,7 @@
     justify-self: center;
     margin-left: 5px;
 }
+
 .selectic-input__selected-items__icon:hover {
     color: var(--selectic-selected-item-color);
 }

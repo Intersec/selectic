@@ -378,6 +378,7 @@ export type IconKey =
     | 'caret-down'
     | 'caret-up'
     | 'check'
+    | 'dot'
     | 'search'
     | 'spinner'
     | 'strikethrough'

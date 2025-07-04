@@ -8,6 +8,7 @@ import Store, { IconFamily, IconKey, IconValue } from './Store';
 import IconCaretDown from './icons/caret-down';
 import IconCaretUp from './icons/caret-up';
 import IconCheck from './icons/check';
+import IconDot from './icons/dot';
 import IconQuestion from './icons/question';
 import IconSearch from './icons/search';
 import IconSpinner from './icons/spinner';
@@ -87,6 +88,8 @@ export default class Icon extends Vue<Props> {
                 return IconCaretUp;
             case 'check':
                 return IconCheck;
+            case 'dot':
+                return IconDot;
             case 'search':
                 return IconSearch;
             case 'spinner':
