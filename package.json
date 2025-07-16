@@ -42,8 +42,8 @@
         "vtyx": "4.2.1"
     },
     "devDependencies": {
-        "@babel/types": "^7.23.6",
-        "rollup": "^2.79.1",
+        "@babel/types": "^7.28.1",
+        "rollup": "^2.79.2",
         "rollup-plugin-postcss": "^4.0.2",
         "tape": "^4.17.0",
         "typescript": "~4.8"
