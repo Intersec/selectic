@@ -361,9 +361,18 @@ export default class Selectic extends Vue<Props> {
                 return;
             }
 
-            const target =  evt.target as Node;
+            const target =  evt.target as Element | null;
 
             if (!extendedListEl.contains(target) && !this.$el.contains(target)) {
+                if (keepOpenWithOtherSelectic) {
+                    const parentIsSelectic = target?.closest('.selectic');
+
+                    if (parentIsSelectic) {
+                        /* Do not close current Selectic */
+                        return;
+                    }
+                }
+
                 store.commit('isOpen', false);
             }
         };
