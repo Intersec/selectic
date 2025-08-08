@@ -312,12 +312,17 @@ will not be displayed and the filter panel is always open.
 
 ## keepOpenWithOtherSelectic
 
-Type: `boolean`
+Type: `boolean | string`
 
 Default value: `false`
 
 By default, only one selectic component can be open at the same time. So if another Selectic component is open then any previously open component is closed.
-If `keepOpenWithOtherSelectic` is set to `true`, this component stays open when another Selectic component opens.
+
+When `keepOpenWithOtherSelectic` is set to `true`, this component stays open when any other Selectic component opens.
+
+When it is set to a `non-empty string`, this component stays open only when another Selectic component that matches the given CSS selector opens.
+
+For falsy values, the component always closes when another Selectic opens.
 
 Note: This attribute does not prevent closing when user clicks outside the component.
 
@@ -325,6 +330,15 @@ Note: This attribute does not prevent closing when user clicks outside the compo
 <selectic
     :params="{
         keepOpenWithOtherSelectic: true,
+    }"
+    :options="optionList"
+/>
+```
+
+```html
+<selectic
+    :params="{
+        keepOpenWithOtherSelectic: '.class-name',
     }"
     :options="optionList"
 />
