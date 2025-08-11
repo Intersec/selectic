@@ -1,5 +1,5 @@
-# ASDF configuration file for mmsx repository.
+# ASDF configuration file for Selectic repository.
 #
 # https://asdf-vm.com/manage/configuration.html
 
-nodejs 12.18.4 system
+nodejs 20.11.1 system

@@ -39,13 +39,13 @@
         "test": "npm run build && tape test/**/*.spec.js"
     },
     "dependencies": {
-        "vtyx": "4.2.1"
+        "vtyx": "4.4.2"
     },
     "devDependencies": {
-        "@babel/types": "^7.28.1",
+        "@babel/types": "^7.28.2",
         "rollup": "^2.79.2",
         "rollup-plugin-postcss": "^4.0.2",
         "tape": "^4.17.0",
-        "typescript": "~4.8"
+        "typescript": "~5.9"
     }
 }
