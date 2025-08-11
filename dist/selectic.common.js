@@ -2921,6 +2921,17 @@ let Selectic = class Selectic extends vtyx.Vue {
             }
             const target = evt.target;
             if (!extendedListEl.contains(target) && !this.$el.contains(target)) {
+                if (keepOpenWithOtherSelectic) {
+                    let classSelector = '.selectic';
+                    if (typeof keepOpenWithOtherSelectic === 'string') {
+                        classSelector += keepOpenWithOtherSelectic;
+                    }
+                    const parentIsSelectic = target === null || target === void 0 ? void 0 : target.closest(classSelector);
+                    if (parentIsSelectic) {
+                        /* Do not close current Selectic */
+                        return;
+                    }
+                }
                 store.commit('isOpen', false);
             }
         };

@@ -65,8 +65,15 @@ export interface ParamProps {
      * Example: "sort-ODE"
      */
     optionBehavior?: string;
-    /** Keep this component open if another Selectic component opens */
-    keepOpenWithOtherSelectic?: boolean;
+    /** Keep this component open if another Selectic component opens.
+     *
+     * - `true`  → Keep open for **any** Selectic component.
+     * - `string` → Keep open only when the other Selectic matches the given CSS selector.
+     * - `false` (default) → Always close when another Selectic opens.
+     *
+     * An empty string is treated the same as `false`.
+     */
+    keepOpenWithOtherSelectic?: boolean | string;
     /** Avoid click on group name to select all items in this group. */
     disableGroupSelection?: boolean;
 }

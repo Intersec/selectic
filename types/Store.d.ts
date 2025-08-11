@@ -135,8 +135,15 @@ export interface Props {
     icons?: PartialIcons | null;
     /** Overwrite default icon family */
     iconFamily?: IconFamily | null;
-    /** Keep this component open if another Selectic component opens */
-    keepOpenWithOtherSelectic?: boolean;
+    /** Keep this component open if another Selectic component opens.
+     *
+     * - `true`  → Keep open for **any** Selectic component.
+     * - `string` → Keep open only when the other Selectic matches the given CSS selector.
+     * - `false` (default) → Always close when another Selectic opens.
+     *
+     * An empty string is treated the same as `false`.
+     */
+    keepOpenWithOtherSelectic?: boolean | string;
     /** Selectic configuration */
     params?: SelecticStoreStateParams;
     /** Method to call to fetch extra data */
