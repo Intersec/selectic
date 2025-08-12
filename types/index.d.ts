@@ -4,7 +4,7 @@ import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchC
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, };
-declare type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
+type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 export interface EventOptions {
     instance: Selectic;
     eventType: EventType;
@@ -77,8 +77,8 @@ export interface ParamProps {
     /** Avoid click on group name to select all items in this group. */
     disableGroupSelection?: boolean;
 }
-export declare type OnCallback = (event: string, ...args: any[]) => void;
-export declare type GetMethodsCallback = (methods: {
+export type OnCallback = (event: string, ...args: any[]) => void;
+export type GetMethodsCallback = (methods: {
     clearCache: Selectic['clearCache'];
     changeTexts: Selectic['changeTexts'];
     changeIcons: Selectic['changeIcons'];

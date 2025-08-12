@@ -1,10 +1,10 @@
 import { ComputedRef } from 'vue';
-declare type MandateProps<T extends {}> = {
+type MandateProps<T extends {}> = {
     [TK in keyof T]-?: T[TK];
 };
-export declare type StrictOptionId = string | number;
-export declare type OptionId = StrictOptionId | null;
-export declare type SelectedValue = OptionId | StrictOptionId[];
+export type StrictOptionId = string | number;
+export type OptionId = StrictOptionId | null;
+export type SelectedValue = OptionId | StrictOptionId[];
 export interface OptionValue {
     id: OptionId;
     text: string;
@@ -18,19 +18,19 @@ export interface OptionValue {
     exclusive?: boolean;
     data?: any;
 }
-declare type OptionBehaviorOperation = 'sort' | 'force';
-declare type OptionBehaviorOrder = 'O' | 'D' | 'E';
+type OptionBehaviorOperation = 'sort' | 'force';
+type OptionBehaviorOrder = 'O' | 'D' | 'E';
 export interface OptionItem extends OptionValue {
     selected: boolean;
     disabled: boolean;
     isGroup: boolean;
 }
-export declare type OptionProp = OptionValue | string;
+export type OptionProp = OptionValue | string;
 export interface GroupValue {
     id: StrictOptionId;
     text: string;
 }
-export declare type RequestResult = {
+export type RequestResult = {
     /** The total number of expecting options.
      * Needed to know if there are more items to fetch, and to size the scrollbar.
      */
@@ -38,20 +38,20 @@ export declare type RequestResult = {
     /** The list of the options. */
     result: OptionValue[];
 };
-export declare type FetchCallback = (_search: string, _offsetItem: number, _pageSize: number) => Promise<RequestResult>;
-export declare type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
-export declare type FormatCallback = (_option: OptionItem) => OptionItem;
-export declare type SelectionOverflow = 
+export type FetchCallback = (_search: string, _offsetItem: number, _pageSize: number) => Promise<RequestResult>;
+export type GetCallback = (_ids: OptionId[]) => Promise<OptionValue[]>;
+export type FormatCallback = (_option: OptionItem) => OptionItem;
+export type SelectionOverflow = 
 /** Items are reduced in width and an ellipsis is displayed in their name. */
 'collapsed' | 'multiline';
-export declare type ListPosition = 
+export type ListPosition = 
 /** Display the list at bottom */
 'bottom'
 /** Display the list at bottom */
  | 'top'
 /** Display the list at bottom but if there is not enough space, display it at top */
  | 'auto';
-export declare type HideFilter = 
+export type HideFilter = 
 /** Display or hide the filter panel */
 boolean
 /** The handler to open the filter panel is hidden only if there is less
@@ -59,7 +59,7 @@ boolean
  | 'auto'
 /** The panel filter is always open */
  | 'open';
-export declare type SelectAllOption = 
+export type SelectAllOption = 
 /** Display the "select all" only when data are all fetched or allowRevert */
 'auto'
 /** Always display the "select all" in mulitple mode. */
@@ -151,7 +151,7 @@ export interface Props {
     /** Method to call to get specific item */
     getItemsCallback?: GetCallback | null;
 }
-declare type InternalProps = MandateProps<Props>;
+type InternalProps = MandateProps<Props>;
 export interface Data {
     /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
@@ -253,11 +253,11 @@ export interface SelecticStoreState {
         automaticClose: boolean;
     };
 }
-export declare type IconFamily = '' | 'selectic' | 'font-awesome-4' | 'font-awesome-5' | 'font-awesome-6' | 'raw' | `prefix:${string}`;
-export declare type IconKey = 'caret-down' | 'caret-up' | 'check' | 'dot' | 'search' | 'spinner' | 'strikethrough' | 'times' | 'question' | 'spin';
-export declare type IconValue = `selectic:${IconKey}${'' | ':spin'}` | `raw:${string}` | `current:${IconKey}${'' | ':spin'}` | string;
-export declare type Icons = Record<IconKey, IconValue>;
-export declare type PartialIcons = {
+export type IconFamily = '' | 'selectic' | 'font-awesome-4' | 'font-awesome-5' | 'font-awesome-6' | 'raw' | `prefix:${string}`;
+export type IconKey = 'caret-down' | 'caret-up' | 'check' | 'dot' | 'search' | 'spinner' | 'strikethrough' | 'times' | 'question' | 'spin';
+export type IconValue = `selectic:${IconKey}${'' | ':spin'}` | `raw:${string}` | `current:${IconKey}${'' | ':spin'}` | string;
+export type Icons = Record<IconKey, IconValue>;
+export type PartialIcons = {
     [K in IconKey]?: Icons[K];
 };
 interface Messages {
@@ -279,7 +279,7 @@ interface Messages {
     unknownPropertyValue: string;
     wrongQueryResult: string;
 }
-export declare type PartialMessages = {
+export type PartialMessages = {
     [K in keyof Messages]?: Messages[K];
 };
 export declare function changeTexts(texts: PartialMessages): void;

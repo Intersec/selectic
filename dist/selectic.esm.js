@@ -3313,7 +3313,7 @@ let Selectic = class Selectic extends Vue {
                 multiple: ((_a = this.multiple) !== null && _a !== void 0 ? _a : false) !== false,
                 pageSize: this.params.pageSize || 100,
                 hideFilter: (_b = this.params.hideFilter) !== null && _b !== void 0 ? _b : 'auto',
-                allowRevert: this.params.allowRevert,
+                allowRevert: this.params.allowRevert, /* it can be undefined */
                 forceSelectAll: this.params.forceSelectAll || 'auto',
                 allowClearSelection: this.params.allowClearSelection || false,
                 autoSelect: this.params.autoSelect === undefined
@@ -3327,7 +3327,7 @@ let Selectic = class Selectic extends Vue {
                 formatOption: this.params.formatOption,
                 formatSelection: this.params.formatSelection,
                 listPosition: this.params.listPosition || 'auto',
-                optionBehavior: this.params.optionBehavior,
+                optionBehavior: this.params.optionBehavior, /* it can be undefined */
                 isOpen: ((_c = this.open) !== null && _c !== void 0 ? _c : false) !== false,
                 disableGroupSelection: this.params.disableGroupSelection,
             },
