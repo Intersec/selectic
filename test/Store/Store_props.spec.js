@@ -229,6 +229,62 @@ tape.test('change props', (subT) => {
                 t.end();
             });
 
+            sTest.test('should not disable the select, if selected item is disabled but there is another option',
+                async (t) => {
+                    const options = getOptions(2, 'alpha');
+                    options[1].disabled = true;
+
+                    const store = new Store({
+                        value: 1,
+                        options: options,
+                        disabled: false,
+                        params: {
+                            autoDisabled: true,
+                        },
+                    });
+
+                    store.commit('isOpen', true);
+                    await _.nextVueTick(store);
+
+                    t.is(store.state.selectedOptions.text, 'alpha1');
+                    t.is(store.state.internalValue, 1);
+                    t.is(store.state.disabled, false);
+
+                    /* Once we choose the only valid option, disable the selection */
+                    store.props.value = 0;
+                    await _.nextVueTick(store);
+
+                    t.is(store.state.selectedOptions.text, 'alpha0');
+                    t.is(store.state.internalValue, 0);
+                    t.is(store.state.disabled, true);
+
+                    t.end();
+                });
+
+            sTest.test('multi select should not be disabled, even if only disabled options are left',
+                async (t) => {
+                    const options = getOptions(3, 'alpha');
+                    options[1].disabled = true;
+                    options[2].disabled = true;
+
+                    const store = new Store({
+                        value: [0, 1],
+                        options: options,
+                        disabled: false,
+                        params: {
+                            autoDisabled: true,
+                            multiple: true,
+                        },
+                    });
+
+                    store.commit('isOpen', true);
+                    await _.nextVueTick(store);
+
+                    t.deepEqual(store.state.internalValue, [0, 1]);
+                    t.is(store.state.disabled, false);
+                    t.end();
+                });
+
             sTest.test('should not disable the select with an invalid value', async (t) => {
                 const store = new Store({
                     value: 2,
