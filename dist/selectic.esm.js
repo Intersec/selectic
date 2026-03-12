@@ -1452,13 +1452,26 @@ class SelecticStore {
             : false;
         const hasOnlyValidValue = hasValue && !hasDisabledSelected && (Array.isArray(value) ? value.every((val) => this.hasValue(val)) :
             this.hasValue(value));
+        /* Whether at least one option, that is not disabled, is not selected. */
+        const hasAvailableNonSelectedOptions = state.allOptions.some((opt) => {
+            const isOptionSelected = (Array.isArray(selectedOptions)
+                ? selectedOptions.some((selectedOpt) => selectedOpt.id === opt.id)
+                : selectedOptions && selectedOptions.id === opt.id);
+            return !isOptionSelected && !opt.disabled;
+        });
         const isEmpty = nbEnabled === 0;
-        const hasOnlyOneOption = nbEnabled === 1 && hasOnlyValidValue && !state.allowClearSelection;
+        const hasOnlyOneOption = (nbEnabled === 1 && hasOnlyValidValue && !state.allowClearSelection);
+        /* In most cases if `hasOnlyOneOption` is true, we disable selection.
+         * However, if we are not in multi-select mode and if the only option available is not the selected one then
+         * we do not disable selection (to let the user switch from its current disabled selection,
+         * and a valid one).
+         */
+        const cannotSelectAnyOption = hasOnlyOneOption && (Array.isArray(selectedOptions) || !hasAvailableNonSelectedOptions);
         const isExclusiveDisabledItem = Array.isArray(selectedOptions) /* which means "multiple" mode */
             && selectedOptions.length === 1
             && selectedOptions[0].exclusive
             && selectedOptions[0].disabled;
-        if (hasOnlyOneOption || isEmpty || isExclusiveDisabledItem) {
+        if (cannotSelectAnyOption || isEmpty || isExclusiveDisabledItem) {
             if (state.isOpen) {
                 this.setAutomaticClose();
                 this.commit('isOpen', false);
