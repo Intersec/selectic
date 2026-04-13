@@ -44,3 +44,9 @@
 ## Breaking changes
 
 [Migration strategy](./breakingChanges.md)
+
+## Slots
+
+[Slots details](./slots.md)
+
+* custom
