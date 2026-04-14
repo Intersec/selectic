@@ -30,6 +30,12 @@
 * blur
 * item:click
 
+## Slots
+
+[Slots details](./slots.md)
+
+* listFooter
+
 ## Methods
 
 [API details](./methods.md)

@@ -986,7 +986,13 @@ export default class Selectic extends Vue<Props> {
                     elementRight={this.elementRight}
                     width={this.width}
                     ref="extendedList"
-                />
+                >
+                    {this.$slots.listFooter && (
+                        <div slot="listFooter">
+                            {this.$slots.listFooter()}
+                        </div>
+                    )}
+                </ExtendedList>
               )}
             </div>
         );

@@ -352,6 +352,7 @@ export default class ExtendedList extends Vue<Props> {
                         groupId: this.getGroup,
                     }}
                 />
+                {this.$slots.listFooter?.()}
               {this.infoMessage && (
                 <div class="selectic__message alert-info">
                     {this.infoMessage}
