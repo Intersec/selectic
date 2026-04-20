@@ -2810,6 +2810,7 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
     }
     /* }}} */
     render() {
+        var _a, _b;
         const store = this.store;
         const state = store.state;
         const isGroup = state.groups.size > 0 &&
@@ -2833,7 +2834,8 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
                 this.topGroupName)),
             vtyx.h(List$1, { store: store, on: {
                     groupId: this.getGroup,
-                } }),
+                } }), (_b = (_a = this.$slots).listFooter) === null || _b === void 0 ? void 0 :
+            _b.call(_a),
             this.infoMessage && (vtyx.h("div", { class: "selectic__message alert-info" }, this.infoMessage)),
             this.searching && (vtyx.h("div", { class: "selectic__message" },
                 vtyx.h(Icon$1, { icon: "spinner", store: this.store, spin: true }),
@@ -3408,7 +3410,7 @@ let Selectic = class Selectic extends vtyx.Vue {
             vtyx.h(MainInput$1, { store: store, id: id, on: {
                     'item:click': (id) => this.emit('item:click', id),
                 }, ref: "mainInput" }),
-            this.isFocused && (vtyx.h(ExtendedList$1, { class: this.className, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }))));
+            this.isFocused && (vtyx.h(ExtendedList$1, { class: this.className, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter()))))));
     }
 };
 __decorate([
