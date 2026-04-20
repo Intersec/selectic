@@ -46,6 +46,6 @@
         "rollup": "^2.80.0",
         "rollup-plugin-postcss": "^4.0.2",
         "tape": "^4.17.0",
-        "typescript": "~5.9"
+        "typescript": "~5.9.3"
     }
 }
