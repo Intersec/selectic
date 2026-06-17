@@ -6,6 +6,7 @@
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
 import Icon from './Icon';
+import OptionIcon from './OptionIcon';
 
 export interface Props {
     store: Store;
@@ -378,6 +379,13 @@ export default class MainInput extends Vue<Props> {
                         }]}
             >
             { this.hasValue && !this.store.state.multiple && (
+                <OptionIcon
+                    icon={this.singleSelectedItem?.icon}
+                    store={this.store}
+                    className="selectic-input__value-icon"
+                />
+            )}
+            { this.hasValue && !this.store.state.multiple && (
                 <span
                     class="selectic-item_text"
                     style={this.singleStyle}
@@ -419,6 +427,11 @@ export default class MainInput extends Vue<Props> {
                                     click: () => this.$emit('item:click', item.id),
                                 }}
                             >
+                                <OptionIcon
+                                    icon={item.icon}
+                                    store={this.store}
+                                    className="selectic-input__value-icon"
+                                />
                                 <span
                                     class="selectic-input__selected-items__value"
                                 >

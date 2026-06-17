@@ -11,6 +11,7 @@ import Store, {
     OptionId,
 } from './Store';
 import Icon from './Icon';
+import OptionIcon from './OptionIcon';
 import { isDeepEqual } from './tools';
 
 export interface Props {
@@ -286,11 +287,7 @@ export default class List extends Vue<Props> {
                     {!this.isMultiple && (
                         <Icon icon="dot" store={this.store} class="selectic-item_icon single-select_icon" />
                     )}
-                    {option.icon && (
-                        option.icon.includes(':')
-                            ? <Icon icon={option.icon} store={this.store} />
-                            : <Icon icon={`raw:${option.icon}`} store={this.store} />
-                    )}
+                    <OptionIcon icon={option.icon} store={this.store} />
                         {option.text}
                     </li>
                 ))}

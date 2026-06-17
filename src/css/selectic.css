@@ -130,7 +130,7 @@
  * override some rules of the original .form-control */
 .selectic-input.form-control {
     display: inline-flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     overflow: hidden;
     width: 100%;
     min-height: var(--selectic-input-height);
@@ -147,9 +147,13 @@
     cursor: default;
 }
 
+/* `margin-left: auto` keeps the icon on the right edge: the container is
+ * `flex-start` so that the option icon stays glued to its value text. */
 .selectic-input__clear-icon {
     align-self: center;
-    margin-left: 3px;
+    flex: none;
+    margin-left: auto;
+    padding-left: 3px;
     cursor: pointer;
 }
 
@@ -362,7 +366,7 @@
 
 .selectic .single-value {
     display: grid;
-    grid-template: "value icon" 1fr / max-content max-content;
+    grid-template: "pre-icon value icon" 1fr / max-content max-content max-content;
 
     padding: 2px;
     padding-left: 5px;
@@ -394,6 +398,17 @@
     background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));
     color: var(--selectic-more-items-color, var(--selectic-info-color));
     cursor: help;
+}
+
+/* Icon displayed before the text of a selected value (single and multiple).
+ * Spacing between the icon and the text is consumer-controlled via the icon
+ * classes (e.g. an `inline-space-after` utility), mirroring how the dropdown
+ * already handles it. */
+.selectic-input__value-icon {
+    grid-area: pre-icon;
+    align-self: center;
+    justify-self: center;
+    flex: none;
 }
 
 .selectic-input__selected-items__value {
@@ -457,6 +472,13 @@
 .selectic__icon {
     height: 1em;
     fill: currentColor;
+}
+
+/* Default spacing applied by `OptionIcon` so consumers don't have to add
+ * their own spacing utility on every `option.icon` they provide. Override or
+ * unset on the consumer side if a different spacing is needed. */
+.selectic-icon-space-after {
+    margin-right: 5px;
 }
 
 .selectic-spin {
