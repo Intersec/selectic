@@ -140,6 +140,20 @@ export interface FooterConfig {
     apply?: FooterButtonConfig;
 }
 
+export type NavigationAction =
+    /** Activate the first option */
+    'first'
+    /** Activate the last option */
+    | 'last'
+    /** Activate the option before the current one */
+    | 'previous'
+    /** Activate the option after the current one */
+    | 'next'
+    /** Activate the option one page (data.itemsPerPage) before the current one */
+    | 'pageUp'
+    /** Activate the option one page (data.itemsPerPage) after the current one */
+    | 'pageDown';
+
 export interface SelecticStoreStateParams {
     /** Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -277,6 +291,9 @@ export interface Data {
     /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
 
+    /** Time (in ms) before the typeahead text is reset */
+    typeaheadDelay: number;
+
     labels: Messages;
     icons: PartialIcons;
     iconFamily: IconFamily;
@@ -371,6 +388,10 @@ export interface SelecticStoreState {
 
     /** Index of active item */
     activeItemIdx: number;
+
+    /** Index of the active chip (selected item in the main input, in
+     * multiple mode) while navigating through them with keyboard */
+    activeChipIdx: number;
 
     /** Number of items to fetch per page */
     pageSize: number;
@@ -538,6 +559,12 @@ const DEBOUNCE_REQUEST = 250;
 /* Minimum number of items displayed at once in the opened list. */
 const MIN_DISPLAYED_ITEMS = 2;
 
+/**
+ * Default time (in ms) between two key presses before the typeahead text
+ * is reset (can be changed at runtime through `data.typeaheadDelay`).
+ */
+const DEFAULT_TYPEAHEAD_DELAY = 1_000;
+
 /* }}} */
 
 let uid = 0;
@@ -553,6 +580,10 @@ export default class SelecticStore {
     /* Do not need reactivity */
     private requestId: number = 0;
     private requestSearchId: number = 0; /* Used for search request */
+    private typeaheadText: string = '';
+    private typeaheadTime: number = 0;
+    /* Avoid resetting activeChipIdx while removing the active chip */
+    private keepActiveChip: boolean = false;
     private isRequesting: boolean = false;
     private cacheRequest: Map<string, Promise<OptionValue[]>>;
     private closeSelectic: () => void;
@@ -603,6 +634,7 @@ export default class SelecticStore {
         /* {{{ data */
 
         this.state = reactive<SelecticStoreState>({
+            activeChipIdx: -1,
             activeItemIdx: -1,
             allOptions: [],
             allowClearSelection: false,
@@ -652,6 +684,7 @@ export default class SelecticStore {
             icons: Object.assign({}, icons),
             iconFamily: defaultFamilyIcon,
             itemsPerPage: 10,
+            typeaheadDelay: DEFAULT_TYPEAHEAD_DELAY,
             doNotUpdate: false,
             cacheItem: new Map(),
             activeOrder: 'D',
@@ -860,6 +893,7 @@ export default class SelecticStore {
           case 'searchText':
             this.state.offsetItem = 0;
             this.state.activeItemIdx = -1;
+            this.state.activeChipIdx = -1;
             this.clearDisplay();
 
             if (value) {
@@ -872,6 +906,7 @@ export default class SelecticStore {
             if (closePreviousSelectic === this.closeSelectic) {
                 closePreviousSelectic = undefined;
             }
+            this.state.activeChipIdx = -1;
             if (value) {
                 if (this.state.disabled) {
                     this.commit('isOpen', false);
@@ -1002,6 +1037,10 @@ export default class SelecticStore {
         const state = this.state;
         let hasChanged = false;
         const item = state.allOptions.find((opt) => opt.id === id);
+
+        if (!this.keepActiveChip) {
+            state.activeChipIdx = -1;
+        }
 
         /* Check that item is not disabled */
         if (item?.disabled) {
@@ -1163,6 +1202,380 @@ export default class SelecticStore {
         this.data.doNotUpdate = false;
         this.updateFilteredOptions();
     }
+
+    /* {{{ keyboard navigation */
+
+    /** Change the active item (the highlighted one) depending on its
+     * current position. It also ensures that the new active item is
+     * rendered by the virtual list. */
+    public moveActiveItem(action: NavigationAction) {
+        const state = this.state;
+        const totalItems = Number.isFinite(state.totalFilteredOptions)
+            ? state.totalFilteredOptions
+            : state.filteredOptions.length;
+        const lastIdx = totalItems - 1;
+
+        if (lastIdx < 0) {
+            return;
+        }
+
+        const currentIdx = state.activeItemIdx;
+        const pageSize = this.data.itemsPerPage;
+        let idx: number | null = currentIdx;
+
+        switch (action) {
+            case 'first':
+                idx = this.findEnabledItem(0, lastIdx);
+                break;
+            case 'last':
+                idx = this.findEnabledItem(lastIdx, 0);
+                break;
+            case 'previous':
+                if (currentIdx > 0) {
+                    idx = this.findEnabledItem(currentIdx - 1, 0);
+                }
+                break;
+            case 'next':
+                if (currentIdx < lastIdx) {
+                    idx = this.findEnabledItem(currentIdx + 1, lastIdx);
+                }
+                break;
+            case 'pageUp': {
+                const target = Math.max(0, currentIdx - pageSize);
+
+                idx = this.findEnabledItem(target, 0)
+                    ?? this.findEnabledItem(target, lastIdx);
+                break;
+            }
+            case 'pageDown': {
+                const target = Math.min(currentIdx + pageSize, lastIdx);
+
+                idx = this.findEnabledItem(target, lastIdx)
+                    ?? this.findEnabledItem(target, 0);
+                break;
+            }
+        }
+
+        if (idx !== null && idx !== currentIdx) {
+            this.activateItemAt(idx);
+        }
+    }
+
+    /** Handle "typeahead" behavior: activate the next option matching the
+     * text typed by the user (only used when the search filter is hidden). */
+    public typeahead(key: string) {
+        if (key.length !== 1) {
+            /* not a printable character */
+            return;
+        }
+
+        const state = this.state;
+        const options = state.filteredOptions;
+
+        if (!options.length) {
+            return;
+        }
+
+        const now = Date.now();
+
+        if (now - this.typeaheadTime > this.data.typeaheadDelay) {
+            this.typeaheadText = '';
+        }
+        this.typeaheadTime = now;
+        this.typeaheadText += key.toLowerCase();
+        const text = this.typeaheadText;
+
+        /* When the same letter is repeated, cycle through all options
+         * starting with this letter */
+        const isRepeated = text.length > 1
+            && text === text[0].repeat(text.length);
+        const search = isRepeated ? text[0] : text;
+        const currentIdx = state.activeItemIdx;
+        /* Start from the next option, except when refining the search (the
+         * current option may still match) */
+        const startIdx = search.length > 1
+            ? Math.max(currentIdx, 0)
+            : currentIdx + 1;
+
+        for (let offset = 0; offset < options.length; offset++) {
+            const idx = (startIdx + offset) % options.length;
+            const option = options[idx];
+
+            if (option.disabled) {
+                continue;
+            }
+
+            if (String(option.text).toLowerCase().startsWith(search)) {
+                if (idx !== currentIdx) {
+                    this.activateItemAt(idx);
+                }
+                return;
+            }
+        }
+    }
+
+    /** True while the user is typing a text to look for an option */
+    public get isTypeaheadActive(): boolean {
+        return this.typeaheadText !== ''
+            && Date.now() - this.typeaheadTime <= this.data.typeaheadDelay;
+    }
+
+    /** Change the active chip (selected item in the main input, multiple
+     * mode). Cycles through the chips, with a "no active chip" step
+     * between last and first. */
+    public moveActiveChip(direction: 'previous' | 'next') {
+        const state = this.state;
+
+        if (!state.multiple) {
+            return;
+        }
+
+        const chips = state.selectedOptions;
+        const nbChips = Array.isArray(chips) ? chips.length : 0;
+
+        if (!nbChips) {
+            return;
+        }
+
+        const currentIdx = state.activeChipIdx;
+        let idx: number;
+
+        if (direction === 'previous') {
+            idx = currentIdx === -1 ? nbChips - 1 : currentIdx - 1;
+        } else {
+            idx = currentIdx + 1;
+
+            if (idx >= nbChips) {
+                idx = -1;
+            }
+        }
+
+        state.activeChipIdx = idx;
+    }
+
+    /** Unselect the item related to the active chip */
+    public removeActiveChip() {
+        const state = this.state;
+        const idx = state.activeChipIdx;
+
+        if (!state.multiple || idx === -1) {
+            return;
+        }
+
+        const chips = state.selectedOptions as OptionItem[];
+        const chip = chips[idx];
+
+        if (!chip) {
+            state.activeChipIdx = -1;
+            return;
+        }
+
+        this.keepActiveChip = true;
+        this.selectItem(chip.id, false);
+        this.keepActiveChip = false;
+
+        const nbChips = (state.selectedOptions as OptionItem[]).length;
+        state.activeChipIdx = Math.min(idx, nbChips - 1);
+    }
+
+    /** Select (or toggle, for groups) the current active item */
+    public selectActiveItem() {
+        const state = this.state;
+        const index = state.activeItemIdx;
+
+        if (index === -1) {
+            return;
+        }
+
+        const item = state.filteredOptions[index];
+
+        if (!item || item.disabled) {
+            return;
+        }
+
+        if (item.isGroup) {
+            this.selectGroup(item.id, !item.selected);
+            return;
+        }
+
+        this.selectItem(item.id);
+    }
+
+    /** Handle keyboard interactions (shared by the dropdown and the
+     * multilines mode) */
+    public handleKeydown(evt: KeyboardEvent) {
+        const key = evt.key;
+        const state = this.state;
+
+        /* In multilines mode the list is always rendered, so the
+         * `commit('isOpen')` lock never applies: check `disabled` here. */
+        if (state.disabled) {
+            return;
+        }
+
+        const isMultilines = state.multilines;
+        const target = evt.target as HTMLElement | null;
+        const isTextInput = !!target
+            && target.tagName === 'INPUT'
+            && (target as HTMLInputElement).type === 'text';
+
+        /* let native interactive elements (like the footer buttons)
+         * handle keys themselves */
+        if (target?.tagName === 'BUTTON' && key !== 'Escape') {
+            return;
+        }
+
+        function stopEvent() {
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
+
+        switch (key) {
+            case 'Escape':
+                if (!isMultilines) {
+                    this.commit('isOpen', false);
+                }
+                break;
+            case 'Enter':
+                this.selectActiveItem();
+                stopEvent();
+                break;
+            case ' ':
+                /* Same rule as Home/End: the key drives the list until the
+                 * user has started to type something, so that a space can
+                 * still be part of the searched text. */
+                if (isTextInput && (target as HTMLInputElement).value) {
+                    /* the space is typed in the search input */
+                    break;
+                }
+                if (state.hideFilter && this.isTypeaheadActive) {
+                    /* the space is part of the searched text */
+                    this.typeahead(key);
+                } else {
+                    this.selectActiveItem();
+                }
+                stopEvent();
+                break;
+            case 'ArrowUp':
+                this.moveActiveItem('previous');
+                stopEvent();
+                break;
+            case 'ArrowDown':
+                this.moveActiveItem('next');
+                stopEvent();
+                break;
+            case 'PageUp':
+                this.moveActiveItem('pageUp');
+                stopEvent();
+                break;
+            case 'PageDown':
+                this.moveActiveItem('pageDown');
+                stopEvent();
+                break;
+            case 'Home':
+            case 'End':
+                /* keep the text edition behavior in the search input */
+                if (isTextInput && (target as HTMLInputElement).value) {
+                    break;
+                }
+                this.moveActiveItem(key === 'Home' ? 'first' : 'last');
+                stopEvent();
+                break;
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                /* chips only exist in the dropdown main input */
+                if (!isMultilines && state.multiple && !state.searchText) {
+                    const direction = key === 'ArrowLeft' ? 'previous'
+                        : 'next';
+
+                    this.moveActiveChip(direction);
+                    stopEvent();
+                }
+                break;
+            case 'Delete':
+            case 'Backspace':
+                if (state.activeChipIdx >= 0) {
+                    this.removeActiveChip();
+                    stopEvent();
+                } else
+                if (state.searchText) {
+                    break;
+                } else
+                if (key === 'Backspace' && !isMultilines && state.multiple) {
+                    /* a first Backspace only highlights the last chip */
+                    this.moveActiveChip('previous');
+                    stopEvent();
+                } else
+                if (key === 'Delete' && !state.multiple
+                    && state.allowClearSelection)
+                {
+                    this.selectItem(null);
+                    stopEvent();
+                }
+                break;
+            default:
+                /* typeahead, only when there is no search input */
+                if (state.hideFilter && key.length === 1
+                    && !evt.ctrlKey && !evt.altKey && !evt.metaKey)
+                {
+                    this.typeahead(key);
+                    stopEvent();
+                }
+        }
+    }
+
+    /** Activate the option at the given index and ensure it will be
+     * rendered by the virtual list (which only renders a slice of the
+     * options, around offsetItem). */
+    private activateItemAt(idx: number) {
+        const state = this.state;
+        const marginSize = unref(this.marginSize);
+        const totalItems = Number.isFinite(state.totalFilteredOptions)
+            ? state.totalFilteredOptions
+            : state.filteredOptions.length;
+        /* Same formulas as the ones used by List to compute the slice of
+         * rendered options */
+        const endIndex = Math.min(state.offsetItem + marginSize, totalItems);
+        const startIndex = Math.max(0,
+            endIndex - this.data.itemsPerPage - 3 * marginSize);
+
+        if (idx < startIndex || idx >= endIndex) {
+            this.commit('offsetItem', idx + 1);
+        }
+
+        this.commit('activeItemIdx', idx);
+    }
+
+    /** First enabled option index from fromIdx to untilIdx (inclusive).
+     * Options not fetched yet are considered enabled. */
+    private findEnabledItem(fromIdx: number, untilIdx: number): number | null {
+        const options = this.state.filteredOptions;
+        const step = fromIdx <= untilIdx ? 1 : -1;
+        const stopIdx = untilIdx + step;
+
+        for (let idx = fromIdx; idx !== stopIdx; idx += step) {
+            if (!options[idx]?.disabled) {
+                return idx;
+            }
+        }
+
+        return null;
+    }
+
+    /* }}} */
+    /* {{{ ARIA ids */
+
+    /** Id of the listbox element (the list of options) */
+    public get listBoxId(): string {
+        return `selectic-${this._uid}-list`;
+    }
+
+    /** Id of an option element, given its index in the filtered list */
+    public optionId(idx: number): string {
+        return `selectic-${this._uid}-item-${idx}`;
+    }
+
+    /* }}} */
 
     public resetChange() {
         this.state.status.hasChanged = false;

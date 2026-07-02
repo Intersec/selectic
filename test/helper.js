@@ -4,6 +4,7 @@ const sleep = _.sleep;
 
 function getInitialState(replacedAttributes) {
     return _.deepExtend({
+        activeChipIdx: -1,
         activeItemIdx: -1,
         allOptions: [],
         allowClearSelection: false,
@@ -14,6 +15,7 @@ function getInitialState(replacedAttributes) {
         disableGroupSelection: false,
         dynOptions: [],
         filteredOptions: [],
+        footer: null,
         forceSelectAll: 'auto',
         groups: new Map(),
         hideFilter: false,
@@ -21,6 +23,7 @@ function getInitialState(replacedAttributes) {
         isOpen: false,
         keepFilterOpen: false,
         listPosition: 'auto',
+        multilines: false,
         multiple: false,
         offsetItem: 0,
         optionBehaviorOperation: 'sort',
