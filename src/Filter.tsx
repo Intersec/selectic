@@ -2,7 +2,7 @@
  * It manages all controls which can filter the data.
  */
 
-import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import {Vue, Component, Prop, h} from 'vtyx';
 
 import Store from './Store';
 import Icon from './Icon';
@@ -21,11 +21,6 @@ export default class FilterPanel extends Vue<Props> {
 
     @Prop()
     private store: Store;
-
-    /* }}} */
-    /* {{{ data */
-
-    private closed: boolean = true;
 
     /* }}} */
     /* {{{ computed */
@@ -51,7 +46,6 @@ export default class FilterPanel extends Vue<Props> {
                 return;
             }
 
-            this.closed = false;
             if (el) {
                 el.value += key;
                 this.store.commit('searchText', el.value);
@@ -65,37 +59,18 @@ export default class FilterPanel extends Vue<Props> {
         this.store.commit('searchText', el.value);
     }
 
-    private togglePanel() {
-        if (this.store.state.keepFilterOpen === true) {
-            this.closed = false;
-            return;
-        }
-        this.closed = !this.closed;
-    }
-
     private getFocus() {
         const el = this.$refs.filterInput;
-        if (!this.closed && el) {
+        if (el) {
             setTimeout(() => el.focus(), 0);
         }
-    }
-
-    /* }}} */
-    /* {{{ watch */
-
-    @Watch('closed')
-    public onClosed() {
-        this.getFocus();
     }
 
     /* }}} */
     /* {{{ Life cycle */
 
     public mounted() {
-        const state = this.store.state;
-        this.closed = !state.keepFilterOpen && !state.searchText;
         document.addEventListener('keypress', this.onKeyPressed);
-
         this.getFocus();
     }
 
@@ -106,49 +81,27 @@ export default class FilterPanel extends Vue<Props> {
     /* }}} */
 
     public render() {
-        const store = this.store;
-        const state = store.state;
+        const state = this.store.state;
 
         return (
             <div class="filter-panel">
-                <div
-                    class={{
-                        panelclosed: this.closed,
-                        panelopened: !this.closed,
-                    }}
-                >
-                    <div class="filter-panel__input form-group has-feedback">
-                        <input
-                            type="text"
-                            class="form-control filter-input"
-                            placeholder={this.searchPlaceholder}
-                            value={state.searchText}
-                            on={{
-                                'input.stop.prevent': this.onInput,
-                            }}
-                            ref="filterInput"
-                        />
-                        <Icon
-                            icon="search"
-                            store={this.store}
-                            class="selectic-search-scope form-control-feedback"
-                        />
-                    </div>
-                </div>
-
-                {!state.keepFilterOpen && (
-                <div class="curtain-handler"
-                     on={{
-                         'click.prevent.stop': this.togglePanel,
-                     }}
-                >
-                    <Icon icon="search" store={this.store} />
+                <div class="filter-panel__input form-group has-feedback">
+                    <input
+                        type="text"
+                        class="form-control filter-input"
+                        placeholder={this.searchPlaceholder}
+                        value={state.searchText}
+                        on={{
+                            'input.stop.prevent': this.onInput,
+                        }}
+                        ref="filterInput"
+                    />
                     <Icon
-                        icon={this.closed ? 'caret-down' : 'caret-up'}
+                        icon="search"
                         store={this.store}
+                        class="selectic-search-scope form-control-feedback"
                     />
                 </div>
-                )}
            </div>
         );
     }

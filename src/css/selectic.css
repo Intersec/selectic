@@ -326,47 +326,14 @@
     border-bottom: 1px solid var(--selectic-separator-bordercolor);
 }
 
-.selectic .panelclosed {
-    max-height: 0px;
-    transition: max-height 0.3s ease-out;
-    overflow: hidden;
-}
-
-.panelopened {
-    max-height: 200px;
-    transition: max-height 0.3s ease-in;
-    overflow: hidden;
-}
-
 .selectic .filter-panel__input {
     padding-left: 0px;
     padding-right: 0px;
-    padding-bottom: 10px;
     margin-bottom: 0px;
 }
 
 .selectic .filter-input {
     height: calc(var(--selectic-input-height) * 0.75);
-}
-
-.selectic .checkbox-filter {
-    padding: 5px;
-    text-align: center;
-}
-
-.selectic .curtain-handler {
-    text-align: center;
-}
-
-.selectic .toggle-selectic {
-    margin: 5px;
-    padding-left: 0px;
-    padding-right: 0px;
-}
-
-.selectic .toggle-boolean-select-all-toggle {
-    display: inline;
-    margin-right: 15px;
 }
 
 .selectic .toggle-boolean-excluding-toggle {
