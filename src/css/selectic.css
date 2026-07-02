@@ -226,6 +226,7 @@
 
 .selectic__extended-list__list-container{
     overflow: auto;
+    text-align: start;
 }
 
 .selectic__extended-list__list-items {
@@ -466,6 +467,28 @@
     flex-wrap: wrap;
 }
 
+/* {{{ multilines */
+
+/* When placed inside a flex container, the multilines list fills the available
+ * height and scrolls internally instead of growing unbounded. */
+.selectic--multilines {
+    display: flex;
+    flex-direction: column;
+}
+
+.selectic__multilines-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.selectic--multilines .selectic__extended-list__list-container {
+    flex: 1;
+    min-height: 0;
+}
+
+/* }}} */
 /* {{{ icons */
 
 @keyframes selectic-animation-spin {

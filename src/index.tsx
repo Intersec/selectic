@@ -49,6 +49,7 @@ import Store, {
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
+import MultilinesList from './MultilinesList';
 
 /* Export */
 export {
@@ -243,6 +244,13 @@ export interface Props {
      *  If false, the components closes (if it is opened). */
     open?: boolean;
 
+    /** If true, renders the list content inline (search bar + items)
+     *  instead of the standard input-with-dropdown layout.
+     *  A number switches the mode on too, and sets how many items the
+     *  inline list displays at once (like `params.displayedItems`, which
+     *  keeps the priority when both are given). */
+    multilines?: boolean | number;
+
     /** Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
@@ -324,6 +332,9 @@ export default class Selectic extends Vue<Props> {
     @Prop()
     public open?: boolean;
 
+    @Prop({default: false})
+    public multilines: boolean | number;
+
     @Prop({default: () => ({
         allowClearSelection: false,
         strictValue: false,
@@ -348,19 +359,55 @@ export default class Selectic extends Vue<Props> {
     public width = 0;
     private hasBeenRendered = false;
 
+    /** Multilines mode only: true while the DOM focus is inside the
+     * component (there is no dropdown lifecycle to rely on) */
+    private multilinesFocused = false;
+
     private store: Store = {} as Store;
 
     /* No observer */
     private _elementsListeners: Array<Element | Window>;
+    private _multilinesListeners?: {
+        el: HTMLElement;
+        focusin: () => void;
+        focusout: () => void;
+        pointerdown: (evt: Event) => void;
+        timer: number;
+    };
+    /** Multilines mode: whether the last pointer interaction started
+     * inside the component (see `checkMultilinesFocus`) */
+    private _pointerIsInside = false;
     private _oldValue: SelectedValue; /* old values in watcher are buggy :'( */
 
     /* }}} */
     /* {{{ computed */
 
+    /** The inline layout is on for `true` as well as for a number of items
+     * (`0` and `false` both keep the dropdown layout) */
+    get isMultilines(): boolean {
+        return !!this.multilines;
+    }
+
+    /** Number of items the inline list displays at once, when the mode is
+     * given as a number */
+    get multilinesItems(): number | undefined {
+        return typeof this.multilines === 'number' ? this.multilines
+                                                   : undefined;
+    }
+
     get isFocused() {
         if (!this.hasBeenRendered) {
             return false;
         }
+
+        /* the multilines list is always displayed: `isOpen` says nothing
+         * about the component being focused. It only drives `focus`/`blur`
+         * there: the value events do not depend on it (see
+         * `onInternalValueChange`). */
+        if (this.isMultilines) {
+            return this.multilinesFocused;
+        }
+
         return !!this.store.state.isOpen;
     }
 
@@ -594,6 +641,14 @@ export default class Selectic extends Vue<Props> {
         const store = this.store;
         const state = store.state;
 
+        /* The multilines mode only reports the focus: it has no edition
+         * cycle to delimit, so the value events do not go through here. */
+        if (this.isMultilines) {
+            this.emit(this.isFocused ? 'focus' : 'blur');
+
+            return;
+        }
+
         if (this.isFocused) {
             if (this.noCache) {
                 store.clearCache();
@@ -710,7 +765,11 @@ export default class Selectic extends Vue<Props> {
 
             this.emit('input', value, selectionIsExcluded);
 
-            if (!this.isFocused) {
+            /* In the dropdown mode `change` is deferred until the edition
+             * ends (the list closes). The multilines list is always
+             * displayed: there is no such moment, so `change` follows
+             * `input`, like a native `<select multiple size="N">` does. */
+            if (this.isMultilines || !this.isFocused) {
                 this.emit('change', value, selectionIsExcluded);
                 this.store.resetChange();
             }
@@ -721,6 +780,86 @@ export default class Selectic extends Vue<Props> {
 
     /* }}} */
     /* {{{ methods */
+
+    /** Multilines mode: follow the focus inside the component, the way
+     * `checkFocus` does for the dropdown mode.
+     *
+     * The DOM focus alone is not enough here: clicking an option only
+     * focuses the closest focusable ancestor, and Firefox and Safari do not
+     * focus a `<button>` on click. The pointer is therefore watched too, so
+     * that interacting with the list is not reported as a blur. */
+    private addMultilinesFocusListeners() {
+        const el = this.$el as HTMLElement | undefined;
+
+        if (!el) {
+            return;
+        }
+
+        const listeners = {
+            el,
+            timer: 0,
+            focusin: () => this.multilinesFocused = true,
+            focusout: () => {
+                clearTimeout(listeners.timer);
+                /* await the browser moving the focus to its new target */
+                listeners.timer = self.setTimeout(
+                    () => this.checkMultilinesFocus(el), 0);
+            },
+            pointerdown: (evt: Event) => {
+                this._pointerIsInside = el.contains(evt.target as Node);
+
+                if (this._pointerIsInside) {
+                    this.multilinesFocused = true;
+                }
+            },
+        };
+
+        this._multilinesListeners = listeners;
+
+        el.addEventListener('focusin', listeners.focusin);
+        el.addEventListener('focusout', listeners.focusout);
+        /* on document: it must also see the interactions started outside */
+        document.addEventListener('pointerdown', listeners.pointerdown, true);
+    }
+
+    private checkMultilinesFocus(el: HTMLElement) {
+        const focusedEl = document.activeElement;
+
+        /* the focus may just be moving between two elements of the
+         * component (search input, options, footer buttons) */
+        if (focusedEl && el.contains(focusedEl)) {
+            return;
+        }
+
+        /* Clicking an element which cannot be focused sends the focus back
+         * to the body: the user is still interacting with the component.
+         * Leaving with the keyboard focuses another element, so it is not
+         * mistaken for this case. */
+        if (this._pointerIsInside
+            && (!focusedEl || focusedEl === document.body))
+        {
+            return;
+        }
+
+        this.multilinesFocused = false;
+    }
+
+    private removeMultilinesFocusListeners() {
+        const listeners = this._multilinesListeners;
+
+        if (!listeners) {
+            return;
+        }
+
+        clearTimeout(listeners.timer);
+        /* the element is the one the listeners were added on: `this.$el`
+         * may already be gone when the component unmounts */
+        listeners.el.removeEventListener('focusin', listeners.focusin);
+        listeners.el.removeEventListener('focusout', listeners.focusout);
+        document.removeEventListener('pointerdown', listeners.pointerdown,
+                                     true);
+        this._multilinesListeners = undefined;
+    }
 
     private checkFocus() {
         /* Await that focused element becomes active */
@@ -775,12 +914,17 @@ export default class Selectic extends Vue<Props> {
                 break;
             case 'open':
             case 'focus':
-                this._emit('open', options);
+                /* there is no list to open in multilines mode */
+                if (!this.isMultilines) {
+                    this._emit('open', options);
+                }
                 this._emit('focus', options);
                 break;
             case 'close':
             case 'blur':
-                this._emit('close', options);
+                if (!this.isMultilines) {
+                    this._emit('close', options);
+                }
                 this._emit('blur', options);
                 break;
             case 'item:click':
@@ -881,109 +1025,44 @@ export default class Selectic extends Vue<Props> {
     //     return opt;
     // }
 
-    /* }}} */
-    /* {{{ Life cycle */
-
-    public created() {
-        this._elementsListeners = [];
-
-        this.store = new Store({
-            options: deepClone(this.options, ['data']),
-            value: deepClone(this.value),
-            selectionIsExcluded: this.selectionIsExcluded,
-            disabled: this.disabled,
-            texts: this.texts,
-            icons: this.icons,
-            iconFamily: this.iconFamily,
-            groups: deepClone(this.groups),
-            keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
-            params: {
-                multiple: (this.multiple ?? false) !== false,
-                pageSize: this.params.pageSize || 100,
-                hideFilter: this.params.hideFilter ?? 'auto',
-                allowRevert: this.params.allowRevert, /* it can be undefined */
-                forceSelectAll: this.params.forceSelectAll || 'auto',
-                allowClearSelection: this.params.allowClearSelection || false,
-                autoSelect: this.params.autoSelect === undefined
-                          ? !this.multiple && !this.params.fetchCallback
-                          : this.params.autoSelect,
-                autoDisabled: typeof this.params.autoDisabled === 'boolean'
-                            ? this.params.autoDisabled : true,
-                strictValue: this.params.strictValue || false,
-                selectionOverflow: this.params.selectionOverflow || 'collapsed',
-                placeholder: this.placeholder,
-                formatOption: this.params.formatOption,
-                formatSelection: this.params.formatSelection,
-                listPosition: this.params.listPosition || 'auto',
-                optionBehavior: this.params.optionBehavior, /* it can be undefined */
-                isOpen: (this.open ?? false) !== false,
-                disableGroupSelection: this.params.disableGroupSelection,
-                footer: this.params.footer,
-            },
-            fetchCallback: this.params.fetchCallback,
-            getItemsCallback: this.params.getItemsCallback,
-        });
-
-        if (typeof this._getMethods === 'function') {
-            this._getMethods({
-                clearCache: this.clearCache.bind(this),
-                changeTexts: this.changeTexts.bind(this),
-                changeIcons: this.changeIcons.bind(this),
-                getValue: this.getValue.bind(this),
-                getSelectedItems: this.getSelectedItems.bind(this),
-                isEmpty: this.isEmpty.bind(this),
-                toggleOpen: this.toggleOpen.bind(this),
-            });
-        }
+    private renderMultilines(id: string | undefined, store: Store) {
+        return (
+            <div
+                class={[...this.selecticClass, 'selectic--multilines']}
+                title={this.title}
+                data-selectic="true"
+            >
+                <input
+                    type="text"
+                    id={id}
+                    value={this.inputValue}
+                    class="selectic__input-value"
+                />
+                <MultilinesList
+                    store={store}
+                    on={{
+                        'footer:selectAll': () => this.emit('footer:selectAll'),
+                        'footer:invertSelection': () => this.emit('footer:invertSelection'),
+                        'footer:clearFilter': () => this.emit('footer:clearFilter'),
+                        'footer:apply': () => this.emit('footer:apply'),
+                    }}
+                >
+                    {this.$slots.custom && (
+                        <div slot="custom">
+                            {this.$slots.custom()}
+                        </div>
+                    )}
+                    {this.$slots.listFooter && (
+                        <div slot="listFooter">
+                            {this.$slots.listFooter()}
+                        </div>
+                    )}
+                </MultilinesList>
+            </div>
+        );
     }
 
-    public mounted() {
-        setTimeout(() => {
-            this.hasBeenRendered = true;
-            this.computeOffset();
-        }, 100);
-    }
-
-    public beforeUpdate() {
-        // const elements = this.$slots.default;
-        // if (!elements) {
-        //     this.store.childOptions = [];
-        //     return;
-        // }
-        // const options = [];
-
-        // for (const node of elements) {
-        //     if (node.tag === 'option') {
-        //         const prop = this.extractOptionFromNode(node);
-        //         options.push(prop);
-        //     } else
-        //     if (node.tag === 'optgroup') {
-        //         const prop = this.extractOptgroupFromNode(node);
-        //         options.push(prop);
-        //     }
-        // }
-
-        // this.store.childOptions = options;
-    }
-
-    public beforeUnmount() {
-        this.removeListeners();
-    }
-
-    /* }}} */
-
-    @Emits([
-        'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
-        'footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply',
-    ])
-    public render() {
-        const id = this.id || undefined;
-        const store = this.store;
-
-        if (!store.state) {
-            return; /* component is not ready yet */
-        }
-
+    private renderDefault(id: string | undefined, store: Store) {
         return (
             <div
                 class={this.selecticClass}
@@ -1038,5 +1117,121 @@ export default class Selectic extends Vue<Props> {
               )}
             </div>
         );
+    }
+
+    /* }}} */
+    /* {{{ Life cycle */
+
+    public created() {
+        this._elementsListeners = [];
+
+        this.store = new Store({
+            options: deepClone(this.options, ['data']),
+            value: deepClone(this.value),
+            selectionIsExcluded: this.selectionIsExcluded,
+            disabled: this.disabled,
+            texts: this.texts,
+            icons: this.icons,
+            iconFamily: this.iconFamily,
+            groups: deepClone(this.groups),
+            keepOpenWithOtherSelectic: !!this.params.keepOpenWithOtherSelectic,
+            params: {
+                multiple: (this.multiple ?? false) !== false,
+                pageSize: this.params.pageSize || 100,
+                hideFilter: this.params.hideFilter ?? 'auto',
+                allowRevert: this.params.allowRevert, /* it can be undefined */
+                forceSelectAll: this.params.forceSelectAll || 'auto',
+                allowClearSelection: this.params.allowClearSelection || false,
+                autoSelect: this.params.autoSelect === undefined
+                          ? !this.multiple && !this.params.fetchCallback
+                          : this.params.autoSelect,
+                autoDisabled: typeof this.params.autoDisabled === 'boolean'
+                            ? this.params.autoDisabled : true,
+                strictValue: this.params.strictValue || false,
+                selectionOverflow: this.params.selectionOverflow || 'collapsed',
+                placeholder: this.placeholder,
+                formatOption: this.params.formatOption,
+                formatSelection: this.params.formatSelection,
+                listPosition: this.params.listPosition || 'auto',
+                optionBehavior: this.params.optionBehavior, /* it can be undefined */
+                isOpen: (this.open ?? false) !== false,
+                multilines: this.isMultilines,
+                disableGroupSelection: this.params.disableGroupSelection,
+                footer: this.params.footer,
+            },
+            fetchCallback: this.params.fetchCallback,
+            getItemsCallback: this.params.getItemsCallback,
+        });
+
+        if (typeof this._getMethods === 'function') {
+            this._getMethods({
+                clearCache: this.clearCache.bind(this),
+                changeTexts: this.changeTexts.bind(this),
+                changeIcons: this.changeIcons.bind(this),
+                getValue: this.getValue.bind(this),
+                getSelectedItems: this.getSelectedItems.bind(this),
+                isEmpty: this.isEmpty.bind(this),
+                toggleOpen: this.toggleOpen.bind(this),
+            });
+        }
+    }
+
+    public mounted() {
+        setTimeout(() => {
+            this.hasBeenRendered = true;
+            this.computeOffset();
+        }, 100);
+
+        if (this.isMultilines) {
+            this.addMultilinesFocusListeners();
+        }
+    }
+
+    public beforeUpdate() {
+        // const elements = this.$slots.default;
+        // if (!elements) {
+        //     this.store.childOptions = [];
+        //     return;
+        // }
+        // const options = [];
+
+        // for (const node of elements) {
+        //     if (node.tag === 'option') {
+        //         const prop = this.extractOptionFromNode(node);
+        //         options.push(prop);
+        //     } else
+        //     if (node.tag === 'optgroup') {
+        //         const prop = this.extractOptgroupFromNode(node);
+        //         options.push(prop);
+        //     }
+        // }
+
+        // this.store.childOptions = options;
+    }
+
+    public beforeUnmount() {
+        this.removeListeners();
+        this.removeMultilinesFocusListeners();
+    }
+
+    /* }}} */
+
+    @Emits([
+        'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
+        'footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply',
+    ])
+    public render() {
+        const id = this.id || undefined;
+        const store = this.store;
+
+        if (!store.state) {
+            return; /* component is not ready yet */
+        }
+
+        if (this.isMultilines) {
+            return this.renderMultilines(id, store);
+        }
+
+        return this.renderDefault(id, store);
     }
 }

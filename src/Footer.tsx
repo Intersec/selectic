@@ -43,6 +43,12 @@ export default class Footer extends Vue<Props> {
         return !unref(this.store.hasAllItems);
     }
 
+    /** In multilines mode the footer is rendered even when the component is
+     * disabled: none of its actions must be reachable then. */
+    get isDisabled(): boolean {
+        return this.store.state.disabled;
+    }
+
     get enableRevert(): boolean {
         const state = this.store.state;
         return state.multiple && state.allowRevert !== false;
@@ -59,7 +65,8 @@ export default class Footer extends Vue<Props> {
         const hasNoItems = state.filteredOptions.length === 0;
         const canNotSelect = this.hasNotAllItems && !!state.searchText;
 
-        return !state.multiple || hasNoItems || canNotSelect || this.disabledPartialData;
+        return this.isDisabled || !state.multiple || hasNoItems
+            || canNotSelect || this.disabledPartialData;
     }
 
     get titleSelectAll(): string {
@@ -70,7 +77,8 @@ export default class Footer extends Vue<Props> {
     }
 
     get disableRevert(): boolean {
-        return !this.store.state.multiple || !unref(this.store.hasFetchedAllItems);
+        return this.isDisabled || !this.store.state.multiple
+            || !unref(this.store.hasFetchedAllItems);
     }
 
     /* }}} */
@@ -195,7 +203,7 @@ export default class Footer extends Vue<Props> {
                         <button
                             type="button"
                             class="selectic__footer-btn selectic__footer-btn--secondary"
-                            disabled={!!clearCfg.disabled}
+                            disabled={!!clearCfg.disabled || this.isDisabled}
                             title={clearCfg.title}
                             on={{
                                 'click.stop.prevent': () => this.$emit('clearFilter'),
@@ -208,7 +216,7 @@ export default class Footer extends Vue<Props> {
                         <button
                             type="button"
                             class="selectic__footer-btn selectic__footer-btn--primary"
-                            disabled={!!applyCfg.disabled}
+                            disabled={!!applyCfg.disabled || this.isDisabled}
                             title={applyCfg.title}
                             on={{
                                 'click.stop.prevent': () => this.$emit('apply'),

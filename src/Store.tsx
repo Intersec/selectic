@@ -205,6 +205,11 @@ export interface SelecticStoreStateParams {
     /** If true, the component is open at start */
     isOpen?: boolean;
 
+    /** If true, the list is always displayed inline instead of a dropdown.
+     * Since there is no open/close interaction in this mode, filtered
+     * options are built regardless of `isOpen`. */
+    multilines?: boolean;
+
     /** Avoid selecting all items when clicking on group's header */
     disableGroupSelection?: boolean;
 
@@ -327,6 +332,9 @@ export interface SelecticStoreState {
 
     /** If true, the list is displayed */
     isOpen: boolean;
+
+    /** If true, the list is always displayed inline instead of a dropdown */
+    multilines: boolean;
 
     /** Text entered by user to look for options */
     searchText: string;
@@ -605,6 +613,7 @@ export default class SelecticStore {
             hideFilter: false,
             internalValue: null,
             isOpen: false,
+            multilines: false,
             keepFilterOpen: false,
             listPosition: 'auto',
             multiple: false,
@@ -1526,8 +1535,10 @@ export default class SelecticStore {
     private async buildFilteredOptions() {
         const state = this.state;
 
-        if (!state.isOpen) {
-            /* Do not try to fetch anything while the select is not open */
+        if (!state.isOpen && !state.multilines) {
+            /* Do not try to fetch anything while the select is not open.
+             * Multilines mode has no open/close interaction, so it must
+             * always be allowed to build its filtered options. */
             return;
         }
 

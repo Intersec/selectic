@@ -140,7 +140,9 @@ export default class List extends Vue<Props> {
     /* {{{ methods */
 
     private click(option: OptionItem) {
-        if (option.disabled) {
+        /* `state.disabled` is checked here because in multilines mode the
+         * list is always rendered: there is no `isOpen` lock to rely on. */
+        if (option.disabled || this.store.state.disabled) {
             return;
         }
         if (option.isGroup) {

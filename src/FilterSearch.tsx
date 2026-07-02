@@ -53,7 +53,7 @@ export default class FilterSearch extends Vue<Props> {
         const key = evt.key;
 
         /* handle only printable characters */
-        if (key.length === 1) {
+        if (key.length === 1 && !this.store.state.disabled) {
             const el = this.$refs.filterInput;
 
             if (el === evt.target) {
@@ -108,6 +108,7 @@ export default class FilterSearch extends Vue<Props> {
                     class="form-control filter-input"
                     placeholder={this.searchPlaceholder}
                     value={state.searchText}
+                    disabled={state.disabled}
                     on={{
                         'input.stop.prevent': this.onInput,
                     }}
