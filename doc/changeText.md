@@ -43,6 +43,10 @@ It is possible to replace only some sentences.
 
 * **clearSelections**: This is a message displayed in title of the icon to remove all selected options from the selection list. _Default value is `'Clear all selections'`_.
 
+* **removeSelectedItem**: This is the message displayed in title of the icon to remove a selected option (in multiple mode), and announced to screen readers while navigating through the selected options with keyboard. `%s` is replaced by the option text. _Default value is `'Remove %s'`_.
+
+* **groupRoleDescription**: This is how screen readers describe a group header in the options list (instead of "option"). _Default value is `'group'`_.
+
 * **wrongFormattedData**: This is an error message displayed when result from the `fetchCallback` is not in correct format. _Default value is `'The data fetched is not correctly formatted.'`_.
 
 * **moreSelectedItem**: This is a message displayed in a badge if there are one selected option more than the size of the component. _Default value is `'+1 other'`_.

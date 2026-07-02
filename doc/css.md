@@ -85,3 +85,7 @@ body {
 * **--selectic-error-color** _(default: `#ffffff`)_: Text color of information messages (like when fetch is failing).
 
 * **--selectic-error-bg** _(default: `#b72c29`)_: Background color of error messages (like when fetch is failing).
+
+### Accessibility
+
+* **--selectic-focus-outline-color** _(default: `#66afe9`)_: Color of the keyboard focus indicator (outline of the focused element and of the active selected item in multiple mode).

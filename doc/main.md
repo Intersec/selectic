@@ -47,6 +47,14 @@
 * isEmpty
 * toggleOpen
 
+## Accessibility
+
+[Screen reader and keyboard support](./accessibility.md)
+
+* ARIA semantic (combobox / listbox)
+* keyboard support
+* naming the component
+
 ## Breaking changes
 
 [Migration strategy](./breakingChanges.md)
