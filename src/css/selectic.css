@@ -51,6 +51,16 @@
     /* XXX: Currently it is important to keep this size for a correct scroll
      * height estimation */
     --selectic-input-height: 30px;
+
+    /* Height of an item row in the opened list.
+     * XXX: this is only a fallback; the effective value is set inline from
+     * `itemHeight` in List.tsx, so it cannot be overridden from CSS. */
+    --selectic-item-height: calc(var(--selectic-input-height) - 3px);
+
+    /* Number of items displayed at once in the opened list.
+     * XXX: the effective value is set inline from the `displayedItems` param,
+     * so it cannot be overridden from CSS. */
+    --selectic-items-number: 10;
 }
 
 /* }}} */
@@ -230,7 +240,7 @@
 }
 
 .selectic__extended-list__list-items {
-    max-height: calc(var(--selectic-input-height) * 10);
+    max-height: calc(var(--selectic-item-height) * var(--selectic-items-number));
     min-width: max-content;
     padding-left: 0;
 }
@@ -241,7 +251,7 @@
     box-sizing: border-box;
     padding: 2px 8px;
     color: var(--selectic-item-color, var(--selectic-color));
-    min-height: calc(var(--selectic-input-height) - 3px);
+    min-height: var(--selectic-item-height);
     list-style-type: none;
     white-space: nowrap;
     cursor: pointer;

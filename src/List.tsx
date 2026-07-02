@@ -257,6 +257,10 @@ export default class List extends Vue<Props> {
             >
                 <ul
                     class="selectic__extended-list__list-items"
+                    style={
+                        `--selectic-items-number:${this.store.data.itemsPerPage};
+                        --selectic-item-height:${this.itemHeight}px;`
+                    }
                 >
                 {!!this.topOffset && (
                     <li

@@ -112,6 +112,8 @@ export interface SelecticStoreStateParams {
     /** Number of items to retrieve in fetch request  (it is possible
      * to fetch more items at once if several pages are requested) */
     pageSize?: number;
+    /** Number of items displayed at once in the opened list (default: 10) */
+    displayedItems?: number;
     /** Select the first available option */
     autoSelect?: boolean;
     /** Disable the select if only one option is given and must be selected. */

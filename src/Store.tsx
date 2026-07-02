@@ -168,6 +168,9 @@ export interface SelecticStoreStateParams {
      * to fetch more items at once if several pages are requested) */
     pageSize?: number;
 
+    /** Number of items displayed at once in the opened list (default: 10) */
+    displayedItems?: number;
+
     /** Select the first available option */
     autoSelect?: boolean;
 
@@ -532,6 +535,9 @@ let closePreviousSelectic: undefined | voidCaller;
  */
 const DEBOUNCE_REQUEST = 250;
 
+/* Minimum number of items displayed at once in the opened list. */
+const MIN_DISPLAYED_ITEMS = 2;
+
 /* }}} */
 
 let uid = 0;
@@ -795,6 +801,15 @@ export default class SelecticStore {
             this.state.keepFilterOpen = true;
             delete stateParam.hideFilter;
         }
+
+        /* `Number.isFinite` and not `typeof`: NaN and Infinity are numbers
+         * too, and would break the CSS height and the pagination */
+        if (Number.isFinite(stateParam.displayedItems)) {
+            /* keep a minimum so the list stays usable */
+            this.data.itemsPerPage = Math.max(MIN_DISPLAYED_ITEMS,
+                stateParam.displayedItems as number);
+        }
+        delete stateParam.displayedItems;
 
         /* Update state */
         assignObject(this.state, stateParam as SelecticStoreState);

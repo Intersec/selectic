@@ -23,6 +23,8 @@ export interface ParamProps {
      * are going to be requested.
      */
     pageSize?: number;
+    /** Number of items displayed at once in the opened list (default: 10) */
+    displayedItems?: number;
     /** Hide the search control */
     hideFilter?: HideFilter;
     /** Allow to reverse selection.

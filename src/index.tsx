@@ -107,6 +107,9 @@ export interface ParamProps {
      */
     pageSize?: number;
 
+    /** Number of items displayed at once in the opened list (default: 10) */
+    displayedItems?: number;
+
     /** Hide the search control */
     hideFilter?: HideFilter;
 
@@ -1138,6 +1141,11 @@ export default class Selectic extends Vue<Props> {
             params: {
                 multiple: (this.multiple ?? false) !== false,
                 pageSize: this.params.pageSize || 100,
+                /* it can be undefined (defaults to 10 in the store).
+                 * `multilines: <number>` is a shortcut for it, which the
+                 * dedicated parameter overrides when both are given. */
+                displayedItems: this.params.displayedItems
+                             ?? this.multilinesItems,
                 hideFilter: this.params.hideFilter ?? 'auto',
                 allowRevert: this.params.allowRevert, /* it can be undefined */
                 forceSelectAll: this.params.forceSelectAll || 'auto',

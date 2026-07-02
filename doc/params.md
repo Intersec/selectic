@@ -21,6 +21,7 @@ This property is an object with several attributes which are listed below.
 * [formatSelection](params.md#formatselection)
 * [getItemsCallback](params.md#getitemscallback)
 * [hideFilter](params.md#hidefilter)
+* [displayedItems](params.md#displayedItems)
 * [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
 * [listPosition](params.md#listposition)
 * [optionBehavior](params.md#optionbehavior)
@@ -403,6 +404,27 @@ Display only one source (the first which is not empty).
 />
 ```
 
+## displayedItems
+
+Type: `number`
+
+`displayedItems` is the number of options displayed at once in the opened list before scrolling.
+
+This value is an order of magnitude, not an exact count: a small part of the next option can still be visible.
+
+The minimum value is `2`; any smaller value is raised to `2`.
+
+_`displayedItems` default value is `10`._
+
+```html
+<selectic
+    :params="{
+        displayedItems: 20,
+    }"
+    :options="optionList"
+/>
+```
+
 ## pageSize
 
 Type: `number`
@@ -413,7 +435,7 @@ By changing this value you can optimize performance result (more or less request
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-Selectic displays 10 options at a time, but it will call for a new request as soon as the last option index reach the half of page size.
+Selectic displays [displayedItems](params.md#displayedItems) options at a time (10 by default), but it will call for a new request as soon as the last option index reach the half of page size.
 
 _`pageSize` default value is `100`._
 
