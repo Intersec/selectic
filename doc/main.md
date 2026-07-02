@@ -29,12 +29,14 @@
 * focus
 * blur
 * item:click
+* footer:selectAll, footer:invertSelection, footer:clearFilter, footer:apply
 
 ## Slots
 
 [Slots details](./slots.md)
 
 * listFooter
+* custom (multilines mode)
 
 ## Methods
 

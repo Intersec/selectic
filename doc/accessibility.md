@@ -84,6 +84,14 @@ listbox itself takes the focus and carries `aria-activedescendant`. The
 keyboard support is the same as above, except `Escape` (nothing to close)
 and the chips navigation (selected options are visible in the list).
 
+The component reports entering and leaving with the `focus` and `blur`
+events. Moving the focus between the search input, the options and the
+footer buttons stays inside the component and emits nothing. Clicking an
+option does not always move the DOM focus (Firefox and Safari do not focus
+every element on click), so the pointer is watched as well: interacting
+with the list is never reported as a blur. See
+[the events of the mode](extendedProperties.md#events).
+
 ## Footer
 
 The footer actions (displayed in multiple mode, or with the `footer`

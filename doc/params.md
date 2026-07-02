@@ -412,7 +412,9 @@ Type: `number`
 
 This value is an order of magnitude, not an exact count: a small part of the next option can still be visible.
 
-The minimum value is `2`; any smaller value is raised to `2`.
+The minimum value is `2`; any smaller value is raised to `2`. Values which are not finite numbers (like `NaN`) are ignored.
+
+In [multilines](extendedProperties.md#multilines) mode the property can carry the value directly (`:multilines="5"`); `displayedItems` takes precedence when both are given.
 
 _`displayedItems` default value is `10`._
 

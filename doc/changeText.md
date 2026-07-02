@@ -33,6 +33,16 @@ It is possible to replace only some sentences.
 
 * **excludeResult**: The name of the action to invert the selection. _Default value is `'Invert selection'`_.
 
+* **footerSelectAll**: The label of the _Select all_ button in the [footer](extendedProperties.md#footer). _Default value is `'Select all'`_.
+
+* **footerUnselectAll**: The label of the _Select all_ button when all items are already selected. _Default value is `'Unselect all'`_.
+
+* **footerInvertSelection**: The label of the _Invert selection_ button in the [footer](extendedProperties.md#footer). _Default value is `'Invert selection'`_.
+
+* **footerClearFilter**: The label of the _Clear filter_ button in the [footer](extendedProperties.md#footer). _Default value is `'Clear filter'`_.
+
+* **footerApply**: The label of the _Apply_ button in the [footer](extendedProperties.md#footer). _Default value is `'Apply'`_.
+
 * **reverseSelection**: The title displayed on icon which means that selection is inverted. _Default value is `'The displayed elements are those not selected.'`_.
 
 * **noData**: This is an information message when there are no options. _Default value is `'No data'`_.

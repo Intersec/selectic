@@ -15,7 +15,9 @@ applied on main element and on the list element)
 
 ## Extended properties
 
+* [footer](extendedProperties.md#footer)
 * [groups](extendedProperties.md#groups)
+* [multilines](extendedProperties.md#multilines)
 * [noCache](extendedProperties.md#nocache)
 * [open](extendedProperties.md#open)
 * [options](extendedProperties.md#options)
