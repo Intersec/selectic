@@ -23,6 +23,8 @@ It is possible to replace only some sentences.
 
 * **searchPlaceholder**: This is the message in the input placeholder to search for options. _Default value is `'Search'`_.
 
+* **clearSearch**: This is the accessible name (and the tooltip) of the button which empties the search input. It is displayed in place of the magnifier as soon as a search text is typed. _Default value is `'Clear the search'`_.
+
 * **searching**: This is an information message displayed in options when it is not fetched yet._Default value is `'Searching'`_.
 
 * **cannotSelectAllSearchedItems**: This is an error message displayed if the action _select all_ is triggered but all options are not fetched and `allowRevert` property is not set to `true`. _Default value is `'Cannot select all items: too much items in the search result.'`_.

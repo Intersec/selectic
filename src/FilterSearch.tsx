@@ -1,0 +1,139 @@
+/* File Purpose:
+ * It renders the search input used by MultilinesList.
+ */
+
+import {Vue, Component, Prop, h} from 'vtyx';
+
+import Store from './Store';
+import Icon from './Icon';
+
+export interface Props {
+    store: Store;
+    onOpen?: () => void;
+}
+
+@Component
+export default class FilterSearch extends Vue<Props> {
+    public $refs: {
+        filterInput: HTMLInputElement;
+    };
+
+    /* {{{ props */
+
+    @Prop()
+    private store: Store;
+
+    @Prop()
+    private onOpen?: () => void;
+
+    /* }}} */
+    /* {{{ computed */
+
+    get searchPlaceholder(): string {
+        return this.store.data.labels.searchPlaceholder;
+    }
+
+    get clearSearchLabel(): string {
+        return this.store.data.labels.clearSearch;
+    }
+
+    /** The clear action is only offered when there is something to clear */
+    get hasSearch(): boolean {
+        return !!this.store.state.searchText;
+    }
+
+    get onKeyPressed() {
+        return this.keypressed.bind(this);
+    }
+
+    /* }}} */
+    /* {{{ methods */
+
+    private keypressed(evt: KeyboardEvent) {
+        const key = evt.key;
+
+        /* handle only printable characters */
+        if (key.length === 1) {
+            const el = this.$refs.filterInput;
+
+            if (el === evt.target) {
+                return;
+            }
+
+            this.onOpen?.();
+
+            if (el) {
+                el.value += key;
+                this.store.commit('searchText', el.value);
+            }
+            this.focus();
+        }
+    }
+
+    private clearSearch() {
+        this.store.commit('searchText', '');
+        this.focus();
+    }
+
+    private onInput(evt: Event) {
+        const el = evt.currentTarget as HTMLInputElement;
+        this.store.commit('searchText', el.value);
+    }
+
+    public focus() {
+        setTimeout(() => this.$refs.filterInput?.focus(), 0);
+    }
+
+    /* }}} */
+    /* {{{ Life cycle */
+
+    public mounted() {
+        document.addEventListener('keypress', this.onKeyPressed);
+    }
+
+    public unmounted() {
+        document.removeEventListener('keypress', this.onKeyPressed);
+    }
+
+    /* }}} */
+
+    public render() {
+        const store = this.store;
+        const state = store.state;
+
+        return (
+            <div class="filter-panel__input form-group has-feedback">
+                <input
+                    type="text"
+                    class="form-control filter-input"
+                    placeholder={this.searchPlaceholder}
+                    value={state.searchText}
+                    on={{
+                        'input.stop.prevent': this.onInput,
+                    }}
+                    ref="filterInput"
+                />
+                {this.hasSearch ? (
+                    <button
+                        type="button"
+                        class="selectic-search-clear form-control-feedback"
+                        title={this.clearSearchLabel}
+                        aria-label={this.clearSearchLabel}
+                        disabled={state.disabled}
+                        on={{
+                            'click.stop.prevent': this.clearSearch,
+                        }}
+                    >
+                        <Icon icon="times" store={store} />
+                    </button>
+                ) : (
+                    <Icon
+                        icon="search"
+                        store={store}
+                        class="selectic-search-scope form-control-feedback"
+                    />
+                )}
+            </div>
+        );
+    }
+}

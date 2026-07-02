@@ -303,14 +303,45 @@
 
 .selectic-search-scope {
     color: #e0e0e0;
-    left: auto;
-    right: 10px;
 }
 
-.selectic .form-control-feedback.fa.selectic-search-scope {
+/* Both icons are drawn at the height of the search input, and centered in
+ * the area the input reserves on its right (the `padding-right` of
+ * `.has-feedback .form-control`).
+ * XXX: the selector must not be restricted to `.fa`: with the default
+ * (`selectic`) family the icon is an inline SVG, whose width and height
+ * are the drawn size, so it would keep the size of the feedback box. */
+.selectic .form-control-feedback.selectic-search-scope,
+.selectic .form-control-feedback.selectic-search-clear {
     width: calc(var(--selectic-input-height) * 0.75);
     height: calc(var(--selectic-input-height) * 0.75);
     line-height: calc(var(--selectic-input-height) * 0.75);
+    left: auto;
+    right: calc((var(--selectic-input-height) + 4px
+                 - var(--selectic-input-height) * 0.75) / 2);
+}
+
+/* The clear icon is drawn inside a button (`.form-control-feedback` is
+ * neither clickable nor a flow container by default) */
+.selectic .selectic-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--selectic-color);
+    cursor: pointer;
+}
+
+.selectic .selectic-search-clear:disabled {
+    cursor: var(--selectic-cursor-disabled);
+    opacity: 0.5;
+}
+
+.selectic .selectic-search-clear:hover {
+    color: var(--selectic-selected-item-color);
 }
 
 .selectic__message {

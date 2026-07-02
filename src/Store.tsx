@@ -444,6 +444,7 @@ export type PartialIcons = { [K in IconKey]?: Icons[K] };
 interface Messages {
     noFetchMethod: string;
     searchPlaceholder: string;
+    clearSearch: string;
     searching: string;
     cannotSelectAllSearchedItems: string;
     cannotSelectAllRevertItems: string;
@@ -488,6 +489,7 @@ export function changeIcons(newIcons: PartialIcons, newFamilyIcon?: IconFamily) 
 let messages: Messages = {
     noFetchMethod: 'Fetch callback is missing: it is not possible to retrieve data.',
     searchPlaceholder: 'Search',
+    clearSearch: 'Clear the search',
     searching: 'Searching',
     cannotSelectAllSearchedItems: 'Cannot select all items: too much items in the search result.',
     cannotSelectAllRevertItems: 'Cannot select all items: some items are not fetched yet.',
