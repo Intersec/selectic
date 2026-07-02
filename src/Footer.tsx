@@ -106,17 +106,13 @@ export default class Footer extends Vue<Props> {
         return config;
     }
 
-    private getLabel(
+    private getLabelFor(
         key: LinkKey | ButtonKey,
         fallback: 'footerSelectAll' | 'footerInvertSelection' | 'footerClearFilter' | 'footerApply',
+        isActive: boolean,
     ): string {
         const config = this.getConfig(key);
-        const state = this.store.state;
         const labels = this.store.data.labels;
-
-        const isActive =
-            (key === 'selectAll' && state.status.areAllSelected) ||
-            (key === 'invertSelection' && state.selectionIsExcluded);
 
         if (isActive && config?.textActive) {
             return config.textActive;
@@ -128,6 +124,35 @@ export default class Footer extends Vue<Props> {
             return labels.footerUnselectAll;
         }
         return labels[fallback];
+    }
+
+    private getLabel(
+        key: LinkKey | ButtonKey,
+        fallback: 'footerSelectAll' | 'footerInvertSelection' | 'footerClearFilter' | 'footerApply',
+    ): string {
+        const state = this.store.state;
+        const isActive =
+            (key === 'selectAll' && state.status.areAllSelected) ||
+            (key === 'invertSelection' && state.selectionIsExcluded);
+
+        return this.getLabelFor(key, fallback, isActive);
+    }
+
+    /** aria-pressed is only set when the label does not already announce
+     * the state (a label describing the opposite action must not be
+     * combined with a pressed state) */
+    private togglePressed(
+        key: LinkKey,
+        fallback: 'footerSelectAll' | 'footerInvertSelection',
+        isActive: boolean,
+    ): 'true' | 'false' | undefined {
+        if (this.getLabelFor(key, fallback, true)
+            !== this.getLabelFor(key, fallback, false))
+        {
+            return;
+        }
+
+        return isActive ? 'true' : 'false';
     }
 
     private onSelectAll() {
@@ -175,6 +200,8 @@ export default class Footer extends Vue<Props> {
                             }]}
                             disabled={selectAllDisabled}
                             title={selectAllCfg.title ?? this.titleSelectAll}
+                            aria-pressed={this.togglePressed('selectAll',
+                                'footerSelectAll', state.status.areAllSelected)}
                             on={{
                                 'click.stop.prevent': this.onSelectAll,
                             }}
@@ -190,6 +217,8 @@ export default class Footer extends Vue<Props> {
                             }]}
                             disabled={invertDisabled}
                             title={invertCfg.title}
+                            aria-pressed={this.togglePressed('invertSelection',
+                                'footerInvertSelection', state.selectionIsExcluded)}
                             on={{
                                 'click.stop.prevent': this.onInvertSelection,
                             }}

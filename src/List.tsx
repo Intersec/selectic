@@ -16,18 +16,26 @@ import { isDeepEqual } from './tools';
 
 export interface Props {
     store: Store;
+
+    /** If true, the listbox itself can take the DOM focus (used in
+     * multilines mode when there is no search input) */
+    focusable?: boolean;
 }
 
 @Component
 export default class List extends Vue<Props> {
     public $refs: {
         elList: HTMLDivElement;
+        listItems: HTMLUListElement;
     };
 
     /* {{{ props */
 
     @Prop()
     private store: Store;
+
+    @Prop({default: false})
+    private focusable: boolean;
 
     /* }}} */
     /* {{{ data */
@@ -45,6 +53,10 @@ export default class List extends Vue<Props> {
 
     get isMultiple() {
         return this.store.state.multiple;
+    }
+
+    get isDisabled() {
+        return this.store.state.disabled;
     }
 
     get itemsMargin(): number {
@@ -122,6 +134,16 @@ export default class List extends Vue<Props> {
         return (item: OptionItem) => item;
     }
 
+    get activeDescendant(): string | undefined {
+        const activeItemIdx = this.store.state.activeItemIdx;
+
+        if (!this.focusable || activeItemIdx < 0) {
+            return;
+        }
+
+        return this.store.optionId(activeItemIdx);
+    }
+
     get debounce() {
         let callId = 0;
 
@@ -183,6 +205,11 @@ export default class List extends Vue<Props> {
         }
 
         this.store.commit('activeItemIdx', idx + this.startIndex);
+    }
+
+    /** Move the DOM focus to the listbox (when it is focusable) */
+    public focus() {
+        this.$refs.listItems?.focus();
     }
 
     /* }}} */
@@ -250,6 +277,9 @@ export default class List extends Vue<Props> {
         return (
             <div
                 class="selectic__extended-list__list-container"
+                /* scrollable elements are focusable by default in some
+                 * browsers; the list is driven with arrow keys */
+                tabIndex={-1}
                 on={{
                     scroll: this.checkOffset,
                 }}
@@ -261,46 +291,70 @@ export default class List extends Vue<Props> {
                         `--selectic-items-number:${this.store.data.itemsPerPage};
                         --selectic-item-height:${this.itemHeight}px;`
                     }
+                    id={this.store.listBoxId}
+                    role="listbox"
+                    aria-multiselectable={this.isMultiple ? 'true' : undefined}
+                    tabIndex={this.focusable && !this.isDisabled ? 0 : undefined}
+                    aria-disabled={this.isDisabled ? 'true' : undefined}
+                    aria-activedescendant={this.activeDescendant}
+                    ref="listItems"
                 >
                 {!!this.topOffset && (
                     <li
                         class="selectic-item"
                         style={`height:${this.topOffset}px;`}
+                        role="presentation"
+                        aria-hidden="true"
                     ></li>
                 )}
-                {this.shortOptions.map((option, idx) => (
-                    <li
-                        on={{
-                            'click.prevent.stop': () => this.click(option),
-                            'mouseover': () => this.onMouseOver(idx),
-                        }}
-                        class={['selectic-item', option.className || '', {
-                            'selected': option.selected,
-                            'selectable': unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
-                            'selectic-item__active': idx + this.startIndex === this.store.state.activeItemIdx,
-                            'selectic-item__disabled': !!option.disabled,
-                            'selectic-item__exclusive': !!option.exclusive,
-                            'selectic-item__is-in-group': !!option.group,
-                            'selectic-item__is-group': option.isGroup,
-                        }]}
-                        style={option.style}
-                        title={option.title}
-                        key={'selectic-item-' + (idx + this.startIndex)}
-                    >
-                    {this.isMultiple && (
-                        <Icon icon="check" store={this.store} class="selectic-item_icon" />
-                    )}
-                    {!this.isMultiple && (
-                        <Icon icon="dot" store={this.store} class="selectic-item_icon single-select_icon" />
-                    )}
-                    <OptionIcon icon={option.icon} store={this.store} />
-                        {option.text}
-                    </li>
-                ))}
+                {this.shortOptions.map((option, idx) => {
+                    const absoluteIdx = idx + this.startIndex;
+
+                    return (
+                        <li
+                            on={{
+                                'click.prevent.stop': () => this.click(option),
+                                'mouseover': () => this.onMouseOver(idx),
+                            }}
+                            class={['selectic-item', option.className || '', {
+                                'selected': option.selected,
+                                'selectable': unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
+                                'selectic-item__active': absoluteIdx === this.store.state.activeItemIdx,
+                                'selectic-item__disabled': !!option.disabled,
+                                'selectic-item__exclusive': !!option.exclusive,
+                                'selectic-item__is-in-group': !!option.group,
+                                'selectic-item__is-group': option.isGroup,
+                            }]}
+                            style={option.style}
+                            title={option.title}
+                            id={this.store.optionId(absoluteIdx)}
+                            role="option"
+                            aria-roledescription={option.isGroup
+                                ? this.store.data.labels.groupRoleDescription
+                                : undefined}
+                            aria-selected={option.selected ? 'true' : 'false'}
+                            aria-disabled={option.disabled ? 'true' : undefined}
+                            aria-posinset={absoluteIdx + 1}
+                            aria-setsize={this.totalItems}
+                            key={'selectic-item-' + absoluteIdx}
+                        >
+                        {this.isMultiple && (
+                            <Icon icon="check" store={this.store} class="selectic-item_icon" />
+                        )}
+                        {!this.isMultiple && (
+                            <Icon icon="dot" store={this.store} class="selectic-item_icon single-select_icon" />
+                        )}
+                        <OptionIcon icon={option.icon} store={this.store} />
+                            {option.text}
+                        </li>
+                    );
+                })}
                 {!!this.bottomOffset && (
                     <li
                         class="selectic-item"
                         style={`height:${this.bottomOffset}px;`}
+                        role="presentation"
+                        aria-hidden="true"
                     ></li>
                 )}
                 </ul>

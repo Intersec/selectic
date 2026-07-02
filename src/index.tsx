@@ -286,6 +286,7 @@ export default class Selectic extends Vue<Props> {
     public $refs: {
         mainInput: MainInput;
         extendedList?: ExtendedList;
+        multilinesList?: MultilinesList;
     };
 
     /* {{{ props */
@@ -460,6 +461,10 @@ export default class Selectic extends Vue<Props> {
                     }
                 }
 
+                /* The user chose to interact with something else: the
+                 * focus must stay where they clicked, so mark the close as
+                 * automatic to keep `giveFocusBack()` away. */
+                store.setAutomaticClose();
                 store.commit('isOpen', false);
             }
         };
@@ -668,6 +673,7 @@ export default class Selectic extends Vue<Props> {
                 this.store.resetChange();
             }
             this.emit('close');
+            this.giveFocusBack();
         }
     }
 
@@ -864,6 +870,26 @@ export default class Selectic extends Vue<Props> {
         this._multilinesListeners = undefined;
     }
 
+    private onInputValueFocus() {
+        this.store.commit('isOpen', true);
+        /* move the focus to the accessible combobox element */
+        this.$refs.mainInput?.focusCombobox();
+    }
+
+    private giveFocusBack() {
+        if (this.store.state.status.automaticClose) {
+            return;
+        }
+
+        this.$nextTick(() => {
+            const activeEl = document.activeElement;
+
+            if (!activeEl || activeEl === document.body) {
+                this.$refs.mainInput?.focusCombobox(true);
+            }
+        });
+    }
+
     private checkFocus() {
         /* Await that focused element becomes active */
         setTimeout(() => {
@@ -1035,11 +1061,19 @@ export default class Selectic extends Vue<Props> {
                 title={this.title}
                 data-selectic="true"
             >
+                {/* This input is for DOM submission.
+                  * The accessible elements are in MultilinesList. */}
                 <input
                     type="text"
                     id={id}
                     value={this.inputValue}
                     class="selectic__input-value"
+                    readOnly
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    on={{
+                        focus: () => this.$refs.multilinesList?.focus(),
+                    }}
                 />
                 <MultilinesList
                     store={store}
@@ -1049,6 +1083,7 @@ export default class Selectic extends Vue<Props> {
                         'footer:clearFilter': () => this.emit('footer:clearFilter'),
                         'footer:apply': () => this.emit('footer:apply'),
                     }}
+                    ref="multilinesList"
                 >
                     {this.$slots.custom && (
                         <div slot="custom">
@@ -1075,14 +1110,18 @@ export default class Selectic extends Vue<Props> {
                     'click.prevent.stop': () => store.commit('isOpen', true),
                 }}
             >
-                {/* This input is for DOM submission */}
+                {/* This input is for DOM submission.
+                  * The accessible element is the combobox in MainInput. */}
                 <input
                     type="text"
                     id={id}
                     value={this.inputValue}
                     class="selectic__input-value"
+                    readOnly
+                    tabIndex={-1}
+                    aria-hidden="true"
                     on={{
-                        focus: () => store.commit('isOpen', true),
+                        focus: this.onInputValueFocus,
                         blur: this.checkFocus,
                     }}
                 />
@@ -1091,6 +1130,8 @@ export default class Selectic extends Vue<Props> {
                     id={id}
                     on={{
                         'item:click': (id: OptionId) => this.emit('item:click', id),
+                        focus: () => store.commit('isOpen', true),
+                        blur: this.checkFocus,
                     }}
                     ref="mainInput"
                 />

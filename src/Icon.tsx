@@ -2,7 +2,7 @@
  * Display the wanted icon.
  */
 
-import { Component, h, Prop, Vue, Watch } from 'vtyx';
+import { AriaAttributes, Component, h, Prop, Vue, Watch } from 'vtyx';
 
 import Store, { IconFamily, IconKey, IconValue } from './Store';
 import IconCaretDown from './icons/caret-down';
@@ -151,18 +151,34 @@ export default class Icon extends Vue<Props> {
 
     /* }}} */
 
+    /** With a title: labelled image; without: decorative (hidden to AT) */
+    private get ariaAttributes(): AriaAttributes {
+        const title = this.title;
+
+        if (title) {
+            return {
+                role: 'img',
+                'aria-label': title,
+            };
+        }
+
+        return {
+            'aria-hidden': 'true',
+        };
+    }
+
     private renderInnerIcon() {
         const component = this.vueIcon;
 
         return h(
             component,
-            {
+            Object.assign({
                 class: {
                     'selectic__icon': true,
                     [this.spinClass]: this.spinActive,
                 },
                 title: this.title,
-            }
+            }, this.ariaAttributes)
         );
     }
 
@@ -173,6 +189,7 @@ export default class Icon extends Vue<Props> {
             <span
                 class={`${prefix}${this.iconValue} ${classSpin}`}
                 title={this.title}
+                {...this.ariaAttributes}
             />
         );
     }

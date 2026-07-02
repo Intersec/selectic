@@ -487,6 +487,8 @@ interface Messages {
     noResult: string;
     clearSelection: string;
     clearSelections: string;
+    removeSelectedItem: string;
+    groupRoleDescription: string;
     wrongFormattedData: string;
     moreSelectedItem: string;
     moreSelectedItems: string;
@@ -532,6 +534,8 @@ let messages: Messages = {
     noResult: 'No results',
     clearSelection: 'Clear current selection',
     clearSelections: 'Clear all selections',
+    removeSelectedItem: 'Remove %s',
+    groupRoleDescription: 'group',
     wrongFormattedData: 'The data fetched is not correctly formatted.',
     moreSelectedItem: '+1 other',
     moreSelectedItems: '+%d others',
@@ -1419,9 +1423,12 @@ export default class SelecticStore {
             && target.tagName === 'INPUT'
             && (target as HTMLInputElement).type === 'text';
 
-        /* let native interactive elements (like the footer buttons)
-         * handle keys themselves */
-        if (target?.tagName === 'BUTTON' && key !== 'Escape') {
+        /* Buttons (the footer ones) natively need these keys to be
+         * activated or left; all the other keys keep driving the list, so
+         * navigation still works while a footer button has the focus. */
+        const isButton = target?.tagName === 'BUTTON';
+
+        if (isButton && (key === 'Enter' || key === ' ' || key === 'Tab')) {
             return;
         }
 
@@ -1514,8 +1521,10 @@ export default class SelecticStore {
                 }
                 break;
             default:
-                /* typeahead, only when there is no search input */
-                if (state.hideFilter && key.length === 1
+                /* typeahead, only when there is no search input. It stays
+                 * off on buttons: typing a letter there would move the
+                 * active item without any visible relation to the focus. */
+                if (state.hideFilter && key.length === 1 && !isButton
                     && !evt.ctrlKey && !evt.altKey && !evt.metaKey)
                 {
                     this.typeahead(key);

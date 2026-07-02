@@ -28,6 +28,16 @@ export interface Props {
  */
 const DEFAULT_LIST_HEIGHT = 320;
 
+/** Elements of the panel which can take the focus with Tab */
+const FOCUSABLE_ELEMENTS = [
+    'button:not([disabled])',
+    'a[href]',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+].join(', ');
+
 @Component
 export default class ExtendedList extends Vue<Props> {
     /* {{{ props */
@@ -248,43 +258,72 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     private onKeyDown(evt: KeyboardEvent) {
-        const key = evt.key;
+        /* The listener is on `document.body` because the panel is appended
+         * there. The list can be open while the focus is elsewhere in the
+         * page (with the `open` prop): only handle the keys coming from the
+         * panel or from the combobox it belongs to. */
+        const target = evt.target as Node | null;
 
-        if (key === 'Escape') {
-            this.store.commit('isOpen', false);
-        } else
-        if (key === 'Enter') {
-            const index = this.store.state.activeItemIdx;
-
-            if (index !== -1) {
-                const item = this.store.state.filteredOptions[index];
-
-                if (!item.disabled && !item.isGroup) {
-                    this.store.selectItem(item.id);
-                }
-            }
-            evt.stopPropagation();
-            evt.preventDefault();
-        } else
-        if (key === 'ArrowUp') {
-            const index = this.store.state.activeItemIdx;
-
-            if (index > 0) {
-                this.store.commit('activeItemIdx', index - 1);
-            }
-            evt.stopPropagation();
-            evt.preventDefault();
-        } else
-        if (key === 'ArrowDown') {
-            const index = this.store.state.activeItemIdx;
-            const max = this.store.state.totalFilteredOptions - 1;
-
-            if (index < max) {
-                this.store.commit('activeItemIdx', index + 1);
-            }
-            evt.stopPropagation();
-            evt.preventDefault();
+        if (!target || !(this.$el?.contains(target)
+            || !!this.comboboxEl?.contains(target)))
+        {
+            return;
         }
+
+        if (evt.key === 'Tab' && this.handleTabKey(evt)) {
+            return;
+        }
+
+        this.store.handleKeydown(evt);
+    }
+
+    /** The combobox this panel is attached to (it lives outside the panel,
+     * which is appended to the body) */
+    private get comboboxEl(): HTMLElement | null {
+        return document.querySelector<HTMLElement>(
+            `div[role="combobox"][aria-controls="${this.store.listBoxId}"]`
+        );
+    }
+
+    /** The panel is appended at the end of body, so its buttons are not in
+     * the natural tab order of the page. From the combobox, Tab enters the
+     * panel; from its last element, the focus goes back to the combobox so
+     * Tab leaves the component naturally.
+     * Returns true when the event is fully handled. */
+    private handleTabKey(evt: KeyboardEvent): boolean {
+        const target = evt.target as HTMLElement | null;
+        const panelEl = this.$el as HTMLElement;
+        const focusableEls = Array.from(
+            panelEl.querySelectorAll(FOCUSABLE_ELEMENTS)
+        ) as HTMLElement[];
+
+        if (!target || !focusableEls.length) {
+            return false;
+        }
+
+        const comboboxEl = this.comboboxEl;
+        const isOnCombobox = target === comboboxEl;
+        const targetIdx = focusableEls.indexOf(target);
+
+        if (!evt.shiftKey && isOnCombobox) {
+            focusableEls[0].focus();
+            evt.preventDefault();
+            return true;
+        }
+
+        if (!evt.shiftKey && targetIdx === focusableEls.length - 1) {
+            /* the browser moves the focus from the combobox position */
+            comboboxEl?.focus();
+            return true;
+        }
+
+        if (evt.shiftKey && targetIdx === 0) {
+            comboboxEl?.focus();
+            evt.preventDefault();
+            return true;
+        }
+
+        return false;
     }
 
     /* }}} */
@@ -330,6 +369,7 @@ export default class ExtendedList extends Vue<Props> {
 
               {isGroup && (
                 <span
+                    aria-hidden="true"
                     class={[
                         'selectic-item selectic-item--header selectic-item__is-group',
                         {
@@ -356,12 +396,12 @@ export default class ExtendedList extends Vue<Props> {
                 />
                 {this.$slots.listFooter?.()}
               {this.infoMessage && (
-                <div class="selectic__message alert-info">
+                <div class="selectic__message alert-info" role="status">
                     {this.infoMessage}
                 </div>
               )}
               {this.searching && (
-                <div class="selectic__message">
+                <div class="selectic__message" role="status">
                     <Icon icon="spinner" store={this.store} spin />
                     {this.searchingLabel}
                 </div>
@@ -369,6 +409,7 @@ export default class ExtendedList extends Vue<Props> {
               {this.errorMessage && (
                 <div
                     class="selectic__message alert-danger"
+                    role="alert"
                     on={{ click: () => store.resetErrorMessage() }}
                 >
                     {this.errorMessage}

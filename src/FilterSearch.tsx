@@ -10,7 +10,14 @@ import Icon from './Icon';
 export interface Props {
     store: Store;
     onOpen?: () => void;
+
+    /** If true, only handle keys pressed inside the parent component
+     * (for always-displayed contexts like the multilines mode) */
+    scoped?: boolean;
 }
+
+/** Elements from which typed keys must not be stolen */
+const INTERACTIVE_TAGS = ['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'];
 
 @Component
 export default class FilterSearch extends Vue<Props> {
@@ -25,6 +32,9 @@ export default class FilterSearch extends Vue<Props> {
 
     @Prop()
     private onOpen?: () => void;
+
+    @Prop({default: false})
+    private scoped: boolean;
 
     /* }}} */
     /* {{{ computed */
@@ -42,6 +52,20 @@ export default class FilterSearch extends Vue<Props> {
         return !!this.store.state.searchText;
     }
 
+    get listBoxId(): string {
+        return this.store.listBoxId;
+    }
+
+    get activeDescendant(): string | undefined {
+        const state = this.store.state;
+
+        if (state.activeItemIdx < 0) {
+            return;
+        }
+
+        return this.store.optionId(state.activeItemIdx);
+    }
+
     get onKeyPressed() {
         return this.keypressed.bind(this);
     }
@@ -53,21 +77,42 @@ export default class FilterSearch extends Vue<Props> {
         const key = evt.key;
 
         /* handle only printable characters */
-        if (key.length === 1 && !this.store.state.disabled) {
-            const el = this.$refs.filterInput;
+        if (key.length !== 1 || this.store.state.disabled) {
+            return;
+        }
 
-            if (el === evt.target) {
+        const el = this.$refs.filterInput;
+        const target = evt.target as HTMLElement | null;
+
+        if (el === evt.target) {
+            return;
+        }
+
+        /* do not steal keys typed in other interactive elements (like the
+         * footer buttons, activated with Space) */
+        if (target && (INTERACTIVE_TAGS.includes(target.tagName)
+            || target.isContentEditable))
+        {
+            return;
+        }
+
+        /* in multilines mode the component is always displayed: only
+         * handle keys pressed inside it */
+        if (this.scoped) {
+            const rootEl = this.$el?.parentElement;
+
+            if (!rootEl || !target || !rootEl.contains(target)) {
                 return;
             }
-
-            this.onOpen?.();
-
-            if (el) {
-                el.value += key;
-                this.store.commit('searchText', el.value);
-            }
-            this.focus();
         }
+
+        this.onOpen?.();
+
+        if (el) {
+            el.value += key;
+            this.store.commit('searchText', el.value);
+        }
+        this.focus();
     }
 
     private clearSearch() {
@@ -107,6 +152,12 @@ export default class FilterSearch extends Vue<Props> {
                     type="text"
                     class="form-control filter-input"
                     placeholder={this.searchPlaceholder}
+                    aria-label={this.searchPlaceholder}
+                    role="combobox"
+                    aria-expanded="true"
+                    aria-autocomplete="list"
+                    aria-controls={this.listBoxId}
+                    aria-activedescendant={this.activeDescendant}
                     value={state.searchText}
                     disabled={state.disabled}
                     on={{

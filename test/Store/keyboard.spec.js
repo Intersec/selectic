@@ -403,6 +403,50 @@ tape.test('handleKeydown()', (st) => {
         t.end();
     });
 
+    st.test('should keep driving the list from a button', async (t) => {
+        const store = buildStore({ params: { multiple: true } });
+        await sleep(0);
+
+        const onButton = { target: { tagName: 'BUTTON' } };
+
+        /* Only the keys the buttons need natively are left to them: the
+         * navigation must keep working from the footer buttons. */
+        store.handleKeydown(fakeEvent('ArrowDown', onButton));
+        t.is(store.state.activeItemIdx, 0, 'ArrowDown should move the item');
+
+        store.handleKeydown(fakeEvent('End', onButton));
+        t.is(store.state.activeItemIdx, 19, 'End should move to the last item');
+
+        t.end();
+    });
+
+    st.test('should not typeahead from a button', async (t) => {
+        const store = buildStore({ params: { hideFilter: true } });
+        await sleep(0);
+
+        store.handleKeydown(fakeEvent('t', {
+            target: { tagName: 'BUTTON' },
+        }));
+        t.is(store.state.activeItemIdx, -1,
+            'typing on a button should not move the active item');
+
+        t.end();
+    });
+
+    st.test('should ignore every key when disabled', async (t) => {
+        const store = buildStore({
+            disabled: true,
+            params: { multilines: true },
+        });
+        await sleep(0);
+
+        store.handleKeydown(fakeEvent('ArrowDown'));
+        t.is(store.state.activeItemIdx, -1,
+            'the always-displayed list must stay inert when disabled');
+
+        t.end();
+    });
+
     st.test('arrow keys should move the active item', async (t) => {
         const store = buildStore();
         await sleep(0);

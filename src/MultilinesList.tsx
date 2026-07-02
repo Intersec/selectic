@@ -18,6 +18,11 @@ export interface Props {
 
 @Component
 export default class MultilinesList extends Vue<Props> {
+    public $refs: {
+        filterSearch?: FilterSearch;
+        list?: List;
+    };
+
     /* {{{ props */
 
     @Prop()
@@ -60,43 +65,25 @@ export default class MultilinesList extends Vue<Props> {
     /* {{{ methods */
 
     private onKeyDown(evt: KeyboardEvent) {
-        const key = evt.key;
+        const target = evt.target as Node | null;
 
-        if (key === 'Enter') {
-            const index = this.store.state.activeItemIdx;
+        /* the listener is on document (the component is always displayed):
+         * only handle keys pressed inside the component */
+        if (!target || !this.$el?.contains(target)) {
+            return;
+        }
 
-            if (index !== -1) {
-                const item = this.store.state.filteredOptions[index];
+        this.store.handleKeydown(evt);
+    }
 
-                if (!item.disabled && !item.isGroup) {
-                    this.store.selectItem(item.id);
-                }
-            }
+    /** Move the DOM focus to the search input (or to the list) */
+    public focus() {
+        if (!this.store.state.hideFilter) {
+            this.$refs.filterSearch?.focus();
+            return;
+        }
 
-            evt.stopPropagation();
-            evt.preventDefault();
-        } else
-            if (key === 'ArrowUp') {
-                const index = this.store.state.activeItemIdx;
-
-                if (index > 0) {
-                    this.store.commit('activeItemIdx', index - 1);
-                }
-
-                evt.stopPropagation();
-                evt.preventDefault();
-            } else
-                if (key === 'ArrowDown') {
-                    const index = this.store.state.activeItemIdx;
-                    const max = this.store.state.totalFilteredOptions - 1;
-
-                    if (index < max) {
-                        this.store.commit('activeItemIdx', index + 1);
-                    }
-
-                    evt.stopPropagation();
-                    evt.preventDefault();
-                }
+        this.$refs.list?.focus();
     }
 
     /* }}} */
@@ -118,17 +105,22 @@ export default class MultilinesList extends Vue<Props> {
         return (
             <div class="selectic selectic__multilines-list">
                 {!store.state.hideFilter && (
-                    <FilterSearch store={store} />
+                    <FilterSearch store={store} scoped ref="filterSearch" />
                 )}
-                <List store={store} />
+                {/* without search input, the list itself takes the focus */}
+                <List
+                    store={store}
+                    focusable={store.state.hideFilter}
+                    ref="list"
+                />
                 {this.$slots.custom?.()}
                 {this.infoMessage && (
-                    <div class="selectic__message alert-info">
+                    <div class="selectic__message alert-info" role="status">
                         {this.infoMessage}
                     </div>
                 )}
                 {this.searching && (
-                    <div class="selectic__message">
+                    <div class="selectic__message" role="status">
                         <Icon icon="spinner" store={store} spin />
                         {this.searchingLabel}
                     </div>
@@ -136,6 +128,7 @@ export default class MultilinesList extends Vue<Props> {
                 {this.errorMessage && (
                     <div
                         class="selectic__message alert-danger"
+                        role="alert"
                         on={{ click: () => store.resetErrorMessage() }}
                     >
                         {this.errorMessage}

@@ -19,6 +19,7 @@ export interface Props {
 export default class MainInput extends Vue<Props> {
     public $refs: {
         selectedItems?: HTMLDivElement;
+        comboboxEl?: HTMLDivElement;
     };
 
     /* {{{ props */
@@ -34,8 +35,15 @@ export default class MainInput extends Vue<Props> {
 
     private nbHiddenItems = 0;
 
+    /** ids of the external <label> elements naming the combobox */
+    private ariaLabelledby = '';
+
     /* reactivity non needed */
     private domObserver: MutationObserver | null = null;
+    private doNotOpenOnFocus: boolean = false;
+    /* isOpen state before the mousedown gives the focus (which opens the
+     * list): the following click must not toggle it back */
+    private wasOpenAtMousedown: boolean = false;
 
     /* }}} */
     /* {{{ computed */
@@ -150,6 +158,41 @@ export default class MainInput extends Vue<Props> {
         return;
     }
 
+    get listBoxId(): string {
+        return this.store.listBoxId;
+    }
+
+    get activeDescendant(): string | undefined {
+        const state = this.store.state;
+
+        if (!state.isOpen || state.activeItemIdx < 0) {
+            return;
+        }
+
+        return this.store.optionId(state.activeItemIdx);
+    }
+
+    /** Text announced (live region) when navigating through chips */
+    get chipsAnnouncement(): string {
+        const state = this.store.state;
+        const idx = state.activeChipIdx;
+        const chips = state.selectedOptions;
+
+        if (idx < 0 || !Array.isArray(chips)) {
+            return '';
+        }
+
+        const chip = chips[idx];
+
+        if (!chip) {
+            return '';
+        }
+
+        const label = this.removeItemLabel(chip);
+
+        return `${label} (${idx + 1}/${chips.length})`;
+    }
+
     get isSelectionReversed() {
         return this.store.state.selectionIsExcluded;
     }
@@ -228,12 +271,96 @@ export default class MainInput extends Vue<Props> {
     /* }}} */
     /* {{{ methods */
 
+    private onMousedown() {
+        this.wasOpenAtMousedown = this.store.state.isOpen;
+    }
+
     private toggleFocus(focused?: boolean) {
         if (typeof focused === 'boolean') {
             this.store.commit('isOpen', focused);
         } else {
-            this.store.commit('isOpen', !this.store.state.isOpen);
+            this.store.commit('isOpen', !this.wasOpenAtMousedown);
         }
+    }
+
+    /** Move the DOM focus on the combobox element.
+     * With doNotOpen, getting the focus does not open the list. */
+    public focusCombobox(doNotOpen = false) {
+        const el = this.$refs.comboboxEl;
+
+        if (!el) {
+            return;
+        }
+
+        if (doNotOpen) {
+            this.doNotOpenOnFocus = true;
+            setTimeout(() => this.doNotOpenOnFocus = false, 0);
+        }
+
+        el.focus();
+    }
+
+    /** When the list is closed, no other listener handles keys (the one of
+     * ExtendedList only exists while the panel is mounted). Without this,
+     * the combobox could not be reopened with the keyboard after Escape. */
+    private onComboboxKeydown(evt: KeyboardEvent) {
+        const state = this.store.state;
+
+        if (state.isOpen || state.disabled) {
+            return;
+        }
+
+        const key = evt.key;
+
+        if (key !== 'ArrowDown' && key !== 'ArrowUp'
+            && key !== 'Enter' && key !== ' ')
+        {
+            return;
+        }
+
+        evt.stopPropagation();
+        evt.preventDefault();
+        this.store.commit('isOpen', true);
+    }
+
+    private onComboboxFocus() {
+        if (!this.doNotOpenOnFocus) {
+            this.$emit('focus');
+        }
+    }
+
+    private onComboboxBlur() {
+        this.$emit('blur');
+    }
+
+    private removeItemLabel(item: OptionItem): string {
+        return this.store.data.labels.removeSelectedItem
+            .replace('%s', item.text);
+    }
+
+    /** Retrieve the <label> elements associated to the hidden input, so
+     * the combobox gets the same accessible name. */
+    private findAriaLabels() {
+        const rootEl = this.$el?.parentElement as HTMLElement | null;
+        const input = rootEl?.querySelector(
+            'input.selectic__input-value'
+        ) as HTMLInputElement | null;
+        const labels = input?.labels;
+
+        if (!labels?.length) {
+            return;
+        }
+
+        const ids: string[] = [];
+
+        Array.from(labels).forEach((label, idx) => {
+            if (!label.id) {
+                label.id = `selectic-${this.store._uid}-label-${idx}`;
+            }
+            ids.push(label.id);
+        });
+
+        this.ariaLabelledby = ids.join(' ');
     }
 
     private selectItem(id: OptionId) {
@@ -249,7 +376,10 @@ export default class MainInput extends Vue<Props> {
         const selectedOptions = this.selectedOptions as OptionItem[];
 
         if (!state.multiple || state.selectionOverflow !== 'collapsed'
-        ||  !selectedOptions.length)
+        ||  !selectedOptions.length
+        /* display all chips while navigating through them with keyboard,
+         * so the active one is always visible */
+        ||  state.activeChipIdx >= 0)
         {
             this.nbHiddenItems = 0;
             return;
@@ -349,8 +479,29 @@ export default class MainInput extends Vue<Props> {
         this.nbHiddenItems = 0;
     }
 
+    /** All the chips are rendered while navigating through them, but the
+     * input stays on a single line: keep the active one visible. */
+    @Watch('store.state.activeChipIdx')
+    public onActiveChipChange() {
+        if (this.store.state.activeChipIdx < 0) {
+            return;
+        }
+
+        this.$nextTick(() => {
+            const el = this.$el?.querySelector(
+                '.selectic-input__selected-items__active'
+            );
+
+            el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
+    }
+
     /* }}} */
     /* {{{ life cycles methods */
+
+    public mounted() {
+        this.findAriaLabels();
+    }
 
     public updated() {
         this.computeSize();
@@ -367,6 +518,7 @@ export default class MainInput extends Vue<Props> {
         <div
             class="selectic-container has-feedback"
             on={{
+                mousedown: this.onMousedown,
                 'click.prevent.stop': () => this.toggleFocus(),
             }}
         >
@@ -376,7 +528,23 @@ export default class MainInput extends Vue<Props> {
                         {
                             focused: this.store.state.isOpen,
                             disabled: this.store.state.disabled,
+                            'selectic-input--unfolded':
+                                this.store.state.activeChipIdx >= 0,
                         }]}
+                role="combobox"
+                tabIndex={this.isDisabled ? undefined : 0}
+                aria-expanded={this.store.state.isOpen ? 'true' : 'false'}
+                aria-haspopup="listbox"
+                aria-controls={this.listBoxId}
+                aria-activedescendant={this.activeDescendant}
+                aria-disabled={this.isDisabled ? 'true' : undefined}
+                aria-labelledby={this.ariaLabelledby || undefined}
+                ref="comboboxEl"
+                on={{
+                    focus: this.onComboboxFocus,
+                    blur: this.onComboboxBlur,
+                    keydown: this.onComboboxKeydown,
+                }}
             >
             { this.hasValue && !this.store.state.multiple && (
                 <OptionIcon
@@ -418,9 +586,12 @@ export default class MainInput extends Vue<Props> {
                         />
                     )}
                     {this.showSelectedOptions.map(
-                        (item) => (
+                        (item, idx) => (
                             <div
-                                class="single-value"
+                                class={['single-value', {
+                                    'selectic-input__selected-items__active':
+                                        idx === this.store.state.activeChipIdx,
+                                }]}
                                 style={item.style}
                                 title={item.title || item.text}
                                 on={{
@@ -442,6 +613,8 @@ export default class MainInput extends Vue<Props> {
                                         icon="times"
                                         class="selectic-input__selected-items__icon"
                                         store={this.store}
+                                        title={this.removeItemLabel(item)}
+                                        aria-hidden="true"
                                         on={{
                                             'click.prevent.stop': () => this.selectItem(item.id),
                                         }}
@@ -465,11 +638,18 @@ export default class MainInput extends Vue<Props> {
                     icon="times"
                     class="selectic-input__clear-icon"
                     title={this.clearedLabel}
+                    aria-hidden="true"
                     store={this.store}
                     on={{ 'click.prevent.stop': this.clearSelection }}
                 />
             )}
             </div>
+            <span
+                class="selectic-sr-only"
+                role="status"
+            >
+                {this.chipsAnnouncement}
+            </span>
             <div
                 class={[
                     'selectic__icon-container',
