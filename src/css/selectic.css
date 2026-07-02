@@ -38,6 +38,16 @@
     --selectic-error-bg: #b72c29;
     --selectic-error-color: #ffffff;
 
+    /* Footer bar (displayed under the list) */
+    --selectic-footer-bg: #f1f1f1;
+    --selectic-footer-link-color: #335895;
+    --selectic-footer-btn-secondary-bg: #ffffff;
+    --selectic-footer-btn-secondary-border: #cccccc;
+    --selectic-footer-btn-secondary-color: #333333;
+    --selectic-footer-btn-primary-bg: #335895;
+    --selectic-footer-btn-primary-border: #2d4d86;
+    --selectic-footer-btn-primary-color: #ffffff;
+
     /* XXX: Currently it is important to keep this size for a correct scroll
      * height estimation */
     --selectic-input-height: 30px;
@@ -483,6 +493,79 @@
 
 .selectic-spin {
     animation: selectic-animation-spin 2s infinite linear;
+}
+
+/* }}} */
+/* {{{ footer */
+
+.selectic__extended-list__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 5px 10px;
+    min-height: 40px;
+    background: var(--selectic-footer-bg);
+}
+
+.selectic__footer-left,
+.selectic__footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selectic__footer-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--selectic-footer-link-color);
+    font-size: 11px;
+    line-height: 1.2;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.selectic__footer-link--active {
+    font-weight: bold;
+}
+
+.selectic__footer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.selectic__footer-btn--secondary {
+    background: var(--selectic-footer-btn-secondary-bg);
+    border: 1px solid var(--selectic-footer-btn-secondary-border);
+    color: var(--selectic-footer-btn-secondary-color);
+}
+
+.selectic__footer-btn--primary {
+    background: var(--selectic-footer-btn-primary-bg);
+    border: 1px solid var(--selectic-footer-btn-primary-border);
+    color: var(--selectic-footer-btn-primary-color);
+}
+
+.selectic__footer-link:hover:not(:disabled),
+.selectic__footer-btn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.selectic__footer-link:disabled,
+.selectic__footer-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* }}} */

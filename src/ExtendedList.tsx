@@ -3,11 +3,12 @@
  * Content of inner elements are related to dedicated files.
  */
 
-import {Vue, Component, Prop, Watch, h} from 'vtyx';
+import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
 import { unref } from 'vue';
 
 import Store, { OptionId, OptionItem } from './Store';
 import Filter from './Filter';
+import Footer from './Footer';
 import List from './List';
 import Icon from './Icon';
 
@@ -306,6 +307,7 @@ export default class ExtendedList extends Vue<Props> {
 
     /* }}} */
 
+    @Emits(['footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply'])
     public render() {
         const store = this.store;
         const state = store.state;
@@ -372,6 +374,17 @@ export default class ExtendedList extends Vue<Props> {
                     {this.errorMessage}
                 </div>
               )}
+                {(state.footer || state.multiple) && (
+                    <Footer
+                        store={store}
+                        on={{
+                            selectAll: () => this.$emit('footer:selectAll'),
+                            invertSelection: () => this.$emit('footer:invertSelection'),
+                            clearFilter: () => this.$emit('footer:clearFilter'),
+                            apply: () => this.$emit('footer:apply'),
+                        }}
+                    />
+                )}
             </div>
         );
     }

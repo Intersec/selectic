@@ -111,6 +111,35 @@ export type SelectAllOption =
     /** Always display the "select all" in mulitple mode. */
   | 'visible';
 
+/** Configuration for a single footer button. */
+export interface FooterButtonConfig {
+    /** If false, the button is not rendered. Default: true. */
+    visible?: boolean;
+    /** Override the default label (falls back to `texts` / `labels`). */
+    text?: string;
+    /** Label shown when the button is in "active" state — only meaningful
+     * for `selectAll` (all items are selected) and `invertSelection`
+     * (selection is excluded). Falls back to `text`, then to the default
+     * label. */
+    textActive?: string;
+    /** If true, the button is disabled. */
+    disabled?: boolean;
+    /** Optional tooltip. */
+    title?: string;
+}
+
+/** Configuration for the extended-list footer bar.
+ *
+ * When provided (even empty), the footer is rendered under the list. Each
+ * entry controls one of the four semantic buttons; a missing entry hides that
+ * button. */
+export interface FooterConfig {
+    selectAll?: FooterButtonConfig;
+    invertSelection?: FooterButtonConfig;
+    clearFilter?: FooterButtonConfig;
+    apply?: FooterButtonConfig;
+}
+
 export interface SelecticStoreStateParams {
     /** Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -178,6 +207,12 @@ export interface SelecticStoreStateParams {
 
     /** Avoid selecting all items when clicking on group's header */
     disableGroupSelection?: boolean;
+
+    /** Footer configuration.
+     *
+     * When present (even as an empty object), a footer bar is rendered under
+     * the list. See `FooterConfig` for the four available buttons. */
+    footer?: FooterConfig;
 }
 
 export interface Props {
@@ -350,6 +385,9 @@ export interface SelecticStoreState {
     /** Avoid selecting all items when clicking on group's header */
     disableGroupSelection: boolean;
 
+    /** Footer configuration; `null` means no footer is rendered. */
+    footer: FooterConfig | null;
+
     /** Inner status which should be modified only by store */
     status: {
         /** If true, a search is currently done */
@@ -421,6 +459,11 @@ interface Messages {
     moreSelectedItems: string;
     unknownPropertyValue: string;
     wrongQueryResult: string;
+    footerSelectAll: string;
+    footerUnselectAll: string;
+    footerInvertSelection: string;
+    footerClearFilter: string;
+    footerApply: string;
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
@@ -460,6 +503,11 @@ let messages: Messages = {
     moreSelectedItems: '+%d others',
     unknownPropertyValue: 'property "%s" has incorrect values.',
     wrongQueryResult: 'Query did not return all results.',
+    footerSelectAll: 'Select all',
+    footerUnselectAll: 'Unselect all',
+    footerInvertSelection: 'Invert selection',
+    footerClearFilter: 'Clear filter',
+    footerApply: 'Apply',
 };
 
 let defaultFamilyIcon: IconFamily = 'selectic';
@@ -549,6 +597,7 @@ export default class SelecticStore {
             disableGroupSelection: false,
             dynOptions: [],
             filteredOptions: [],
+            footer: null,
             forceSelectAll: 'auto',
             groups: new Map(),
             hideFilter: false,

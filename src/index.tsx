@@ -44,6 +44,8 @@ import Store, {
     SelectAllOption,
     PartialIcons,
     IconFamily,
+    FooterConfig,
+    FooterButtonConfig,
 } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
@@ -64,9 +66,22 @@ export {
     SelectionOverflow,
     ListPosition,
     HideFilter,
+    FooterConfig,
+    FooterButtonConfig,
 };
 
-type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
+type EventType =
+    | 'input'
+    | 'change'
+    | 'open'
+    | 'close'
+    | 'focus'
+    | 'blur'
+    | 'item:click'
+    | 'footer:selectAll'
+    | 'footer:invertSelection'
+    | 'footer:clearFilter'
+    | 'footer:apply';
 
 export interface EventOptions {
     instance: Selectic;
@@ -158,6 +173,15 @@ export interface ParamProps {
 
     /** Avoid click on group name to select all items in this group. */
     disableGroupSelection?: boolean;
+
+    /** Footer configuration.
+     *
+     * When present (even as an empty object), a footer bar is rendered under
+     * the list. Each entry `selectAll`, `invertSelection`, `clearFilter`,
+     * `apply` configures the corresponding button; a missing entry hides that
+     * button. Clicks emit `footer:selectAll`, `footer:invertSelection`,
+     * `footer:clearFilter`, `footer:apply` on the Selectic root. */
+    footer?: FooterConfig;
 }
 
 export type OnCallback = (event: string, ...args: any[]) => void;
@@ -721,6 +745,7 @@ export default class Selectic extends Vue<Props> {
     private _emit(event: 'input' | 'change', value: SelectedValue, options: EventChangeOptions): void;
     private _emit(event: 'open' | 'close' | 'focus' | 'blur', options: EventOptions): void;
     private _emit(event: 'item:click', value: OptionId, options: EventOptions): void;
+    private _emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply', options: EventOptions): void;
     private _emit(event: EventType, ...args: any[]) {
         this.$emit(event, ...args);
 
@@ -732,6 +757,7 @@ export default class Selectic extends Vue<Props> {
     private emit(event: 'input' | 'change', value: SelectedValue, isExcluded: boolean): void;
     private emit(event: 'open' | 'close' | 'focus' | 'blur'): void;
     private emit(event: 'item:click', value: OptionId): void;
+    private emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply'): void;
     private emit(event: EventType, value?: SelectedValue | OptionId, isExcluded?: boolean) {
         const automatic = this.store.state.status.automaticChange;
         const options: EventOptions = {
@@ -759,6 +785,12 @@ export default class Selectic extends Vue<Props> {
                 break;
             case 'item:click':
                 this._emit(event, value as OptionId, options);
+                break;
+            case 'footer:selectAll':
+            case 'footer:invertSelection':
+            case 'footer:clearFilter':
+            case 'footer:apply':
+                this._emit(event, options);
                 break;
         }
     }
@@ -886,6 +918,7 @@ export default class Selectic extends Vue<Props> {
                 optionBehavior: this.params.optionBehavior, /* it can be undefined */
                 isOpen: (this.open ?? false) !== false,
                 disableGroupSelection: this.params.disableGroupSelection,
+                footer: this.params.footer,
             },
             fetchCallback: this.params.fetchCallback,
             getItemsCallback: this.params.getItemsCallback,
@@ -939,7 +972,10 @@ export default class Selectic extends Vue<Props> {
 
     /* }}} */
 
-    @Emits(['input', 'change', 'open', 'focus', 'close', 'blur', 'item:click'])
+    @Emits([
+        'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
+        'footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply',
+    ])
     public render() {
         const id = this.id || undefined;
         const store = this.store;
@@ -986,6 +1022,12 @@ export default class Selectic extends Vue<Props> {
                     elementRight={this.elementRight}
                     width={this.width}
                     ref="extendedList"
+                    on={{
+                        'footer:selectAll': () => this.emit('footer:selectAll'),
+                        'footer:invertSelection': () => this.emit('footer:invertSelection'),
+                        'footer:clearFilter': () => this.emit('footer:clearFilter'),
+                        'footer:apply': () => this.emit('footer:apply'),
+                    }}
                 >
                     {this.$slots.listFooter && (
                         <div slot="listFooter">

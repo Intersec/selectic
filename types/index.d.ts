@@ -1,10 +1,10 @@
 import { Vue, h } from 'vtyx';
 import './css/selectic.css';
-import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter, SelectAllOption, PartialIcons, IconFamily } from './Store';
+import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter, SelectAllOption, PartialIcons, IconFamily, FooterConfig, FooterButtonConfig } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
-export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, };
-type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
+export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, FooterConfig, FooterButtonConfig, };
+type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click' | 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply';
 export interface EventOptions {
     instance: Selectic;
     eventType: EventType;
@@ -76,6 +76,14 @@ export interface ParamProps {
     keepOpenWithOtherSelectic?: boolean | string;
     /** Avoid click on group name to select all items in this group. */
     disableGroupSelection?: boolean;
+    /** Footer configuration.
+     *
+     * When present (even as an empty object), a footer bar is rendered under
+     * the list. Each entry `selectAll`, `invertSelection`, `clearFilter`,
+     * `apply` configures the corresponding button; a missing entry hides that
+     * button. Clicks emit `footer:selectAll`, `footer:invertSelection`,
+     * `footer:clearFilter`, `footer:apply` on the Selectic root. */
+    footer?: FooterConfig;
 }
 export type OnCallback = (event: string, ...args: any[]) => void;
 export type GetMethodsCallback = (methods: {
