@@ -15,6 +15,9 @@ export interface Props {
     id?: string;
 }
 
+/** Minimal width (in px) needed to display a chip */
+const MIN_CHIP_WIDTH = 50;
+
 @Component
 export default class MainInput extends Vue<Props> {
     public $refs: {
@@ -41,6 +44,7 @@ export default class MainInput extends Vue<Props> {
     /* reactivity non needed */
     private domObserver: MutationObserver | null = null;
     private doNotOpenOnFocus: boolean = false;
+    private hasTriedToUnfold: boolean = false;
     /* isOpen state before the mousedown gives the focus (which opens the
      * list): the following click must not toggle it back */
     private wasOpenAtMousedown: boolean = false;
@@ -376,10 +380,10 @@ export default class MainInput extends Vue<Props> {
         const selectedOptions = this.selectedOptions as OptionItem[];
 
         if (!state.multiple || state.selectionOverflow !== 'collapsed'
-        ||  !selectedOptions.length
-        /* display all chips while navigating through them with keyboard,
-         * so the active one is always visible */
-        ||  state.activeChipIdx >= 0)
+            || !selectedOptions.length
+            /* display all chips while navigating through them with
+             * keyboard, so the active one is always visible */
+            || state.activeChipIdx >= 0)
         {
             this.nbHiddenItems = 0;
             return;
@@ -402,11 +406,24 @@ export default class MainInput extends Vue<Props> {
         }
 
         const parentPadding = parseInt(getComputedStyle(parentEl).getPropertyValue('padding-right'), 10);
-        const clearEl = parentEl.querySelector('.selectic-input__clear-icon')  as HTMLSpanElement;
-        const clearWidth = clearEl ? clearEl.offsetWidth : 0;
+        /* XXX: the clear icon can be an SVG (which has no offsetWidth) */
+        const clearEl = parentEl.querySelector('.selectic-input__clear-icon');
+        const clearWidth = clearEl ? clearEl.getBoundingClientRect().width : 0;
         const itemsWidth = parentEl.clientWidth - parentPadding - clearWidth;
+        const spareWidth = itemsWidth - el.offsetWidth;
 
-        if (itemsWidth - el.offsetWidth > 0) {
+        if (spareWidth > 0) {
+            /* Currently displayed items fit. If they are all hidden while
+             * there is enough spare space, retry to display them (sizes
+             * may have been computed while the component was not
+             * correctly displayed) */
+            if (!this.hasTriedToUnfold
+                && this.nbHiddenItems >= selectedOptions.length
+                && spareWidth >= MIN_CHIP_WIDTH)
+            {
+                this.hasTriedToUnfold = true;
+                this.nbHiddenItems = 0;
+            }
             return;
         }
 
@@ -435,8 +452,8 @@ export default class MainInput extends Vue<Props> {
             idx++;
         }
 
-        /* Hide the previous element */
-        idx--;
+        /* Hide also the last displayed element (it may be truncated) */
+        idx = Math.max(0, idx - 1);
 
         this.nbHiddenItems = selectedOptions.length - idx;
     }
@@ -477,6 +494,7 @@ export default class MainInput extends Vue<Props> {
     @Watch('store.state.internalValue', { deep: true })
     public onInternalChange() {
         this.nbHiddenItems = 0;
+        this.hasTriedToUnfold = false;
     }
 
     /** All the chips are rendered while navigating through them, but the
