@@ -3,8 +3,9 @@ import './css/selectic.css';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter, SelectAllOption, PartialIcons, IconFamily, FooterConfig, FooterButtonConfig } from './Store';
 import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
+import MultilinesList from './MultilinesList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, FooterConfig, FooterButtonConfig, };
-type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click' | 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply';
+type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click' | 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply';
 export interface EventOptions {
     instance: Selectic;
     eventType: EventType;
@@ -81,10 +82,13 @@ export interface ParamProps {
     /** Footer configuration.
      *
      * When present (even as an empty object), a footer bar is rendered under
-     * the list. Each entry `selectAll`, `invertSelection`, `clearFilter`,
-     * `apply` configures the corresponding button; a missing entry hides that
-     * button. Clicks emit `footer:selectAll`, `footer:invertSelection`,
-     * `footer:clearFilter`, `footer:apply` on the Selectic root. */
+     * the list. Each entry `selectAll`, `invertSelection`, `showSelection`,
+     * `clearFilter`, `apply` configures the corresponding button; a missing
+     * entry hides that button. Clicks emit `footer:selectAll`,
+     * `footer:invertSelection`, `footer:showSelection`, `footer:clearFilter`,
+     * `footer:apply` on the Selectic root. A `footer:clearSelection` event
+     * is also emitted when the contextual "Clear selection" button (shown
+     * while `state.showSelection` is on) is clicked. */
     footer?: FooterConfig;
 }
 export type OnCallback = (event: string, ...args: any[]) => void;
@@ -129,6 +133,9 @@ export interface Props {
     /** If true, the component opens (at start or if it is closed).
      *  If false, the components closes (if it is opened). */
     open?: boolean;
+    /** If true, renders the list content inline (search bar + items) instead
+     *  of the standard input-with-dropdown layout. */
+    multilines?: boolean;
     /** Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
@@ -151,6 +158,7 @@ export default class Selectic extends Vue<Props> {
     $refs: {
         mainInput: MainInput;
         extendedList?: ExtendedList;
+        multilinesList?: MultilinesList;
     };
     value?: SelectedValue;
     selectionIsExcluded: boolean;
@@ -167,6 +175,7 @@ export default class Selectic extends Vue<Props> {
     iconFamily?: IconFamily;
     noCache: boolean;
     open?: boolean;
+    multilines: boolean;
     params: ParamProps;
     /** For tests */
     _on?: OnCallback;
@@ -221,9 +230,13 @@ export default class Selectic extends Vue<Props> {
     onOpenChanged(): void;
     onFocusChanged(): void;
     onInternalValueChange(): void;
+    private onInputValueFocus;
+    private giveFocusBack;
     private checkFocus;
     private _emit;
     private emit;
+    private renderMultilines;
+    private renderDefault;
     created(): void;
     mounted(): void;
     beforeUpdate(): void;

@@ -47,8 +47,11 @@ export default class List extends Vue<Props> {
     /* }}} */
     /* {{{ computed */
 
+    /* The store owns the displayed list (and the "show selection" filter),
+     * so the indexes used here are the ones the keyboard navigation and the
+     * ARIA ids are built on. */
     get filteredOptions() {
-        return this.store.state.filteredOptions;
+        return unref(this.store.displayedOptions);
     }
 
     get isMultiple() {
@@ -91,8 +94,7 @@ export default class List extends Vue<Props> {
     }
 
     get totalItems() {
-        const total = this.store.state.totalFilteredOptions;
-        return Number.isInteger(total) && total > 0 ? total : 0;
+        return unref(this.store.totalDisplayedOptions);
     }
 
     get endIndex() {
@@ -195,7 +197,7 @@ export default class List extends Vue<Props> {
     }
 
     private computeGroupId(topIndex: number) {
-        const item = this.store.state.filteredOptions[topIndex - 1];
+        const item = this.filteredOptions[topIndex - 1];
 
         if (!item) {
             this.groupId = null;

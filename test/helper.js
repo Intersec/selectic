@@ -34,6 +34,7 @@ function getInitialState(replacedAttributes) {
         selectedOptions: null,
         selectionIsExcluded: false,
         selectionOverflow: 'collapsed',
+        showSelection: false,
         strictValue: false,
         totalAllOptions: 0,
         totalDynOptions: 0,

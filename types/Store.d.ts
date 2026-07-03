@@ -82,15 +82,37 @@ export interface FooterButtonConfig {
 }
 /** Configuration for the extended-list footer bar.
  *
- * When provided (even empty), the footer is rendered under the list. Each
- * entry controls one of the four semantic buttons; a missing entry hides that
- * button. */
+ * `params.footer` is merged additively with the multiple-mode defaults:
+ * in `multiple` mode, the three left-side links (`selectAll`,
+ * `invertSelection`, `showSelection`) always auto-appear unless a
+ * `visible: false` entry is provided for them. The two right-side buttons
+ * (`clearFilter`, `apply`) remain opt-in — they only render when an entry
+ * for them exists in `params.footer`. Per-key config values (labels,
+ * `textActive`, `disabled`, `title`) always win over the defaults. */
 export interface FooterConfig {
     selectAll?: FooterButtonConfig;
     invertSelection?: FooterButtonConfig;
+    /** Toggles the extended list between the normal view (options mixed
+     * with selected items) and a view showing only the currently-selected
+     * items. Clicking an item in the "show selection" view unselects it.
+     * Only meaningful in `multiple` mode. */
+    showSelection?: FooterButtonConfig;
     clearFilter?: FooterButtonConfig;
     apply?: FooterButtonConfig;
 }
+export type NavigationAction = 
+/** Activate the first option */
+'first'
+/** Activate the last option */
+ | 'last'
+/** Activate the option before the current one */
+ | 'previous'
+/** Activate the option after the current one */
+ | 'next'
+/** Activate the option one page (data.itemsPerPage) before the current one */
+ | 'pageUp'
+/** Activate the option one page (data.itemsPerPage) after the current one */
+ | 'pageDown';
 export interface SelecticStoreStateParams {
     /** Equivalent of <select>'s "multiple" attribute */
     multiple?: boolean;
@@ -142,6 +164,10 @@ export interface SelecticStoreStateParams {
     listPosition?: ListPosition;
     /** If true, the component is open at start */
     isOpen?: boolean;
+    /** If true, the list is always displayed inline instead of a dropdown.
+     * Since there is no open/close interaction in this mode, filtered
+     * options are built regardless of `isOpen`. */
+    multilines?: boolean;
     /** Avoid selecting all items when clicking on group's header */
     disableGroupSelection?: boolean;
     /** Footer configuration.
@@ -189,6 +215,8 @@ type InternalProps = MandateProps<Props>;
 export interface Data {
     /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
+    /** Time (in ms) before the typeahead text is reset */
+    typeaheadDelay: number;
     labels: Messages;
     icons: PartialIcons;
     iconFamily: IconFamily;
@@ -233,6 +261,8 @@ export interface SelecticStoreState {
     selectionOverflow: SelectionOverflow;
     /** If true, the list is displayed */
     isOpen: boolean;
+    /** If true, the list is always displayed inline instead of a dropdown */
+    multilines: boolean;
     /** Text entered by user to look for options */
     searchText: string;
     /** Contains all known options */
@@ -255,6 +285,9 @@ export interface SelecticStoreState {
     offsetItem: number;
     /** Index of active item */
     activeItemIdx: number;
+    /** Index of the active chip (selected item in the main input, in
+     * multiple mode) while navigating through them with keyboard */
+    activeChipIdx: number;
     /** Number of items to fetch per page */
     pageSize: number;
     /** Called when item is displayed in the list. */
@@ -273,6 +306,9 @@ export interface SelecticStoreState {
     disableGroupSelection: boolean;
     /** Footer configuration; `null` means no footer is rendered. */
     footer: FooterConfig | null;
+    /** When true (multiple mode), the extended list renders only the
+     * currently-selected items instead of the full option set. */
+    showSelection: boolean;
     /** Inner status which should be modified only by store */
     status: {
         /** If true, a search is currently done */
@@ -309,6 +345,8 @@ interface Messages {
     noResult: string;
     clearSelection: string;
     clearSelections: string;
+    removeSelectedItem: string;
+    groupRoleDescription: string;
     wrongFormattedData: string;
     moreSelectedItem: string;
     moreSelectedItems: string;
@@ -317,8 +355,12 @@ interface Messages {
     footerSelectAll: string;
     footerUnselectAll: string;
     footerInvertSelection: string;
+    footerShowSelection: string;
+    footerShowAll: string;
+    footerClearSelection: string;
     footerClearFilter: string;
     footerApply: string;
+    showingSelection: string;
 }
 export type PartialMessages = {
     [K in keyof Messages]?: Messages[K];
@@ -331,6 +373,9 @@ export default class SelecticStore {
     data: Data;
     private requestId;
     private requestSearchId;
+    private typeaheadText;
+    private typeaheadTime;
+    private keepActiveChip;
     private isRequesting;
     private cacheRequest;
     private closeSelectic;
@@ -353,6 +398,37 @@ export default class SelecticStore {
     selectGroup(id: OptionId, itemsSelected: boolean): void;
     selectItem(id: OptionId, selected?: boolean, keepOpen?: boolean): boolean;
     toggleSelectAll(): void;
+    /** Change the active item (the highlighted one) depending on its
+     * current position. It also ensures that the new active item is
+     * rendered by the virtual list. */
+    moveActiveItem(action: NavigationAction): void;
+    /** Handle "typeahead" behavior: activate the next option matching the
+     * text typed by the user (only used when the search filter is hidden). */
+    typeahead(key: string): void;
+    /** True while the user is typing a text to look for an option */
+    get isTypeaheadActive(): boolean;
+    /** Change the active chip (selected item in the main input, multiple
+     * mode). Cycles through the chips, with a "no active chip" step
+     * between last and first. */
+    moveActiveChip(direction: 'previous' | 'next'): void;
+    /** Unselect the item related to the active chip */
+    removeActiveChip(): void;
+    /** Select (or toggle, for groups) the current active item */
+    selectActiveItem(): void;
+    /** Handle keyboard interactions (shared by the dropdown and the
+     * multilines mode) */
+    handleKeydown(evt: KeyboardEvent): void;
+    /** Activate the option at the given index and ensure it will be
+     * rendered by the virtual list (which only renders a slice of the
+     * options, around offsetItem). */
+    private activateItemAt;
+    /** First enabled option index from fromIdx to untilIdx (inclusive).
+     * Options not fetched yet are considered enabled. */
+    private findEnabledItem;
+    /** Id of the listbox element (the list of options) */
+    get listBoxId(): string;
+    /** Id of an option element, given its index in the filtered list */
+    optionId(idx: number): string;
     resetChange(): void;
     resetErrorMessage(): void;
     clearCache(forceReset?: boolean): void;

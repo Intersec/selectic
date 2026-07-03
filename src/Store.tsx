@@ -130,12 +130,24 @@ export interface FooterButtonConfig {
 
 /** Configuration for the extended-list footer bar.
  *
- * When provided (even empty), the footer is rendered under the list. Each
- * entry controls one of the four semantic buttons; a missing entry hides that
- * button. */
+ * The three left-side links are displayed by default in `multiple` mode.
+ * A `visible: false` entry hides one of them.
+ *
+ * The two right-side buttons are opt-in: they are only displayed when an
+ * entry exists for them.
+ *
+ * In both cases the values of the entry win over the defaults.
+ */
 export interface FooterConfig {
     selectAll?: FooterButtonConfig;
     invertSelection?: FooterButtonConfig;
+    /** Toggles the list between the normal view and a view displaying
+     * only the selected items.
+     *
+     * Clicking an item in that view unselects it.
+     *
+     * Only meaningful in `multiple` mode. */
+    showSelection?: FooterButtonConfig;
     clearFilter?: FooterButtonConfig;
     apply?: FooterButtonConfig;
 }
@@ -420,6 +432,10 @@ export interface SelecticStoreState {
     /** Footer configuration; `null` means no footer is rendered. */
     footer: FooterConfig | null;
 
+    /** When true (multiple mode), the extended list renders only the
+     * currently-selected items instead of the full option set. */
+    showSelection: boolean;
+
     /** Inner status which should be modified only by store */
     status: {
         /** If true, a search is currently done */
@@ -497,8 +513,12 @@ interface Messages {
     footerSelectAll: string;
     footerUnselectAll: string;
     footerInvertSelection: string;
+    footerShowSelection: string;
+    footerShowAll: string;
+    footerClearSelection: string;
     footerClearFilter: string;
     footerApply: string;
+    showingSelection: string;
 }
 
 export type PartialMessages = { [K in keyof Messages]?: Messages[K] };
@@ -544,8 +564,12 @@ let messages: Messages = {
     footerSelectAll: 'Select all',
     footerUnselectAll: 'Unselect all',
     footerInvertSelection: 'Invert selection',
+    footerShowSelection: 'Show selection',
+    footerShowAll: 'Show all',
+    footerClearSelection: 'Clear selection',
     footerClearFilter: 'Clear filter',
     footerApply: 'Apply',
+    showingSelection: 'Showing selection (%s)',
 };
 
 let defaultFamilyIcon: IconFamily = 'selectic';
@@ -600,6 +624,15 @@ export default class SelecticStore {
 
     /** If true, it is possible to click on group to select all items inside */
     public allowGroupSelection: ComputedRef<boolean>;
+
+    /** The options currently displayed by the list. It is the only index
+     * space shared by the views and the keyboard navigation: in the "show
+     * selection" view it is a subset of `state.filteredOptions`. */
+    public displayedOptions: ComputedRef<OptionItem[]>;
+
+    /** Number of options the list should display (it can be greater than
+     * `displayedOptions.length` when they are not all fetched yet) */
+    public totalDisplayedOptions: ComputedRef<number>;
 
     public isPartial: ComputedRef<boolean>;
     public hasAllItems: ComputedRef<boolean>;
@@ -668,6 +701,7 @@ export default class SelecticStore {
             selectedOptions: null,
             selectionIsExcluded: false,
             selectionOverflow: 'collapsed',
+            showSelection: false,
             strictValue: false,
             totalAllOptions: Infinity,
             totalDynOptions: Infinity,
@@ -714,6 +748,35 @@ export default class SelecticStore {
             }
 
             return isPartial;
+        });
+
+        this.displayedOptions = computed(() => {
+            const state = this.state;
+
+            if (this.isShowingSelection) {
+                /* "Show selection" view: only the currently selected items
+                 * are displayed. Unselecting one removes it from the list
+                 * (the getter re-runs). */
+                return state.filteredOptions.filter(
+                    (item) => item.selected && !item.isGroup);
+            }
+
+            return state.filteredOptions;
+        });
+
+        this.totalDisplayedOptions = computed(() => {
+            const state = this.state;
+
+            if (this.isShowingSelection) {
+                return unref(this.displayedOptions).length;
+            }
+
+            const total = state.totalFilteredOptions;
+
+            /* it is Infinity until the options have been built */
+            return Number.isFinite(total) && total > 0
+                ? total
+                : state.filteredOptions.length;
         });
 
         this.hasAllItems = computed(() => {
@@ -767,6 +830,20 @@ export default class SelecticStore {
         watch(() => this.props.value, () => {
             const value = this.props.value ?? null;
             this.commit('internalValue', value);
+        }, { deep: true });
+
+        /* Auto-exit "show selection" view when the selection empties out
+         * (either via individual unselects in that view, via the Clear
+         * selection button, or via an external change). Keeps the UI from
+         * being stranded on an empty list with no way back. */
+        watch(() => this.state.internalValue, () => {
+            if (!this.state.showSelection || !this.state.multiple) {
+                return;
+            }
+            const value = this.state.internalValue;
+            if (!Array.isArray(value) || value.length === 0) {
+                this.state.showSelection = false;
+            }
         }, { deep: true });
 
         watch(() => this.props.selectionIsExcluded, () => {
@@ -911,6 +988,9 @@ export default class SelecticStore {
                 closePreviousSelectic = undefined;
             }
             this.state.activeChipIdx = -1;
+            /* the "show selection" view is transient: reopening the list
+             * must start again from the whole set of options */
+            this.state.showSelection = false;
             if (value) {
                 if (this.state.disabled) {
                     this.commit('isOpen', false);
@@ -1214,9 +1294,7 @@ export default class SelecticStore {
      * rendered by the virtual list. */
     public moveActiveItem(action: NavigationAction) {
         const state = this.state;
-        const totalItems = Number.isFinite(state.totalFilteredOptions)
-            ? state.totalFilteredOptions
-            : state.filteredOptions.length;
+        const totalItems = unref(this.totalDisplayedOptions);
         const lastIdx = totalItems - 1;
 
         if (lastIdx < 0) {
@@ -1274,7 +1352,7 @@ export default class SelecticStore {
         }
 
         const state = this.state;
-        const options = state.filteredOptions;
+        const options = unref(this.displayedOptions);
 
         if (!options.length) {
             return;
@@ -1391,7 +1469,7 @@ export default class SelecticStore {
             return;
         }
 
-        const item = state.filteredOptions[index];
+        const item = unref(this.displayedOptions)[index];
 
         if (!item || item.disabled) {
             return;
@@ -1539,9 +1617,7 @@ export default class SelecticStore {
     private activateItemAt(idx: number) {
         const state = this.state;
         const marginSize = unref(this.marginSize);
-        const totalItems = Number.isFinite(state.totalFilteredOptions)
-            ? state.totalFilteredOptions
-            : state.filteredOptions.length;
+        const totalItems = unref(this.totalDisplayedOptions);
         /* Same formulas as the ones used by List to compute the slice of
          * rendered options */
         const endIndex = Math.min(state.offsetItem + marginSize, totalItems);
@@ -1558,7 +1634,7 @@ export default class SelecticStore {
     /** First enabled option index from fromIdx to untilIdx (inclusive).
      * Options not fetched yet are considered enabled. */
     private findEnabledItem(fromIdx: number, untilIdx: number): number | null {
-        const options = this.state.filteredOptions;
+        const options = unref(this.displayedOptions);
         const step = fromIdx <= untilIdx ? 1 : -1;
         const stopIdx = untilIdx + step;
 
@@ -1573,6 +1649,21 @@ export default class SelecticStore {
 
     /* }}} */
     /* {{{ ARIA ids */
+
+    /** True while the list is restricted to the selected items.
+     *
+     * It is never active in exclusion mode: `internalValue` then holds the
+     * *excluded* items, so a "selection" view would display exactly the
+     * options which are not selected. */
+    public get isShowingSelection(): boolean {
+        const state = this.state;
+
+        return state.multiple && state.showSelection
+            && !state.selectionIsExcluded
+            /* in dynamic mode the not-yet-fetched selected items are not
+             * in `filteredOptions`, so the view would be incomplete */
+            && unref(this.hasFetchedAllItems);
+    }
 
     /** Id of the listbox element (the list of options) */
     public get listBoxId(): string {

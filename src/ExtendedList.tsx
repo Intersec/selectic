@@ -98,12 +98,26 @@ export default class ExtendedList extends Vue<Props> {
         }
 
         const store = this.store;
+        const state = store.state;
+        const labels = store.data.labels;
 
-        if (store.state.filteredOptions.length === 0) {
-            if (store.state.searchText) {
-                return store.data.labels.noResult;
+        /* "Show selection" view: surface a persistent hint about the
+         * filtered scope with the current selection count. When the
+         * selection is empty the store's watcher flips `showSelection`
+         * back off, so this branch is only hit while there is at least
+         * one selected item. */
+        if (store.isShowingSelection) {
+            const count = Array.isArray(state.internalValue)
+                ? state.internalValue.length
+                : 0;
+            return labels.showingSelection.replace(/%s/, String(count));
+        }
+
+        if (state.filteredOptions.length === 0) {
+            if (state.searchText) {
+                return labels.noResult;
             }
-            return store.data.labels.noData;
+            return labels.noData;
         }
         return '';
     }
@@ -346,7 +360,7 @@ export default class ExtendedList extends Vue<Props> {
 
     /* }}} */
 
-    @Emits(['footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply'])
+    @Emits(['footer:selectAll', 'footer:invertSelection', 'footer:showSelection', 'footer:clearSelection', 'footer:clearFilter', 'footer:apply'])
     public render() {
         const store = this.store;
         const state = store.state;
@@ -421,6 +435,8 @@ export default class ExtendedList extends Vue<Props> {
                         on={{
                             selectAll: () => this.$emit('footer:selectAll'),
                             invertSelection: () => this.$emit('footer:invertSelection'),
+                            showSelection: () => this.$emit('footer:showSelection'),
+                            clearSelection: () => this.$emit('footer:clearSelection'),
                             clearFilter: () => this.$emit('footer:clearFilter'),
                             apply: () => this.$emit('footer:apply'),
                         }}

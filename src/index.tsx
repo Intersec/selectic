@@ -81,6 +81,8 @@ type EventType =
     | 'item:click'
     | 'footer:selectAll'
     | 'footer:invertSelection'
+    | 'footer:showSelection'
+    | 'footer:clearSelection'
     | 'footer:clearFilter'
     | 'footer:apply';
 
@@ -180,11 +182,11 @@ export interface ParamProps {
 
     /** Footer configuration.
      *
-     * When present (even as an empty object), a footer bar is rendered under
-     * the list. Each entry `selectAll`, `invertSelection`, `clearFilter`,
-     * `apply` configures the corresponding button; a missing entry hides that
-     * button. Clicks emit `footer:selectAll`, `footer:invertSelection`,
-     * `footer:clearFilter`, `footer:apply` on the Selectic root. */
+     * When present (even as an empty object), a footer bar is rendered
+     * under the list. Each entry configures the matching button, and
+     * clicking it emits the related `footer:*` event.
+     *
+     * See `FooterConfig` for the available buttons. */
     footer?: FooterConfig;
 }
 
@@ -913,7 +915,7 @@ export default class Selectic extends Vue<Props> {
     private _emit(event: 'input' | 'change', value: SelectedValue, options: EventChangeOptions): void;
     private _emit(event: 'open' | 'close' | 'focus' | 'blur', options: EventOptions): void;
     private _emit(event: 'item:click', value: OptionId, options: EventOptions): void;
-    private _emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply', options: EventOptions): void;
+    private _emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply', options: EventOptions): void;
     private _emit(event: EventType, ...args: any[]) {
         this.$emit(event, ...args);
 
@@ -925,7 +927,7 @@ export default class Selectic extends Vue<Props> {
     private emit(event: 'input' | 'change', value: SelectedValue, isExcluded: boolean): void;
     private emit(event: 'open' | 'close' | 'focus' | 'blur'): void;
     private emit(event: 'item:click', value: OptionId): void;
-    private emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply'): void;
+    private emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply'): void;
     private emit(event: EventType, value?: SelectedValue | OptionId, isExcluded?: boolean) {
         const automatic = this.store.state.status.automaticChange;
         const options: EventOptions = {
@@ -961,6 +963,8 @@ export default class Selectic extends Vue<Props> {
                 break;
             case 'footer:selectAll':
             case 'footer:invertSelection':
+            case 'footer:showSelection':
+            case 'footer:clearSelection':
             case 'footer:clearFilter':
             case 'footer:apply':
                 this._emit(event, options);
@@ -1080,6 +1084,8 @@ export default class Selectic extends Vue<Props> {
                     on={{
                         'footer:selectAll': () => this.emit('footer:selectAll'),
                         'footer:invertSelection': () => this.emit('footer:invertSelection'),
+                        'footer:showSelection': () => this.emit('footer:showSelection'),
+                        'footer:clearSelection': () => this.emit('footer:clearSelection'),
                         'footer:clearFilter': () => this.emit('footer:clearFilter'),
                         'footer:apply': () => this.emit('footer:apply'),
                     }}
@@ -1148,6 +1154,8 @@ export default class Selectic extends Vue<Props> {
                     on={{
                         'footer:selectAll': () => this.emit('footer:selectAll'),
                         'footer:invertSelection': () => this.emit('footer:invertSelection'),
+                        'footer:showSelection': () => this.emit('footer:showSelection'),
+                        'footer:clearSelection': () => this.emit('footer:clearSelection'),
                         'footer:clearFilter': () => this.emit('footer:clearFilter'),
                         'footer:apply': () => this.emit('footer:apply'),
                     }}
@@ -1267,7 +1275,7 @@ export default class Selectic extends Vue<Props> {
 
     @Emits([
         'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
-        'footer:selectAll', 'footer:invertSelection', 'footer:clearFilter', 'footer:apply',
+        'footer:selectAll', 'footer:invertSelection', 'footer:showSelection', 'footer:clearSelection', 'footer:clearFilter', 'footer:apply',
     ])
     public render() {
         const id = this.id || undefined;
