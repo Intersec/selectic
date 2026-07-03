@@ -176,7 +176,15 @@ export default class List extends Vue<Props> {
     }
 
     private checkOffset() {
-        const scrollTop = this.$refs.elList.scrollTop;
+        const elList = this.$refs.elList;
+
+        if (!elList) {
+            /* options can change before the component is mounted (like the
+             * autoSelect done at creation in multilines mode) */
+            return;
+        }
+
+        const scrollTop = elList.scrollTop;
         const topIndex = Math.floor(scrollTop / this.itemHeight);
         const total = this.totalItems;
         const itemsPerPage = this.store.data.itemsPerPage;
