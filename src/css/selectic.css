@@ -110,6 +110,9 @@
 
 .has-feedback .selectic__icon-container.form-control-feedback {
     right: 0;
+    /* the icon container has its own click handler to toggle the list, so it
+     * must receive pointer events despite the .form-control-feedback rule */
+    pointer-events: auto;
 }
 
 /* The input which contains the selected value
