@@ -463,6 +463,7 @@ export default class MainInput extends Vue<Props> {
                     'form-control-feedback',
                     {focused: this.store.state.isOpen}
                 ]}
+                data-test="selectic-toggle"
                 on={{
                     'click.prevent.stop': () => this.toggleFocus(),
                 }}
