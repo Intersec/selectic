@@ -92,6 +92,14 @@ body {
 **:warning: Currently this value is also hard-coded in javascript, so it can
 break the scroll height estimation if this value is changed.**
 
+### Options
+
+* **--selectic-option-image-size** _(default: `1.5em`)_: Size of the square
+  box displaying the image of an option (an `icon` prefixed with `img:`).
+
+* **--selectic-option-image-radius** _(default: `3px`)_: Border radius of that
+  box. Set it to `50%` for round avatars.
+
 ### Messages
 
 * **--selectic-info-color** _(default: `#ffffff`)_: Text color of information

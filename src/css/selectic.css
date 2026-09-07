@@ -50,6 +50,10 @@
     --selectic-footer-btn-primary-border: #2d4d86;
     --selectic-footer-btn-primary-color: #ffffff;
 
+    /* Image icon of an option (`icon: 'img:<url>'`) */
+    --selectic-option-image-size: 1.5em;
+    --selectic-option-image-radius: 3px;
+
     /* Keyboard focus indicator */
     --selectic-focus-outline-color: #66afe9;
 
@@ -553,6 +557,25 @@
  * unset on the consumer side if a different spacing is needed. */
 .selectic-icon-space-after {
     margin-right: 5px;
+}
+
+/* Image displayed instead of a class-based icon, when the icon of the
+ * option is prefixed with `img:`.
+ *
+ * The size is fixed so that the box is already reserved while the image
+ * loads, and stays reserved when it cannot be loaded at all: the rows of
+ * the list keep the same alignment either way. `cover` handles the
+ * avatars which are not square. */
+.selectic__option-image {
+    display: inline-block;
+    box-sizing: border-box;
+    vertical-align: middle;
+    flex: none;
+
+    width: var(--selectic-option-image-size);
+    height: var(--selectic-option-image-size);
+    border-radius: var(--selectic-option-image-radius);
+    object-fit: cover;
 }
 
 .selectic-spin {

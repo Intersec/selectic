@@ -81,6 +81,13 @@ given class (with no prefix).
 In some case, the prefix `current:` could be used to use the current icon
 family.
 
+The prefix `img:` is different from the others: the rest of the value is the
+URL of an image to display, and it is never resolved through an icon family.
+It is accepted only on the `icon` of an option, not on the icons of the
+component itself (`icons`, `changeIcons()`).
+
+Read [the description of the option `icon`](list.md#object) for more information.
+
 
 With `selectic:`, `raw:`, or `current:` prefix, it is also possible to add a
 `:spin` suffix in order to add the _spin_ on the icon.

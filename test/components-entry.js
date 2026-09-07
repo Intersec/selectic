@@ -13,4 +13,5 @@ export { default as Filter } from '../lib/Filter.js';
 export { default as FilterSearch } from '../lib/FilterSearch.js';
 export { default as Footer } from '../lib/Footer.js';
 export { default as Icon } from '../lib/Icon.js';
+export { default as OptionIcon } from '../lib/OptionIcon.js';
 export { default as Store } from '../lib/Store.js';

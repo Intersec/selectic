@@ -40,9 +40,38 @@ selection (it can always be removed by changing `value` of the component).
   `''`).
 * **style** {`string`}: css style which are applied on the option (default:
   `''`).
-* **icon** {`string`}: class names which are applied on a `<span>` before text —
-  both in the dropdown option **and** next to the selected value(s) in the input
-  — to display an icon (default: `''`).
+* **icon** {`string`}: icon displayed before the text — both in the dropdown
+  option **and** next to the selected value(s) in the input (default: `''`).
+
+  The value is a list of class names, which are applied on a `<span>`.
+  Prefixed with `img:`, the rest of the value is the URL of an image to
+  display instead. Any scheme is accepted, `blob:` and `data:` as well as
+  `https:`.
+
+  ```javascript
+  const options = [
+      { id: 1, text: 'With a class', icon: 'fa fa-star' },
+      { id: 2, text: 'With an image', icon: 'img:https://example.org/a.png' },
+      { id: 3, text: 'With a blob', icon: 'img:blob:https://example.org/9d4b' },
+      { id: 4, text: 'With an empty box', icon: 'img:' },
+      { id: 5, text: 'Without any icon' },
+  ];
+  ```
+
+  The image is displayed in a square box of a fixed size, which is reserved
+  before the image is loaded. The box is kept even when the image cannot be
+  loaded, so that the option stays aligned with the others. Its size and its
+  border radius are set with the
+  [CSS variables of the options](css.md#options).
+
+  `img:` alone, without any URL, displays the empty box (option 4 above).
+  This is how an option with no image stays aligned in a list where the
+  others have one. An option with no `icon` at all reserves no space (option
+  5 above).
+
+  An `img:` value is not resolved through the
+  [icon families](changeIcons.md#icon-family).
+
 * **options** {`options[]`}: an other list of options. The current option is
   considered as a group (equivalent of `optgroup`) (default: `undefined`).
 * **group** {`string | number`}: If set, the option is part of the given group.

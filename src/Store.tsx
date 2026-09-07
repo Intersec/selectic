@@ -36,6 +36,14 @@ export interface OptionValue {
     group?: StrictOptionId;
     className?: string;
     style?: string;
+
+    /** Icon displayed before the text of the option.
+     *
+     * The value is a list of class names, unless it is prefixed with
+     * `img:`: the rest is then the URL of an image to display (any
+     * scheme, `https:` as well as `blob:` or `data:`).
+     *
+     * An `img:` value is not resolved through the icon families. */
     icon?: string;
     options?: OptionValue[];
     exclusive?: boolean;
