@@ -4,7 +4,9 @@
 
 [List of all properties](properties.md)
 
-Selectic supports common properties which are related to `<select>` element ([read dom properties document](domProperties.md)), but they are some more which are more related to the nature of selectic.
+Selectic supports common properties which are related to `<select>` element
+([read dom properties document](domProperties.md)), but they are some more which
+are more related to the nature of selectic.
 
 * [footer](extendedProperties.md#footer)
 * [groups](extendedProperties.md#groups)
@@ -40,9 +42,13 @@ Type: `FooterConfig`
 
 Default: `undefined`
 
-When this property is set (even as an empty object `{}`), a footer bar is displayed under the options list, with up to five buttons. Each entry configures one button; a missing entry hides that button.
+When this property is set (even as an empty object `{}`), a footer bar is
+displayed under the options list, with up to five buttons. Each entry configures
+one button; a missing entry hides that button.
 
-In _multiple_ mode, the footer is displayed even without this property: _Select all_ and _Invert selection_ are enabled by default (the two other buttons remain opt-in).
+In _multiple_ mode, the footer is displayed even without this property: _Select
+all_ and _Invert selection_ are enabled by default (the two other buttons remain
+opt-in).
 
 ```typescript
 interface FooterConfig {
@@ -122,7 +128,8 @@ Default: `[]`
 
 This property list options which should contains other options.
 
-It is required to fill this property only in _dynamic_ mode in order to know to which group their property `group` refers.
+It is required to fill this property only in _dynamic_ mode in order to know to
+which group their property `group` refers.
 
 ```html
 <selectic
@@ -142,13 +149,25 @@ Type: `boolean | number`
 
 Default: `false`
 
-If `true`, Selectic renders its content inline (search input + options list, always visible) instead of the input-with-dropdown layout. There is no main input anymore: the selection is visible through the selected state of the options.
+If `true`, Selectic renders its content inline (search input + options list,
+always visible) instead of the input-with-dropdown layout. There is no main
+input anymore: the selection is visible through the selected state of the
+options.
 
-A **number** switches the mode on as well, and sets how many options the inline list displays at once before scrolling: `:multilines="5"` is a shortcut for `multilines` + [`displayedItems: 5`](params.md#displayeditems). The same rules apply: the value is an order of magnitude rather than an exact count, and the minimum is `2` (any smaller value is raised to `2`). `0` and `false` both keep the dropdown layout.
+A **number** switches the mode on as well, and sets how many options the inline
+list displays at once before scrolling: `:multilines="5"` is a shortcut for
+`multilines` + [`displayedItems: 5`](params.md#displayeditems). The same rules
+apply: the value is an order of magnitude rather than an exact count, and the
+minimum is `2` (any smaller value is raised to `2`). `0` and `false` both keep
+the dropdown layout.
 
-When [`params.displayedItems`](params.md#displayeditems) is given too, it takes precedence: it is the dedicated parameter, so `:multilines="5" :params="{ displayedItems: 20 }"` displays 20 options.
+When [`params.displayedItems`](params.md#displayeditems) is given too, it takes
+precedence: it is the dedicated parameter, so `:multilines="5" :params="{
+displayedItems: 20 }"` displays 20 options.
 
-The component root gets the `selectic--multilines` class. When placed inside a flex container, the list fills the available height and scrolls internally instead of growing unbounded.
+The component root gets the `selectic--multilines` class. When placed inside a
+flex container, the list fills the available height and scrolls internally
+instead of growing unbounded.
 
 ### Events
 
@@ -166,9 +185,13 @@ since clicking an option does not always move the DOM focus (Firefox and
 Safari do not focus every element on click), the pointer is watched too, so
 that interacting with the list is never reported as a blur.
 
-The [listFooter](slots.md#listFooter) slot allows adding content under the options list, at the same place as in the dropdown mode. The [footer](extendedProperties.md#footer) property is also supported (without the _Apply_ button).
+The [listFooter](slots.md#listFooter) slot allows adding content under the
+options list, at the same place as in the dropdown mode. The
+[footer](extendedProperties.md#footer) property is also supported (without the
+_Apply_ button).
 
-See also the [accessibility page](accessibility.md#multilines-mode) for the keyboard and screen reader behavior in this mode.
+See also the [accessibility page](accessibility.md#multilines-mode) for the
+keyboard and screen reader behavior in this mode.
 
 ```html
 <!-- inline list, sized by displayedItems (10 options by default) -->
@@ -194,7 +217,8 @@ Type: `Boolean`
 
 Default: `false`
 
-If `noCache` is set to `true`, the dynamic cache is cleared each time the list is opening. This means that selectic has to re-fetch options every time.
+If `noCache` is set to `true`, the dynamic cache is cleared each time the list
+is opening. This means that selectic has to re-fetch options every time.
 
 This is useful when we want up to date options from backend.
 
@@ -218,14 +242,22 @@ Default: `false`
 If `open` is set to `true`, the selectic component will open (if closed).
 If `open` is set to `false`, the selectic component will close (if opened).
 
-This allows to force the selectic to a given state. The state may be changed due to other user actions (like selecting a value which close the component). Then to re-open the component this attribute should be reset to `false` and then to `true`.
+This allows to force the selectic to a given state. The state may be changed due
+to other user actions (like selecting a value which close the component). Then
+to re-open the component this attribute should be reset to `false` and then to
+`true`.
 
 It also allows to start in an open state.
 
-This attribute purpose is to change the state programmatically. To keep state unchanged there are several other attributes ([disabled](domProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic), ...).
-The current state can be updated with the [open](events.md#open) and [close](events.md#close) events.
+This attribute purpose is to change the state programmatically. To keep state
+unchanged there are several other attributes
+([disabled](domProperties.md#disabled),
+[keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic), ...).
+The current state can be updated with the [open](events.md#open) and
+[close](events.md#close) events.
 
-It is also possible to change the "open" state with the method [toggleOpen](methods.md#toggleOpen).
+It is also possible to change the "open" state with the method
+[toggleOpen](methods.md#toggleOpen).
 
 ```html
 <selectic
@@ -240,9 +272,11 @@ Type: `Option[]`
 
 Default: `[]`
 
-This property is to list all options available ([read how to build a list](list.md)).
+This property is to list all options available
+([read how to build a list](list.md)).
 
-This property can be omitted in dynamic mode ([read how to build dynamic list](dynamic.md)).
+This property can be omitted in dynamic mode
+([read how to build dynamic list](dynamic.md)).
 
 ## selectionIsExcluded
 
@@ -252,7 +286,8 @@ Default: `false`
 
 It should be only used in _multiple_ mode.
 
-If it is set to `true`, it means that current `value` are options which are **not** selected.
+If it is set to `true`, it means that current `value` are options which are
+**not** selected.
 
 It is useful with _dynamic_ mode where it is not possible to fetch all options.
 
@@ -276,7 +311,8 @@ The `texts` property is to change texts in the component.
 
 It is possible to change all texts or only some.
 
-It changes the texts only for this component. To change texts for all selectic components, you should use the static method `changeTexts()`.
+It changes the texts only for this component. To change texts for all selectic
+components, you should use the static method `changeTexts()`.
 
 [Read the documentation about changing text](changeText.md).
 
@@ -295,6 +331,8 @@ It changes the texts only for this component. To change texts for all selectic c
 
 Type: `Object`
 
-This is a property for advanced configuration. Properties set in `params` should not change during the life time of a selectic component.
+This is a property for advanced configuration. Properties set in `params` should
+not change during the life time of a selectic component.
 
-[Read the advanced configuration documentation](params.md) to know more about the `params` property.
+[Read the advanced configuration documentation](params.md) to know more about
+the `params` property.

@@ -46,11 +46,13 @@ complete list of the available keys.
 
 ## 3.0.x → 3.1.x
 
-Selectic no more depends on Font-awesome. It embeds its own icons (from Material Design Icons).
+Selectic no more depends on Font-awesome. It embeds its own icons (from Material
+Design Icons).
 
 It is still possible to use Font-awesome icons (or from any other libraries).
 
-Read [the documentation section related to changing icons](./changeIcons.md) for more information on how to handle them.
+Read [the documentation section related to changing icons](./changeIcons.md) for
+more information on how to handle them.
 
 ## 1.3.x → 3.x
 
@@ -66,7 +68,8 @@ to see all implications.
 
 The argument given when events are emitted have been changed.
 
-For example to listen to a `change` event with Selectic 1.3.x you could write something like:
+For example to listen to a `change` event with Selectic 1.3.x you could write
+something like:
 
 ```
 <Selectic @change="(id, isExcluded, instance) => ..."></Selectic>

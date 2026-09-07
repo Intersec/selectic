@@ -5,7 +5,8 @@
 [List of all properties](properties.md)
 
 In property `params` you can configure selectic to behave the way you want.
-All configurations set in this property should not change during the component life.
+All configurations set in this property should not change during the component
+life.
 
 This property is an object with several attributes which are listed below.
 
@@ -34,9 +35,11 @@ This property is an object with several attributes which are listed below.
 
 Type: `boolean`
 
-If `allowClearSelection` is set to `true`, it will be possible to remove the selection to have nothing selected.
+If `allowClearSelection` is set to `true`, it will be possible to remove the
+selection to have nothing selected.
 
-If `allowClearSelection` is set to `false`, it won't be possible to have nothing selected since an item has been selected. _This is the default value_.
+If `allowClearSelection` is set to `false`, it won't be possible to have nothing
+selected since an item has been selected. _This is the default value_.
 
 ```html
 <selectic
@@ -52,21 +55,32 @@ If `allowClearSelection` is set to `false`, it won't be possible to have nothing
 Type: `boolean` | `undefined`
 
 In _multiple_ mode, it is possible to invert the selection.
-However in _dynamic_ mode selectic does not know all options so it cannot select the opposite selections.
+However in _dynamic_ mode selectic does not know all options so it cannot select
+the opposite selections.
 
-To allow this feature in _dynamic_ mode, there is a property `selectionIsExcluded` which means that values returned by `getValue()`, `getSelection()` or emitted events are the ones which are not selected.
+To allow this feature in _dynamic_ mode, there is a property
+`selectionIsExcluded` which means that values returned by `getValue()`,
+`getSelection()` or emitted events are the ones which are not selected.
 
-As this behavior is more complex, it is needed to set `allowRevert` to `true` to enable it.
+As this behavior is more complex, it is needed to set `allowRevert` to `true` to
+enable it.
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-If `allowRevert` is set to `false`, the action to invert the selection will always be disabled.
+If `allowRevert` is set to `false`, the action to invert the selection will
+always be disabled.
 
-If `allowRevert` is set to `true`, the action to invert the selection will always be enabled. The parent of selectic component should support `selectionIsExcluded` property (which can be applied in _dynamic_ mode).
+If `allowRevert` is set to `true`, the action to invert the selection will
+always be enabled. The parent of selectic component should support
+`selectionIsExcluded` property (which can be applied in _dynamic_ mode).
 
-If `allowRevert` is set to `undefined` (is not set), the action to invert the selection will be enabled only if the `selectionIsExcluded` property is not needed (always in _static_ mode, and in _dynamic_ mode when all options are already fetched).
+If `allowRevert` is set to `undefined` (is not set), the action to invert the
+selection will be enabled only if the `selectionIsExcluded` property is not
+needed (always in _static_ mode, and in _dynamic_ mode when all options are
+already fetched).
 
-Read [the extended properties documentation](extendedProperties.md) for more information about `selectionIsExcluded`.
+Read [the extended properties documentation](extendedProperties.md) for more
+information about `selectionIsExcluded`.
 
 ```html
 <selectic
@@ -81,7 +95,9 @@ Read [the extended properties documentation](extendedProperties.md) for more inf
 
 Type: `boolean`
 
-If `autoDisabled` is set to `true`, it will disable automatically the component if the list of options is empty or if there is only one which must be selected (`allowClearSelection` is not set).
+If `autoDisabled` is set to `true`, it will disable automatically the component
+if the list of options is empty or if there is only one which must be selected
+(`allowClearSelection` is not set).
 
 It doesn't apply for dynamic list ([see dynamic configuration](dynamic.md)).
 
@@ -100,7 +116,9 @@ By default, it is set to `true`.
 
 Type: `boolean`
 
-If `autoSelect` is set to `true`, it will select automatically the first item if the value is empty. It behaves like `<select>` which selects by default the first item.
+If `autoSelect` is set to `true`, it will select automatically the first item if
+the value is empty. It behaves like `<select>` which selects by default the
+first item.
 
 If `autoSelect` is set to `false`, it won't select anything automatically.
 
@@ -122,7 +140,8 @@ Type: `boolean`
 In multiple mode, if there are groups. It is possible to select all items
 under this group by clicking only on the group name.
 
-If `disableGroupSelection` is set to `true`, it will not be possible to click on the group (and so it will not select the items inside it).
+If `disableGroupSelection` is set to `true`, it will not be possible to click on
+the group (and so it will not select the items inside it).
 
 By default, it is set to `false`.
 
@@ -147,33 +166,47 @@ This behavior works only with the following condition:
 
 * multiple mode should be enabled: we should be able to select several items.
 
-* the component should be in static mode: otherwise it will not be possible to know which items are not loaded yet.
+* the component should be in static mode: otherwise it will not be possible to
+  know which items are not loaded yet.
 
-* the group should not be disabled: this is a way to forbid this action on some groups.
+* the group should not be disabled: this is a way to forbid this action on some
+  groups.
 
-* the parameter `disableGroupSelection` should not be `true`: this is to disabled this behavior.
+* the parameter `disableGroupSelection` should not be `true`: this is to
+  disabled this behavior.
 
 Moreover in the group some items may be not (un)selected:
 
-* The item should not be disabled: it should not be possible to select a disabled item
+* The item should not be disabled: it should not be possible to select a
+  disabled item
 
-* The item should not use exclusive mode: because otherwise only this one should be selected.
+* The item should not use exclusive mode: because otherwise only this one should
+  be selected.
 
-* Only items that matches the search will be selected: only visible items are (un)selected.
+* Only items that matches the search will be selected: only visible items are
+  (un)selected.
 
 ## displayedItems
 
 Type: `number`
 
-`displayedItems` is the number of options displayed at once in the opened list before scrolling.
+`displayedItems` is the number of options displayed at once in the opened list
+before scrolling.
 
-This value is an order of magnitude, not an exact count: a small part of the next option can still be visible.
+This value is an order of magnitude, not an exact count: a small part of the
+next option can still be visible.
 
-It also drives everything which reasons in "pages" of options: the threshold of [hideFilter](params.md#hidefilter) `'auto'`, the jump of the `PageUp` / `PageDown` keys, and the window of options requested while scrolling in [dynamic mode](dynamic.md).
+It also drives everything which reasons in "pages" of options: the threshold of
+[hideFilter](params.md#hidefilter) `'auto'`, the jump of the `PageUp` /
+`PageDown` keys, and the window of options requested while scrolling in
+[dynamic mode](dynamic.md).
 
-The minimum value is `2`; any smaller value is raised to `2`. Values which are not finite numbers (like `NaN`) are ignored.
+The minimum value is `2`; any smaller value is raised to `2`. Values which are
+not finite numbers (like `NaN`) are ignored.
 
-In [multilines](extendedProperties.md#multilines) mode the property can carry the value directly (`:multilines="5"`); `displayedItems` takes precedence when both are given.
+In [multilines](extendedProperties.md#multilines) mode the property can carry
+the value directly (`:multilines="5"`); `displayedItems` takes precedence when
+both are given.
 
 _`displayedItems` default value is `10`._
 
@@ -190,7 +223,8 @@ _`displayedItems` default value is `10`._
 
 Type: `OptionId`
 
-By default, if there is no selected options, the result given by `getValue()` returns `null`  (or `[]` in _multiple_ mode).
+By default, if there is no selected options, the result given by `getValue()`
+returns `null`  (or `[]` in _multiple_ mode).
 
 `emptyValue` allows to change this default value.
 
@@ -207,11 +241,14 @@ By default, if there is no selected options, the result given by `getValue()` re
 
 Type: `function (search, offset, limit) => Promise<{total, result}>`
 
-The purpose of this function is to return a list of option dynamically. With it, it is possible to fetch data build the list asynchronously (useful for very large list).
+The purpose of this function is to return a list of option dynamically. With it,
+it is possible to fetch data build the list asynchronously (useful for very
+large list).
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-It should return a promise which resolves with an object which contains the total number of items and the list of options asked by the request.
+It should return a promise which resolves with an object which contains the
+total number of items and the list of options asked by the request.
 
 ```html
 <selectic
@@ -251,7 +288,10 @@ This option allows you to change the behavior.
 
 Type: `function (option) => option`
 
-This callback function is called when items are displayed in the list. This allows to return specific class, style or icon depending on context, or to display a different text for the same option if it is in the list or in selection area.
+This callback function is called when items are displayed in the list. This
+allows to return specific class, style or icon depending on context, or to
+display a different text for the same option if it is in the list or in
+selection area.
 
 As argument, it receives an option item and should also return an option item.
 
@@ -276,7 +316,10 @@ As argument, it receives an option item and should also return an option item.
 
 Type: `function (option) => option`
 
-This callback function is called when items are displayed in the selected area. This allows to return specific class, style or icon depending on context, or to display a different text for ame option if it is in the list or in selection area.
+This callback function is called when items are displayed in the selected area.
+This allows to return specific class, style or icon depending on context, or to
+display a different text for ame option if it is in the list or in selection
+area.
 
 As argument, it receives an option item and should also return an option item.
 
@@ -302,7 +345,8 @@ This is used to display correctly the initial selected options.
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-It should return a promise which resolves with an array of options corresponding of the given ids.
+It should return a promise which resolves with an array of options corresponding
+of the given ids.
 
 ```html
 <selectic
@@ -319,9 +363,14 @@ It should return a promise which resolves with an array of options corresponding
 
 Type: `boolean` | `'auto'` | `'open'`
 
-If `hideFilter` is set to `true`, the search input is not displayed and it will not be possible to search for options.
+If `hideFilter` is set to `true`, the search input is not displayed and it will
+not be possible to search for options.
 
-If `hideFilter` is set to `'auto'`, the search input is hidden only when every option fits in the list without scrolling (see [displayedItems](params.md#displayeditems)), and is displayed otherwise. It is always displayed in _multiple_ mode and with dynamic options. _This is the default value_.
+If `hideFilter` is set to `'auto'`, the search input is hidden only when every
+option fits in the list without scrolling (see
+[displayedItems](params.md#displayeditems)), and is displayed otherwise. It is
+always displayed in _multiple_ mode and with dynamic options. _This is the
+default value_.
 
 If `hideFilter` is set to `false`, the search input is always displayed.
 
@@ -346,15 +395,19 @@ Type: `boolean | string`
 
 Default value: `false`
 
-By default, only one selectic component can be open at the same time. So if another Selectic component is open then any previously open component is closed.
+By default, only one selectic component can be open at the same time. So if
+another Selectic component is open then any previously open component is closed.
 
-When `keepOpenWithOtherSelectic` is set to `true`, this component stays open when any other Selectic component opens.
+When `keepOpenWithOtherSelectic` is set to `true`, this component stays open
+when any other Selectic component opens.
 
-When it is set to a `non-empty string`, this component stays open only when another Selectic component that matches the given CSS selector opens.
+When it is set to a `non-empty string`, this component stays open only when
+another Selectic component that matches the given CSS selector opens.
 
 For falsy values, the component always closes when another Selectic opens.
 
-Note: This attribute does not prevent closing when user clicks outside the component.
+Note: This attribute does not prevent closing when user clicks outside the
+component.
 
 ```html
 <selectic
@@ -380,9 +433,12 @@ Type: `'auto' | 'bottom' | 'top'`
 
 Default value: `'auto'`
 
-`listPosition` defines where the list should be displayed (at top or at bottom of the select button).
+`listPosition` defines where the list should be displayed (at top or at bottom
+of the select button).
 
-With the `'auto'` value it displays the list at bottom, but if there is not enough space (the select is at bottom of the page). It displays the list at top instead.
+With the `'auto'` value it displays the list at bottom, but if there is not
+enough space (the select is at bottom of the page). It displays the list at top
+instead.
 
 ```html
 <selectic
@@ -399,7 +455,8 @@ Type: `string`
 
 Default value: `'sort-ODE'`
 
-`optionBehavior` describes how different options should be ordered when they are set from different input.
+`optionBehavior` describes how different options should be ordered when they are
+set from different input.
 
 There are 3 different input:
 * _options_ attribute **(O)**
@@ -412,7 +469,8 @@ There are 3 different input:
 
 Display all sources in the given order.
 
-`sort-EDO` means that inner elements are displayed first, then element from dynamic options and finally the ones in the _options_ attributes.
+`sort-EDO` means that inner elements are displayed first, then element from
+dynamic options and finally the ones in the _options_ attributes.
 
 ### override
 
@@ -420,7 +478,9 @@ Display all sources in the given order.
 
 Display only one source (the first which is not empty).
 
-`force-DEO` means that it displays dynamic options if there are any, otherwise displays inner elements if they are set, otherwise display what is in _options_ attributes.
+`force-DEO` means that it displays dynamic options if there are any, otherwise
+displays inner elements if they are set, otherwise display what is in _options_
+attributes.
 
 ### Example
 
@@ -437,13 +497,17 @@ Display only one source (the first which is not empty).
 
 Type: `number`
 
-`pageSize` is the number of options requested in dynamic mode when selectic needs to display more options than it has in cache.
+`pageSize` is the number of options requested in dynamic mode when selectic
+needs to display more options than it has in cache.
 
-By changing this value you can optimize performance result (more or less requests vs memory cache consumption).
+By changing this value you can optimize performance result (more or less
+requests vs memory cache consumption).
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-Selectic displays [displayedItems](params.md#displayeditems) options at a time (10 by default), but it will call for a new request as soon as the last option index reach the half of page size.
+Selectic displays [displayedItems](params.md#displayeditems) options at a time
+(10 by default), but it will call for a new request as soon as the last option
+index reach the half of page size.
 
 _`pageSize` default value is `100`._
 
@@ -460,11 +524,19 @@ _`pageSize` default value is `100`._
 
 Type: `'collapsed'` | `'multiline'`
 
-`selectOverflow` is to describe how selected options should be displayed when they are not enough space to display them all (in _multiple_ mode).
+`selectOverflow` is to describe how selected options should be displayed when
+they are not enough space to display them all (in _multiple_ mode).
 
 Currently there are two supported behavior:
-* `'collapsed'`: the size of selectic input is not changed. If there is not enough space to display all selected options then it displays the possible ones then displays a _"+x others"_ in a badge (_x_ is the number of not displayed options). It is possible to watch these options with `title` or by opening selectic and see which options are selected. _This is the default value_.
-* `'multiline'`: If there is not enough space to display all selected options then it displays the others on another line. The size of the component can be higher than the allowed space.
+* `'collapsed'`: the size of selectic input is not changed. If there is not
+  enough space to display all selected options then it displays the possible
+  ones then displays a _"+x others"_ in a badge (_x_ is the number of not
+  displayed options). It is possible to watch these options with `title` or by
+  opening selectic and see which options are selected. _This is the default
+  value_.
+* `'multiline'`: If there is not enough space to display all selected options
+  then it displays the others on another line. The size of the component can be
+  higher than the allowed space.
 
 ```html
 <selectic
@@ -479,7 +551,8 @@ Currently there are two supported behavior:
 
 Type: `boolean`
 
-If `strictValue` is set to `true`, it will consider value as `undefined` if its value is not an id of `options`.
+If `strictValue` is set to `true`, it will consider value as `undefined` if its
+value is not an id of `options`.
 
 By default, it is set to `false`.
 

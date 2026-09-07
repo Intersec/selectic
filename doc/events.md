@@ -31,7 +31,8 @@ information ([(read more about isExcluded flag)](dynamic.md#exclude-selection)).
 
 An event _change_ is emitted when list is closing and selection has changed.
 
-If changes are done on **value** and selectic is closed, the event will also be emited.
+If changes are done on **value** and selectic is closed, the event will also be
+emited.
 
 In [multilines](extendedProperties.md#multilines) mode the list is always
 displayed, so there is no closing to wait for: _change_ is emitted with
@@ -47,7 +48,8 @@ information ([(read more about isExcluded flag)](dynamic.md#exclude-selection)).
 
 ## item:click
 
-An event _item:click_ is emitted when user click on a selected item in _multiple_ mode (which are displayed in the main input).
+An event _item:click_ is emitted when user click on a selected item in
+_multiple_ mode (which are displayed in the main input).
 
 2 arguments are sent with the event:
 * The id of the selected item.
@@ -81,7 +83,8 @@ Is an alias of the [close](#close) event.
 
 This is a string of an event that can be triggered by Selectic.
 
-Its value can be `'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click'`
+Its value can be `'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' |
+'item:click'`
 
 ## EventOptions
 

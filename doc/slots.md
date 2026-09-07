@@ -2,17 +2,23 @@
 
 [Back to documentation index](main.md)
 
-Slots allow passing template fragment to a child component, and let the child component render the fragment within its own template.
+Slots allow passing template fragment to a child component, and let the child
+component render the fragment within its own template.
 
 * [listFooter](#listFooter)
 
 ## listFooter
 
-The `listFooter` slot allows adding custom content to the bottom of the options list. It is displayed below the options, at the same place in both the dropdown and the [multilines](extendedProperties.md#multilines) modes (above the messages and the footer bar).
+The `listFooter` slot allows adding custom content to the bottom of the options
+list. It is displayed below the options, at the same place in both the dropdown
+and the [multilines](extendedProperties.md#multilines) modes (above the messages
+and the footer bar).
 
-This slot can be useful to display additional elements or information, for example a button to trigger a custom action (select all, create item, etc.).
+This slot can be useful to display additional elements or information, for
+example a button to trigger a custom action (select all, create item, etc.).
 
-The slot content is free. It can be any HTML or Vue component, and no constraints are enforced.
+The slot content is free. It can be any HTML or Vue component, and no
+constraints are enforced.
 
 No default styling is applied to this slot. Styling is left to the user.
 
