@@ -17,6 +17,8 @@ export default class Icon extends Vue<Props> {
     private get vueIcon();
     private get spinClass();
     private get spinActive();
+    /** With a title: labelled image; without: decorative (hidden to AT) */
+    private get ariaAttributes();
     private renderInnerIcon;
     private renderSpanIcon;
     render(): import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {

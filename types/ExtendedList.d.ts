@@ -22,10 +22,6 @@ export default class ExtendedList extends Vue<Props> {
     private availableSpace;
     /** check if the height of the box has been completely estimated. */
     get isFullyEstimated(): boolean;
-    get searchingLabel(): string;
-    get searching(): boolean;
-    get errorMessage(): string;
-    get infoMessage(): string;
     get bestPosition(): 'top' | 'bottom';
     get position(): 'top' | 'bottom';
     get horizontalStyle(): string;
@@ -39,6 +35,15 @@ export default class ExtendedList extends Vue<Props> {
     private computeListSize;
     private clickHeaderGroup;
     private onKeyDown;
+    /** The combobox this panel is attached to (it lives outside the panel,
+     * which is appended to the body) */
+    private get comboboxEl();
+    /** The panel is appended at the end of body, so its buttons are not in
+     * the natural tab order of the page. From the combobox, Tab enters the
+     * panel; from its last element, the focus goes back to the combobox so
+     * Tab leaves the component naturally.
+     * Returns true when the event is fully handled. */
+    private handleTabKey;
     mounted(): void;
     unmounted(): void;
     render(): h.JSX.Element;

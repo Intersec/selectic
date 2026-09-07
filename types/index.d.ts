@@ -5,7 +5,7 @@ import MainInput from './MainInput';
 import ExtendedList from './ExtendedList';
 import MultilinesList from './MultilinesList';
 export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, FooterConfig, FooterButtonConfig, };
-type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click' | 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply';
+type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 export interface EventOptions {
     instance: Selectic;
     eventType: EventType;
@@ -81,14 +81,13 @@ export interface ParamProps {
     disableGroupSelection?: boolean;
     /** Footer configuration.
      *
-     * When present (even as an empty object), a footer bar is rendered under
-     * the list. Each entry `selectAll`, `invertSelection`, `showSelection`,
-     * `clearFilter`, `apply` configures the corresponding button; a missing
-     * entry hides that button. Clicks emit `footer:selectAll`,
-     * `footer:invertSelection`, `footer:showSelection`, `footer:clearFilter`,
-     * `footer:apply` on the Selectic root. A `footer:clearSelection` event
-     * is also emitted when the contextual "Clear selection" button (shown
-     * while `state.showSelection` is on) is clicked. */
+     * When present (even as an empty object), a footer bar is rendered
+     * under the list. Each entry configures the matching button. See
+     * `FooterConfig` for the available buttons.
+     *
+     * Every button acts on its own: the result is observed through the
+     * `input` and `change` events. Buttons with a custom behavior belong
+     * to the `listFooter` slot. */
     footer?: FooterConfig;
 }
 export type OnCallback = (event: string, ...args: any[]) => void;
@@ -133,9 +132,12 @@ export interface Props {
     /** If true, the component opens (at start or if it is closed).
      *  If false, the components closes (if it is opened). */
     open?: boolean;
-    /** If true, renders the list content inline (search bar + items) instead
-     *  of the standard input-with-dropdown layout. */
-    multilines?: boolean;
+    /** If true, renders the list content inline (search bar + items)
+     *  instead of the standard input-with-dropdown layout.
+     *  A number switches the mode on too, and sets how many items the
+     *  inline list displays at once (like `params.displayedItems`, which
+     *  keeps the priority when both are given). */
+    multilines?: boolean | number;
     /** Props which is not expected to change during the life time of the
      * component.
      * These parameters modify the component behavior but are not official
@@ -175,7 +177,7 @@ export default class Selectic extends Vue<Props> {
     iconFamily?: IconFamily;
     noCache: boolean;
     open?: boolean;
-    multilines: boolean;
+    multilines: boolean | number;
     params: ParamProps;
     /** For tests */
     _on?: OnCallback;
@@ -186,9 +188,22 @@ export default class Selectic extends Vue<Props> {
     elementRight: number;
     width: number;
     private hasBeenRendered;
+    /** Multilines mode only: true while the DOM focus is inside the
+     * component (there is no dropdown lifecycle to rely on) */
+    private multilinesFocused;
     private store;
     private _elementsListeners;
+    private _multilinesListeners?;
+    /** Multilines mode: whether the last pointer interaction started
+     * inside the component (see `checkMultilinesFocus`) */
+    private _pointerIsInside;
     private _oldValue;
+    /** The inline layout is on for `true` as well as for a number of items
+     * (`0` and `false` both keep the dropdown layout) */
+    get isMultilines(): boolean;
+    /** Number of items the inline list displays at once, when the mode is
+     * given as a number */
+    get multilinesItems(): number | undefined;
     get isFocused(): boolean;
     get scrollListener(): () => void;
     get outsideListener(): (evt: MouseEvent) => void;
@@ -230,6 +245,16 @@ export default class Selectic extends Vue<Props> {
     onOpenChanged(): void;
     onFocusChanged(): void;
     onInternalValueChange(): void;
+    /** Multilines mode: follow the focus inside the component, the way
+     * `checkFocus` does for the dropdown mode.
+     *
+     * The DOM focus alone is not enough here: clicking an option only
+     * focuses the closest focusable ancestor, and Firefox and Safari do not
+     * focus a `<button>` on click. The pointer is therefore watched too, so
+     * that interacting with the list is not reported as a blur. */
+    private addMultilinesFocusListeners;
+    private checkMultilinesFocus;
+    private removeMultilinesFocusListeners;
     private onInputValueFocus;
     private giveFocusBack;
     private checkFocus;

@@ -13,6 +13,13 @@ export interface OptionValue {
     group?: StrictOptionId;
     className?: string;
     style?: string;
+    /** Icon displayed before the text of the option.
+     *
+     * The value is a list of class names, unless it is prefixed with
+     * `img:`: the rest is then the URL of an image to display (any
+     * scheme, `https:` as well as `blob:` or `data:`).
+     *
+     * An `img:` value is not resolved through the icon families. */
     icon?: string;
     options?: OptionValue[];
     exclusive?: boolean;
@@ -82,19 +89,22 @@ export interface FooterButtonConfig {
 }
 /** Configuration for the extended-list footer bar.
  *
- * `params.footer` is merged additively with the multiple-mode defaults:
- * in `multiple` mode, the three left-side links (`selectAll`,
- * `invertSelection`, `showSelection`) always auto-appear unless a
- * `visible: false` entry is provided for them. The two right-side buttons
- * (`clearFilter`, `apply`) remain opt-in — they only render when an entry
- * for them exists in `params.footer`. Per-key config values (labels,
- * `textActive`, `disabled`, `title`) always win over the defaults. */
+ * The three left-side links are displayed by default in `multiple` mode.
+ * A `visible: false` entry hides one of them.
+ *
+ * The two right-side buttons are opt-in: they are only displayed when an
+ * entry exists for them.
+ *
+ * In both cases the values of the entry win over the defaults.
+ */
 export interface FooterConfig {
     selectAll?: FooterButtonConfig;
     invertSelection?: FooterButtonConfig;
-    /** Toggles the extended list between the normal view (options mixed
-     * with selected items) and a view showing only the currently-selected
-     * items. Clicking an item in the "show selection" view unselects it.
+    /** Toggles the list between the normal view and a view displaying
+     * only the selected items.
+     *
+     * Clicking an item in that view unselects it.
+     *
      * Only meaningful in `multiple` mode. */
     showSelection?: FooterButtonConfig;
     clearFilter?: FooterButtonConfig;
@@ -239,8 +249,6 @@ export interface SelecticStoreState {
     placeholder: string;
     /** If true, filters and controls are hidden */
     hideFilter: boolean;
-    /** If true, the filter panel is always open */
-    keepFilterOpen: boolean;
     /** Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
      * If false, the action is never available.
@@ -335,11 +343,10 @@ export type PartialIcons = {
 interface Messages {
     noFetchMethod: string;
     searchPlaceholder: string;
+    clearSearch: string;
     searching: string;
     cannotSelectAllSearchedItems: string;
     cannotSelectAllRevertItems: string;
-    selectAll: string;
-    excludeResult: string;
     reverseSelection: string;
     noData: string;
     noResult: string;
@@ -383,6 +390,13 @@ export default class SelecticStore {
     marginSize: ComputedRef<number>;
     /** If true, it is possible to click on group to select all items inside */
     allowGroupSelection: ComputedRef<boolean>;
+    /** The options currently displayed by the list. It is the only index
+     * space shared by the views and the keyboard navigation: in the "show
+     * selection" view it is a subset of `state.filteredOptions`. */
+    displayedOptions: ComputedRef<OptionItem[]>;
+    /** Number of options the list should display (it can be greater than
+     * `displayedOptions.length` when they are not all fetched yet) */
+    totalDisplayedOptions: ComputedRef<number>;
     isPartial: ComputedRef<boolean>;
     hasAllItems: ComputedRef<boolean>;
     hasFetchedAllItems: ComputedRef<boolean>;
@@ -425,6 +439,12 @@ export default class SelecticStore {
     /** First enabled option index from fromIdx to untilIdx (inclusive).
      * Options not fetched yet are considered enabled. */
     private findEnabledItem;
+    /** True while the list is restricted to the selected items.
+     *
+     * It is never active in exclusion mode: `internalValue` then holds the
+     * *excluded* items, so a "selection" view would display exactly the
+     * options which are not selected. */
+    get isShowingSelection(): boolean;
     /** Id of the listbox element (the list of options) */
     get listBoxId(): string;
     /** Id of an option element, given its index in the filtered list */
