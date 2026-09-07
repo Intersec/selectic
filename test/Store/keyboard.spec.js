@@ -1,6 +1,8 @@
 const {
     getOptions,
+    buildFetchCb,
     sleep,
+    DEBOUNCE_REQUEST,
 } = require('../helper.js');
 const tape = require('tape');
 const StoreFile = require('../dist/Store.js');
@@ -674,6 +676,47 @@ tape.test('active chip', (st) => {
     });
 });
 
+tape.test('navigation with unfetched options', (st) => {
+    function buildDynamicStore() {
+        const store = new Store({
+            fetchCallback: buildFetchCb({ total: 30 }),
+            params: { pageSize: 10 },
+        });
+
+        store.commit('isOpen', true);
+
+        return store;
+    }
+
+    st.test('End should reach the last option', async (t) => {
+        const store = buildDynamicStore();
+        await sleep(DEBOUNCE_REQUEST);
+
+        t.is(store.state.filteredOptions.length, 10,
+            'the fixture should have fetched a single page');
+
+        store.moveActiveItem('last');
+
+        /* options which are not fetched yet are considered enabled: the
+         * navigation must not stop at the end of the fetched page */
+        t.is(store.state.activeItemIdx, 29);
+
+        t.end();
+    });
+
+    st.test('PageDown should jump a whole page', async (t) => {
+        const store = buildDynamicStore();
+        await sleep(DEBOUNCE_REQUEST);
+
+        store.commit('activeItemIdx', 0);
+        store.moveActiveItem('pageDown');
+
+        t.is(store.state.activeItemIdx, 10);
+
+        t.end();
+    });
+});
+
 tape.test('ARIA ids', (st) => {
     st.test('should provide ids for list and options', (t) => {
         const store = new Store();
@@ -681,6 +724,19 @@ tape.test('ARIA ids', (st) => {
 
         t.is(store.listBoxId, `selectic-${uid}-list`);
         t.is(store.optionId(12), `selectic-${uid}-item-12`);
+
+        t.end();
+    });
+
+    st.test('should be unique between two instances', (t) => {
+        const first = new Store();
+        const second = new Store();
+
+        /* two Selectic on the same page must not share their ids, or
+         * `aria-controls` and `aria-activedescendant` would point at the
+         * elements of the other one */
+        t.notEqual(first.listBoxId, second.listBoxId);
+        t.notEqual(first.optionId(3), second.optionId(3));
 
         t.end();
     });
