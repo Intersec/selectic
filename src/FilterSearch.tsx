@@ -1,5 +1,7 @@
 /* File Purpose:
- * It renders the search input used by MultilinesList.
+ * It renders the search input of the list panel: the text field, and the
+ * button which empties it. It is used directly by MultilinesList, and
+ * through Filter by the dropdown panel.
  */
 
 import {Vue, Component, Prop, h} from 'vtyx';
@@ -9,7 +11,6 @@ import Icon from './Icon';
 
 export interface Props {
     store: Store;
-    onOpen?: () => void;
 
     /** If true, only handle keys pressed inside the parent component
      * (for always-displayed contexts like the multilines mode) */
@@ -29,9 +30,6 @@ export default class FilterSearch extends Vue<Props> {
 
     @Prop()
     private store: Store;
-
-    @Prop()
-    private onOpen?: () => void;
 
     @Prop({default: false})
     private scoped: boolean;
@@ -105,8 +103,6 @@ export default class FilterSearch extends Vue<Props> {
                 return;
             }
         }
-
-        this.onOpen?.();
 
         if (el) {
             el.value += key;

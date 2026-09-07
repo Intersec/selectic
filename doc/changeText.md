@@ -29,15 +29,23 @@ It is possible to replace only some sentences.
 
 * **cannotSelectAllSearchedItems**: This is an error message displayed if the action _select all_ is triggered but all options are not fetched and `allowRevert` property is not set to `true`. _Default value is `'Cannot select all items: too much items in the search result.'`_.
 
-* **selectAll**: The name of the action to _select all_ options. _Default value is `'Select all'`_.
+* **cannotSelectAllRevertItems**: This is an error message displayed when the action _select all_ cannot be applied because some options are not fetched yet. _Default value is `'Cannot select all items: some items are not fetched yet.'`_.
 
-* **excludeResult**: The name of the action to invert the selection. _Default value is `'Invert selection'`_.
+* **unknownPropertyValue**: This is an error message displayed when a property is given an unsupported value. `%s` is replaced with the property name. _Default value is `'property "%s" has incorrect values.'`_.
 
 * **footerSelectAll**: The label of the _Select all_ button in the [footer](extendedProperties.md#footer). _Default value is `'Select all'`_.
 
 * **footerUnselectAll**: The label of the _Select all_ button when all items are already selected. _Default value is `'Unselect all'`_.
 
 * **footerInvertSelection**: The label of the _Invert selection_ button in the [footer](extendedProperties.md#footer). _Default value is `'Invert selection'`_.
+
+* **footerShowSelection**: The label of the _Show selection_ button in the [footer](extendedProperties.md#footer), which restricts the list to the selected options. _Default value is `'Show selection'`_.
+
+* **footerShowAll**: The label of the _Show selection_ button while the list is already restricted to the selection, to come back to the whole list. _Default value is `'Show all'`_.
+
+* **footerClearSelection**: The label of the _Clear selection_ button, displayed in place of _Select all_ while the list is restricted to the selection. _Default value is `'Clear selection'`_.
+
+* **showingSelection**: The message displayed while the list is restricted to the selection. `%d` is replaced with the number of selected options. _Default value is `'Showing selection (%d)'`_.
 
 * **footerClearFilter**: The label of the _Clear filter_ button in the [footer](extendedProperties.md#footer). _Default value is `'Clear filter'`_.
 

@@ -7,6 +7,43 @@ version which want to upgrade them to latest version.
 
 **This is not something you have to read to understand and to use Selectic.**
 
+## 3.4.x → 3.5.x
+
+### The filter panel is no more collapsible
+
+The search input used to live in a panel which could be folded behind a
+handler. That handler has been removed: the search input is now always
+part of the list panel, next to the footer actions.
+
+The only visible consequence is the `hideFilter: 'open'` value, which
+used to unfold that panel. It is kept as an alias of `false` (the search
+input is always displayed), so existing code keeps working, but it does
+not do anything specific anymore.
+
+For the same reason, the `keepFilterOpen` attribute of the store state
+does not exist anymore.
+
+Read [the documentation of `hideFilter`](./params.md#hidefilter) for more
+information.
+
+### Renamed message keys
+
+The footer labels are now prefixed with `footer`, so that they can be
+told apart from the labels of the main input:
+
+| Removed key     | New key                 |
+| --------------- | ----------------------- |
+| `selectAll`     | `footerSelectAll`       |
+| `excludeResult` | `footerInvertSelection` |
+
+`changeTexts()` ignores the keys it does not know, so a project which
+still sets the old ones does not crash: its translations are silently
+dropped and the default English labels are displayed instead. TypeScript
+projects get a compilation error, which is the intended warning.
+
+Read [the documentation about changing texts](./changeText.md) for the
+complete list of the available keys.
+
 ## 3.0.x → 3.1.x
 
 Selectic no more depends on Font-awesome. It embeds its own icons (from Material Design Icons).

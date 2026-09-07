@@ -77,12 +77,15 @@ When the list closes, the focus goes back to the combobox element.
 
 ## Multilines mode
 
-With the `multilines` property, the list is always displayed: there is no
-combobox nor expanded/collapsed state. The search input drives the list
-(same announcements as in the dropdown mode); with `hideFilter`, the
-listbox itself takes the focus and carries `aria-activedescendant`. The
-keyboard support is the same as above, except `Escape` (nothing to close)
-and the chips navigation (selected options are visible in the list).
+With the `multilines` property, the list is always displayed, so there is
+no main input and no expanded/collapsed state to announce. The search
+input keeps the `combobox` role driving the listbox (with a permanent
+`aria-expanded="true"`, which matches what the user sees), and the same
+announcements as in the dropdown mode; with `hideFilter` there is no
+combobox at all: the listbox itself takes the focus and carries
+`aria-activedescendant`. The keyboard support is the same as above,
+except `Escape` (nothing to close) and the chips navigation (selected
+options are visible in the list).
 
 The component reports entering and leaving with the `focus` and `blur`
 events. Moving the focus between the search input, the options and the
@@ -121,6 +124,13 @@ Without such a label, screen readers announce an unnamed combobox.
   issues). The link with the component is done with `aria-controls`, but
   inside an `aria-modal="true"` dialog some screen readers may ignore
   content outside of the dialog.
+* In dropdown mode two elements carry the `combobox` role: the main
+  input, which is the tab stop and announces the selection, and the
+  search input of the open panel, which announces what is typed and
+  which option is active. This is a deliberate compromise: the panel is
+  attached to the body, so it cannot be a child of the main input, and
+  each of the two needs to be announced on its own. Both point at the
+  same listbox through `aria-controls`.
 * The default theme focus indicator uses the
   `--selectic-focus-outline-color` CSS variable, see [css](./css.md).
   If you customize colors, keep a sufficient contrast (WCAG 1.4.11).

@@ -16,6 +16,8 @@ global.window = global.window || {
 const components = require('../dist/components.js');
 const List = components.List;
 const Selectic = components.Selectic;
+const ExtendedList = components.ExtendedList;
+const MultilinesList = components.MultilinesList;
 const Store = components.Store;
 
 function render(Component, props) {
@@ -85,6 +87,40 @@ tape.test('List', (st) => {
 
         t.notOk(html.includes('selectic--multilines'),
             '0 should keep the dropdown layout');
+
+        t.end();
+    });
+
+    st.test('Apply should not be rendered in multilines', async (t) => {
+        /* the list is always displayed: there is nothing to close, and
+         * `change` is already emitted with every modification */
+        function buildStore(extraParams) {
+            return new Store({
+                options: getOptions(20),
+                params: Object.assign({
+                    multiple: true,
+                    footer: { apply: {}, clearFilter: {} },
+                }, extraParams),
+            });
+        }
+
+        const dropdownStore = buildStore();
+        dropdownStore.commit('isOpen', true);
+        await sleep(0);
+
+        let html = await render(ExtendedList, { store: dropdownStore });
+        t.ok(html.includes('selectic__footer-btn--primary'),
+            'Apply should be rendered in the dropdown mode');
+
+        const multilinesStore = buildStore({ multilines: true });
+        await sleep(0);
+
+        html = await render(MultilinesList, { store: multilinesStore });
+
+        t.notOk(html.includes('selectic__footer-btn--primary'),
+            'Apply should be dropped in multilines');
+        t.ok(html.includes('selectic__footer-btn--secondary'),
+            'Clear filter should stay: the search still exists');
 
         t.end();
     });

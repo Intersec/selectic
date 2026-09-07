@@ -13,15 +13,16 @@ This property is an object with several attributes which are listed below.
 * [allowRevert](params.md#allowrevert)
 * [autoDisabled](params.md#autodisabled)
 * [autoSelect](params.md#autoselect)
-* [disableGroupSelection](params.md#disableGroupSelection)
+* [disableGroupSelection](params.md#disablegroupselection)
+* [displayedItems](params.md#displayeditems)
 * [emptyValue](params.md#emptyvalue)
 * [fetchCallback](params.md#fetchcallback)
+* [footer](extendedProperties.md#footer)
 * [forceSelectAll](params.md#forceselectall)
 * [formatOption](params.md#formatoption)
 * [formatSelection](params.md#formatselection)
 * [getItemsCallback](params.md#getitemscallback)
 * [hideFilter](params.md#hidefilter)
-* [displayedItems](params.md#displayedItems)
 * [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
 * [listPosition](params.md#listposition)
 * [optionBehavior](params.md#optionbehavior)
@@ -160,6 +161,31 @@ Moreover in the group some items may be not (un)selected:
 
 * Only items that matches the search will be selected: only visible items are (un)selected.
 
+## displayedItems
+
+Type: `number`
+
+`displayedItems` is the number of options displayed at once in the opened list before scrolling.
+
+This value is an order of magnitude, not an exact count: a small part of the next option can still be visible.
+
+It also drives everything which reasons in "pages" of options: the threshold of [hideFilter](params.md#hidefilter) `'auto'`, the jump of the `PageUp` / `PageDown` keys, and the window of options requested while scrolling in [dynamic mode](dynamic.md).
+
+The minimum value is `2`; any smaller value is raised to `2`. Values which are not finite numbers (like `NaN`) are ignored.
+
+In [multilines](extendedProperties.md#multilines) mode the property can carry the value directly (`:multilines="5"`); `displayedItems` takes precedence when both are given.
+
+_`displayedItems` default value is `10`._
+
+```html
+<selectic
+    :params="{
+        displayedItems: 20,
+    }"
+    :options="optionList"
+/>
+```
+
 ## emptyValue
 
 Type: `OptionId`
@@ -293,14 +319,17 @@ It should return a promise which resolves with an array of options corresponding
 
 Type: `boolean` | `'auto'` | `'open'`
 
-If `hideFilter` is set to `true`, the handler to open the filter panel is hidden and it will not be possible to search for options.
+If `hideFilter` is set to `true`, the search input is not displayed and it will not be possible to search for options.
 
-If `hideFilter` is set to `'auto`, the handler to open the filter panel is hidden only if there is less than 10 options (when there is no scroll), and is displayed otherwise. _This is the default value_.
+If `hideFilter` is set to `'auto'`, the search input is hidden only when every option fits in the list without scrolling (see [displayedItems](params.md#displayeditems)), and is displayed otherwise. It is always displayed in _multiple_ mode and with dynamic options. _This is the default value_.
 
-If `hideFilter` is set to `false`, the handler to open the filter panel is always displayed.
+If `hideFilter` is set to `false`, the search input is always displayed.
 
-If `hideFilter` is set to `'open'`, the handler to open or close the filter panel
-will not be displayed and the filter panel is always open.
+> **Changed in 3.5.0.** The filter panel used to be collapsible, behind a
+> handler which has been removed: the search input is now always part of the
+> panel. `hideFilter: 'open'` used to unfold that panel; it is kept as an
+> alias of `false` so existing code keeps working, but it does not do
+> anything specific anymore.
 
 ```html
 <selectic
@@ -404,29 +433,6 @@ Display only one source (the first which is not empty).
 />
 ```
 
-## displayedItems
-
-Type: `number`
-
-`displayedItems` is the number of options displayed at once in the opened list before scrolling.
-
-This value is an order of magnitude, not an exact count: a small part of the next option can still be visible.
-
-The minimum value is `2`; any smaller value is raised to `2`. Values which are not finite numbers (like `NaN`) are ignored.
-
-In [multilines](extendedProperties.md#multilines) mode the property can carry the value directly (`:multilines="5"`); `displayedItems` takes precedence when both are given.
-
-_`displayedItems` default value is `10`._
-
-```html
-<selectic
-    :params="{
-        displayedItems: 20,
-    }"
-    :options="optionList"
-/>
-```
-
 ## pageSize
 
 Type: `number`
@@ -437,7 +443,7 @@ By changing this value you can optimize performance result (more or less request
 
 Read [the dynamic documentation](dynamic.md) for more information.
 
-Selectic displays [displayedItems](params.md#displayedItems) options at a time (10 by default), but it will call for a new request as soon as the last option index reach the half of page size.
+Selectic displays [displayedItems](params.md#displayeditems) options at a time (10 by default), but it will call for a new request as soon as the last option index reach the half of page size.
 
 _`pageSize` default value is `100`._
 

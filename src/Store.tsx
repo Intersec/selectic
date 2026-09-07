@@ -335,9 +335,6 @@ export interface SelecticStoreState {
     /** If true, filters and controls are hidden */
     hideFilter: boolean;
 
-    /** If true, the filter panel is always open */
-    keepFilterOpen: boolean;
-
     /** Allow to reverse selection.
      * If true, parent should support the selectionIsExcluded property.
      * If false, the action is never available.
@@ -496,8 +493,6 @@ interface Messages {
     searching: string;
     cannotSelectAllSearchedItems: string;
     cannotSelectAllRevertItems: string;
-    selectAll: string;
-    excludeResult: string;
     reverseSelection: string;
     noData: string;
     noResult: string;
@@ -547,8 +542,6 @@ let messages: Messages = {
     searching: 'Searching',
     cannotSelectAllSearchedItems: 'Cannot select all items: too much items in the search result.',
     cannotSelectAllRevertItems: 'Cannot select all items: some items are not fetched yet.',
-    selectAll: 'Select all',
-    excludeResult: 'Invert selection',
     reverseSelection: 'The displayed elements are those not selected.',
     noData: 'No data',
     noResult: 'No results',
@@ -569,7 +562,7 @@ let messages: Messages = {
     footerClearSelection: 'Clear selection',
     footerClearFilter: 'Clear filter',
     footerApply: 'Apply',
-    showingSelection: 'Showing selection (%s)',
+    showingSelection: 'Showing selection (%d)',
 };
 
 let defaultFamilyIcon: IconFamily = 'selectic';
@@ -689,7 +682,6 @@ export default class SelecticStore {
             internalValue: null,
             isOpen: false,
             multilines: false,
-            keepFilterOpen: false,
             listPosition: 'auto',
             multiple: false,
             offsetItem: 0,
@@ -909,10 +901,10 @@ export default class SelecticStore {
             delete stateParam.optionBehavior;
         }
 
-        if (stateParam.hideFilter === 'auto') {
-            delete stateParam.hideFilter;
-        } else if (stateParam.hideFilter === 'open') {
-            this.state.keepFilterOpen = true;
+        /* `'open'` used to unfold the filter panel, which is not
+         * collapsible anymore: it is kept as a no-op alias of `false`.
+         * `'auto'` is resolved later by `checkHideFilter()`. */
+        if (stateParam.hideFilter === 'auto' || stateParam.hideFilter === 'open') {
             delete stateParam.hideFilter;
         }
 
@@ -1519,6 +1511,7 @@ export default class SelecticStore {
             case 'Escape':
                 if (!isMultilines) {
                     this.commit('isOpen', false);
+                    stopEvent();
                 }
                 break;
             case 'Enter':

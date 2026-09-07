@@ -7,6 +7,7 @@ const {
 const tape = require('tape');
 const StoreFile = require('../dist/Store.js');
 const Store = StoreFile.default;
+const Footer = require('../dist/components.js').Footer;
 
 function buildStore(params = {}, props = {}) {
     const store = new Store(Object.assign({
@@ -174,6 +175,62 @@ tape.test('footer actions with a disabled store', (st) => {
 
         t.deepEqual(store.state.internalValue, [],
             'a disabled multilines list must not be usable');
+
+        t.end();
+    });
+});
+
+tape.test('footer buttons behavior', (st) => {
+    st.test('"Clear filter" should empty the search', async (t) => {
+        const store = buildStore({ footer: { clearFilter: {} } });
+        await sleep(0);
+
+        store.commit('searchText', 'text1');
+        await sleep(0);
+        t.is(store.state.filteredOptions.length, 11, 'the list is filtered');
+
+        const footer = Object.create(Footer.prototype);
+        footer.store = store;
+        Footer.prototype.onClearFilter.call(footer);
+        await sleep(0);
+
+        t.is(store.state.searchText, '');
+        t.is(store.state.filteredOptions.length, 20,
+            'the whole list should be restored');
+
+        t.end();
+    });
+
+    st.test('"Apply" should close the list', async (t) => {
+        const store = buildStore({ footer: { apply: {} } });
+        await sleep(0);
+
+        t.ok(store.state.isOpen);
+
+        const footer = Object.create(Footer.prototype);
+        footer.store = store;
+        Footer.prototype.onApply.call(footer);
+
+        /* closing is what validates the selection: the standard circuit
+         * emits `change` from there */
+        t.notOk(store.state.isOpen);
+
+        t.end();
+    });
+
+    st.test('both should be inert when disabled', async (t) => {
+        const store = buildStore({ footer: { apply: {}, clearFilter: {} } },
+            { disabled: true });
+        await sleep(0);
+
+        store.state.searchText = 'text1';
+
+        const footer = Object.create(Footer.prototype);
+        footer.store = store;
+        Footer.prototype.onClearFilter.call(footer);
+        Footer.prototype.onApply.call(footer);
+
+        t.is(store.state.searchText, 'text1', 'the search should be kept');
 
         t.end();
     });

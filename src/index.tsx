@@ -10,12 +10,17 @@
  */
 
 /* Events emitted are:
- *   change [value, isExcluded, component]: triggered when the list is closed and a change occurs
  *   input [value, isExcluded, component]: triggered when a change occurs
+ *   change [value, isExcluded, component]: triggered when the list is
+ *                    closed and a change occurred. In multilines mode the
+ *                    list is always displayed: it is then emitted with
+ *                    every `input`.
  *   item:click [id, component]: triggered on multiple select, when user click on
  *                    selected item (in main input)
- *   open [component]: triggered when the list opens.
- *   close [component]: triggered when the list closes.
+ *   open [component]: triggered when the list opens (not in multilines mode).
+ *   close [component]: triggered when the list closes (idem).
+ *   focus [component]: triggered when the component takes the focus.
+ *   blur [component]: triggered when the component loses the focus.
  */
 
 import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
@@ -78,13 +83,7 @@ type EventType =
     | 'close'
     | 'focus'
     | 'blur'
-    | 'item:click'
-    | 'footer:selectAll'
-    | 'footer:invertSelection'
-    | 'footer:showSelection'
-    | 'footer:clearSelection'
-    | 'footer:clearFilter'
-    | 'footer:apply';
+    | 'item:click';
 
 export interface EventOptions {
     instance: Selectic;
@@ -183,10 +182,12 @@ export interface ParamProps {
     /** Footer configuration.
      *
      * When present (even as an empty object), a footer bar is rendered
-     * under the list. Each entry configures the matching button, and
-     * clicking it emits the related `footer:*` event.
+     * under the list. Each entry configures the matching button. See
+     * `FooterConfig` for the available buttons.
      *
-     * See `FooterConfig` for the available buttons. */
+     * Every button acts on its own: the result is observed through the
+     * `input` and `change` events. Buttons with a custom behavior belong
+     * to the `listFooter` slot. */
     footer?: FooterConfig;
 }
 
@@ -569,6 +570,11 @@ export default class Selectic extends Vue<Props> {
     }
 
     public toggleOpen(open?: boolean): boolean {
+        if (this.isMultilines) {
+            /* there is no list to open or to close in this mode */
+            return false;
+        }
+
         if (typeof open === 'undefined') {
             open = !this.store.state.isOpen;
         }
@@ -754,6 +760,11 @@ export default class Selectic extends Vue<Props> {
 
     @Watch('open')
     public onOpenChanged() {
+        if (this.isMultilines) {
+            /* the list is always displayed in this mode */
+            return;
+        }
+
         this.store.commit('isOpen', this.open ?? false);
     }
 
@@ -915,7 +926,6 @@ export default class Selectic extends Vue<Props> {
     private _emit(event: 'input' | 'change', value: SelectedValue, options: EventChangeOptions): void;
     private _emit(event: 'open' | 'close' | 'focus' | 'blur', options: EventOptions): void;
     private _emit(event: 'item:click', value: OptionId, options: EventOptions): void;
-    private _emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply', options: EventOptions): void;
     private _emit(event: EventType, ...args: any[]) {
         this.$emit(event, ...args);
 
@@ -927,7 +937,6 @@ export default class Selectic extends Vue<Props> {
     private emit(event: 'input' | 'change', value: SelectedValue, isExcluded: boolean): void;
     private emit(event: 'open' | 'close' | 'focus' | 'blur'): void;
     private emit(event: 'item:click', value: OptionId): void;
-    private emit(event: 'footer:selectAll' | 'footer:invertSelection' | 'footer:showSelection' | 'footer:clearSelection' | 'footer:clearFilter' | 'footer:apply'): void;
     private emit(event: EventType, value?: SelectedValue | OptionId, isExcluded?: boolean) {
         const automatic = this.store.state.status.automaticChange;
         const options: EventOptions = {
@@ -960,14 +969,6 @@ export default class Selectic extends Vue<Props> {
                 break;
             case 'item:click':
                 this._emit(event, value as OptionId, options);
-                break;
-            case 'footer:selectAll':
-            case 'footer:invertSelection':
-            case 'footer:showSelection':
-            case 'footer:clearSelection':
-            case 'footer:clearFilter':
-            case 'footer:apply':
-                this._emit(event, options);
                 break;
         }
     }
@@ -1081,21 +1082,8 @@ export default class Selectic extends Vue<Props> {
                 />
                 <MultilinesList
                     store={store}
-                    on={{
-                        'footer:selectAll': () => this.emit('footer:selectAll'),
-                        'footer:invertSelection': () => this.emit('footer:invertSelection'),
-                        'footer:showSelection': () => this.emit('footer:showSelection'),
-                        'footer:clearSelection': () => this.emit('footer:clearSelection'),
-                        'footer:clearFilter': () => this.emit('footer:clearFilter'),
-                        'footer:apply': () => this.emit('footer:apply'),
-                    }}
                     ref="multilinesList"
                 >
-                    {this.$slots.custom && (
-                        <div slot="custom">
-                            {this.$slots.custom()}
-                        </div>
-                    )}
                     {this.$slots.listFooter && (
                         <div slot="listFooter">
                             {this.$slots.listFooter()}
@@ -1151,14 +1139,6 @@ export default class Selectic extends Vue<Props> {
                     elementRight={this.elementRight}
                     width={this.width}
                     ref="extendedList"
-                    on={{
-                        'footer:selectAll': () => this.emit('footer:selectAll'),
-                        'footer:invertSelection': () => this.emit('footer:invertSelection'),
-                        'footer:showSelection': () => this.emit('footer:showSelection'),
-                        'footer:clearSelection': () => this.emit('footer:clearSelection'),
-                        'footer:clearFilter': () => this.emit('footer:clearFilter'),
-                        'footer:apply': () => this.emit('footer:apply'),
-                    }}
                 >
                     {this.$slots.listFooter && (
                         <div slot="listFooter">
@@ -1275,7 +1255,6 @@ export default class Selectic extends Vue<Props> {
 
     @Emits([
         'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
-        'footer:selectAll', 'footer:invertSelection', 'footer:showSelection', 'footer:clearSelection', 'footer:clearFilter', 'footer:apply',
     ])
     public render() {
         const id = this.id || undefined;

@@ -11,7 +11,6 @@ Selectic component emits some events that can be caught by the parent.
 * [focus](#focus)
 * [close](#close)
 * [blur](#blur)
-* [footer:selectAll, footer:invertSelection, footer:clearFilter, footer:apply](#footer-buttons-events)
 
 ## input
 
@@ -76,22 +75,13 @@ An event _close_ is emitted when list is closing.
 
 Is an alias of the [close](#close) event.
 
-## footer buttons events
-
-The events _footer:selectAll_, _footer:invertSelection_, _footer:clearFilter_ and _footer:apply_ are emitted when the user clicks on the corresponding button of the [footer](extendedProperties.md#footer).
-
-_footer:selectAll_ and _footer:invertSelection_ are emitted in addition to the built-in behavior of these buttons (the selection change also triggers the usual [input](#input) event).
-
-1 argument is sent with the event:
-* Information about the event. This is an [`EventOptions` object](#eventoptions).
-
 # Types
 
 ## EventType
 
 This is a string of an event that can be triggered by Selectic.
 
-Its value can be `'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click' | 'footer:selectAll' | 'footer:invertSelection' | 'footer:clearFilter' | 'footer:apply'`
+Its value can be `'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click'`
 
 ## EventOptions
 

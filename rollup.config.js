@@ -18,41 +18,5 @@ export default [{
     external: [
         'vtyx',
     ],
-    context: 'this',
-}, {
-    input: 'lib/Store.js',
-    output: [{
-        file: 'test/dist/Store.js',
-        exports: 'named',
-        format: 'cjs',
-    }],
-    external: [
-        'vtyx',
-    ],
-    context: 'this',
-}, {
-    input: 'lib/tools.js',
-    output: [{
-        file: 'test/dist/tools.js',
-        exports: 'named',
-        format: 'cjs',
-    }],
-    context: 'this',
-}, {
-    input: 'test/components-entry.js',
-    plugins: [
-        postcss({
-            extensions: [ '.css' ],
-        }),
-    ],
-    output: [{
-        file: 'test/dist/components.js',
-        exports: 'named',
-        format: 'cjs',
-    }],
-    external: [
-        'vtyx',
-        'vue',
-    ],
-    context: 'this',
+    context: 'this'
 }];

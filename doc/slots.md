@@ -5,11 +5,10 @@
 Slots allow passing template fragment to a child component, and let the child component render the fragment within its own template.
 
 * [listFooter](#listFooter)
-* [custom](#custom)
 
 ## listFooter
 
-The `listFooter` slot allows adding custom content to the bottom of the dropdown options list. It is displayed below the options.
+The `listFooter` slot allows adding custom content to the bottom of the options list. It is displayed below the options, at the same place in both the dropdown and the [multilines](extendedProperties.md#multilines) modes (above the messages and the footer bar).
 
 This slot can be useful to display additional elements or information, for example a button to trigger a custom action (select all, create item, etc.).
 
@@ -49,23 +48,3 @@ const items = [{
 </Selectic>
 ```
 
-## custom
-
-The `custom` slot is only rendered in [multilines](extendedProperties.md#multilines) mode. It allows adding custom content under the options list (before the messages and the footer).
-
-The slot content is free. It can be any HTML or Vue component, and no constraints are enforced.
-
-### Example
-
-```html
-<Selectic
-    :options="items"
-    multilines
->
-    <template #custom>
-        <div>
-            Select your favorite items in the list above.
-        </div>
-    </template>
-</Selectic>
-```

@@ -1,15 +1,19 @@
 /* File Purpose:
- * It renders the footer bar displayed at the bottom of the extended
- * list, configured through `store.state.footer`.
+ * It renders the footer bar displayed at the bottom of the list panel,
+ * in both the dropdown and the multilines modes. It is configured
+ * through `store.state.footer`.
  *
  * The left side hosts the store-driven links (selectAll,
  * invertSelection, showSelection), displayed by default in `multiple`
- * mode. They also emit a Vue event, so consumers can hook additional
- * behavior. The right side hosts the two opt-in buttons (clearFilter,
- * apply), which only emit theirs.
+ * mode. The right side hosts the two opt-in buttons (clearFilter,
+ * apply).
+ *
+ * Every button acts on the store on its own; none of them emits a
+ * public event. Consumers observe the result through `input`/`change`,
+ * and add their own buttons through the `listFooter` slot.
  */
 
-import {Vue, Component, Emits, Prop, h} from 'vtyx';
+import {Vue, Component, Prop, h} from 'vtyx';
 import { unref } from 'vue';
 
 import Store, { FooterButtonConfig } from './Store';
@@ -188,15 +192,14 @@ export default class Footer extends Vue<Props> {
             return;
         }
         this.store.toggleSelectAll();
-        this.$emit('selectAll');
     }
 
     private onInvertSelection() {
         if (this.disableRevert) {
             return;
         }
-        this.store.commit('selectionIsExcluded', !this.store.state.selectionIsExcluded);
-        this.$emit('invertSelection');
+        this.store.commit('selectionIsExcluded',
+            !this.store.state.selectionIsExcluded);
     }
 
     private onShowSelection() {
@@ -204,7 +207,6 @@ export default class Footer extends Vue<Props> {
             return;
         }
         this.store.commit('showSelection', !this.store.state.showSelection);
-        this.$emit('showSelection');
     }
 
     /** Clear the whole selection. The deep-watcher in the store then
@@ -214,12 +216,26 @@ export default class Footer extends Vue<Props> {
             return;
         }
         this.store.selectItem(null);
-        this.$emit('clearSelection');
+    }
+
+    private onClearFilter() {
+        if (this.isDisabled) {
+            return;
+        }
+        this.store.commit('searchText', '');
+    }
+
+    /** Closing the list is what validates the selection: the standard
+     * closing circuit emits `change`. */
+    private onApply() {
+        if (this.isDisabled) {
+            return;
+        }
+        this.store.commit('isOpen', false);
     }
 
     /* }}} */
 
-    @Emits(['selectAll', 'invertSelection', 'showSelection', 'clearSelection', 'clearFilter', 'apply'])
     public render() {
         const state = this.store.state;
         const labels = this.store.data.labels;
@@ -243,14 +259,15 @@ export default class Footer extends Vue<Props> {
         const invertCfg = showInvert ? this.getConfig('invertSelection') : null;
         const showSelectionCfg = showShowSelection ? this.getConfig('showSelection') : null;
         const clearCfg = this.getConfig('clearFilter');
-        const applyCfg = this.getConfig('apply');
+        /* nothing to validate when the list is always displayed */
+        const applyCfg = state.multilines ? null : this.getConfig('apply');
 
         const selectAllDisabled = !!selectAllCfg?.disabled || this.disableSelectAll;
         const invertDisabled = !!invertCfg?.disabled || this.disableRevert;
         const showSelectionDisabled = !!showSelectionCfg?.disabled || this.isDisabled;
 
         return (
-            <div class="selectic__extended-list__footer">
+            <div class="selectic__list-panel__footer">
                 <div class="selectic__footer-left">
                     {inShowSelectionView && (
                         <button
@@ -324,7 +341,7 @@ export default class Footer extends Vue<Props> {
                             disabled={!!clearCfg.disabled || this.isDisabled}
                             title={clearCfg.title}
                             on={{
-                                'click.stop.prevent': () => this.$emit('clearFilter'),
+                                'click.stop.prevent': this.onClearFilter,
                             }}
                         >
                             {this.getLabel('clearFilter', 'footerClearFilter')}
@@ -337,7 +354,7 @@ export default class Footer extends Vue<Props> {
                             disabled={!!applyCfg.disabled || this.isDisabled}
                             title={applyCfg.title}
                             on={{
-                                'click.stop.prevent': () => this.$emit('apply'),
+                                'click.stop.prevent': this.onApply,
                             }}
                         >
                             {this.getLabel('apply', 'footerApply')}

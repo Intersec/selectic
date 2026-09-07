@@ -3,14 +3,14 @@
  * Content of inner elements are related to dedicated files.
  */
 
-import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
+import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import { unref } from 'vue';
 
 import Store, { OptionId, OptionItem } from './Store';
 import Filter from './Filter';
-import Footer from './Footer';
 import List from './List';
 import Icon from './Icon';
+import PanelContent from './PanelContent';
 
 export interface Props {
     store: Store;
@@ -78,48 +78,6 @@ export default class ExtendedList extends Vue<Props> {
         const availableSpace = this.availableSpace;
 
         return listHeight !== 0 && listHeight < availableSpace;
-    }
-
-    get searchingLabel() {
-        return this.store.data.labels.searching;
-    }
-
-    get searching() {
-        return this.store.state.status.searching;
-    }
-
-    get errorMessage() {
-        return this.store.state.status.errorMessage;
-    }
-
-    get infoMessage() {
-        if (this.searching) {
-            return '';
-        }
-
-        const store = this.store;
-        const state = store.state;
-        const labels = store.data.labels;
-
-        /* "Show selection" view: surface a persistent hint about the
-         * filtered scope with the current selection count. When the
-         * selection is empty the store's watcher flips `showSelection`
-         * back off, so this branch is only hit while there is at least
-         * one selected item. */
-        if (store.isShowingSelection) {
-            const count = Array.isArray(state.internalValue)
-                ? state.internalValue.length
-                : 0;
-            return labels.showingSelection.replace(/%s/, String(count));
-        }
-
-        if (state.filteredOptions.length === 0) {
-            if (state.searchText) {
-                return labels.noResult;
-            }
-            return labels.noData;
-        }
-        return '';
     }
 
     get bestPosition(): 'top' | 'bottom' {
@@ -359,8 +317,6 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     /* }}} */
-
-    @Emits(['footer:selectAll', 'footer:invertSelection', 'footer:showSelection', 'footer:clearSelection', 'footer:clearFilter', 'footer:apply'])
     public render() {
         const store = this.store;
         const state = store.state;
@@ -371,7 +327,7 @@ export default class ExtendedList extends Vue<Props> {
             <div
                 style={this.positionStyle}
                 class={[
-                    'selectic selectic__extended-list',
+                    'selectic selectic__list-panel selectic__extended-list',
                     `selectic-position-${this.position}`,
                 ]}
             >
@@ -408,40 +364,9 @@ export default class ExtendedList extends Vue<Props> {
                         groupId: this.getGroup,
                     }}
                 />
-                {this.$slots.listFooter?.()}
-              {this.infoMessage && (
-                <div class="selectic__message alert-info" role="status">
-                    {this.infoMessage}
-                </div>
-              )}
-              {this.searching && (
-                <div class="selectic__message" role="status">
-                    <Icon icon="spinner" store={this.store} spin />
-                    {this.searchingLabel}
-                </div>
-              )}
-              {this.errorMessage && (
-                <div
-                    class="selectic__message alert-danger"
-                    role="alert"
-                    on={{ click: () => store.resetErrorMessage() }}
-                >
-                    {this.errorMessage}
-                </div>
-              )}
-                {(state.footer || state.multiple) && (
-                    <Footer
-                        store={store}
-                        on={{
-                            selectAll: () => this.$emit('footer:selectAll'),
-                            invertSelection: () => this.$emit('footer:invertSelection'),
-                            showSelection: () => this.$emit('footer:showSelection'),
-                            clearSelection: () => this.$emit('footer:clearSelection'),
-                            clearFilter: () => this.$emit('footer:clearFilter'),
-                            apply: () => this.$emit('footer:apply'),
-                        }}
-                    />
-                )}
+                <PanelContent store={store}>
+                    {this.$slots.listFooter?.()}
+                </PanelContent>
             </div>
         );
     }

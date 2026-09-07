@@ -40,6 +40,8 @@
 
     /* Footer bar (displayed under the list) */
     --selectic-footer-bg: #f1f1f1;
+    --selectic-footer-gap: 24px;
+    --selectic-footer-height: 40px;
     --selectic-footer-link-color: #335895;
     --selectic-footer-btn-secondary-bg: #ffffff;
     --selectic-footer-btn-secondary-border: #cccccc;
@@ -418,9 +420,9 @@
 }
 
 /* Icon displayed before the text of a selected value (single and multiple).
- * Spacing between the icon and the text is consumer-controlled via the icon
- * classes (e.g. an `inline-space-after` utility), mirroring how the dropdown
- * already handles it. */
+ * The spacing with the text comes from `.selectic-icon-space-after`, which
+ * `OptionIcon` applies by default (see below); consumers can override or
+ * unset it. */
 .selectic-input__value-icon {
     grid-area: pre-icon;
     align-self: center;
@@ -560,16 +562,16 @@
 /* }}} */
 /* {{{ footer */
 
-.selectic__extended-list__footer {
+.selectic__list-panel__footer {
     /* 3-column grid keeps the center cluster (Show selection / Clear
      * selection) visually anchored at 50% regardless of how much or
      * how little content lives on the left and right sides. */
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 24px;
+    gap: var(--selectic-footer-gap);
     padding: 5px 10px;
-    min-height: 40px;
+    min-height: var(--selectic-footer-height);
     background: var(--selectic-footer-bg);
 }
 
@@ -598,7 +600,7 @@
     border: 0;
     background: none;
     color: var(--selectic-footer-link-color);
-    font-size: 11px;
+    font-size: calc(var(--selectic-font-size) - 3px);
     line-height: 1.2;
     text-decoration: underline dotted;
     text-underline-offset: 3px;
@@ -614,10 +616,10 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    height: 30px;
+    height: var(--selectic-input-height);
     padding: 0 10px;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: calc(var(--selectic-font-size) - 1px);
     line-height: 1.2;
     white-space: nowrap;
     cursor: pointer;

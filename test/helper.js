@@ -21,7 +21,6 @@ function getInitialState(replacedAttributes) {
         hideFilter: false,
         internalValue: null,
         isOpen: false,
-        keepFilterOpen: false,
         listPosition: 'auto',
         multilines: false,
         multiple: false,

@@ -54,4 +54,4 @@ This methods force the "open" state of the component.
 if `open` is not set, it toggles the current state.
 
 It returns the final state.
-Keep in mind that the state can be changed immediately afterward by automatic settings (like [autoDisabled](params.md#autoDisabled)).
+Keep in mind that the state can be changed immediately afterward by automatic settings (like [autoDisabled](params.md#autodisabled)).

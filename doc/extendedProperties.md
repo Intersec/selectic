@@ -40,7 +40,7 @@ Type: `FooterConfig`
 
 Default: `undefined`
 
-When this property is set (even as an empty object `{}`), a footer bar is displayed under the options list, with up to four buttons. Each entry configures one button; a missing entry hides that button.
+When this property is set (even as an empty object `{}`), a footer bar is displayed under the options list, with up to five buttons. Each entry configures one button; a missing entry hides that button.
 
 In _multiple_ mode, the footer is displayed even without this property: _Select all_ and _Invert selection_ are enabled by default (the two other buttons remain opt-in).
 
@@ -48,6 +48,7 @@ In _multiple_ mode, the footer is displayed even without this property: _Select 
 interface FooterConfig {
     selectAll?: FooterButtonConfig;
     invertSelection?: FooterButtonConfig;
+    showSelection?: FooterButtonConfig;
     clearFilter?: FooterButtonConfig;
     apply?: FooterButtonConfig;
 }
@@ -60,7 +61,8 @@ interface FooterButtonConfig {
     text?: string;
 
     /* Override the label displayed in the "active" state (all items
-     * selected for selectAll, selection excluded for invertSelection). */
+     * selected for selectAll, selection excluded for invertSelection,
+     * list restricted to the selection for showSelection). */
     textActive?: string;
 
     /* If true, the button is disabled. */
@@ -71,20 +73,43 @@ interface FooterButtonConfig {
 }
 ```
 
-_Select all_ and _Invert selection_ have a built-in behavior (the same as the former filter panel checkboxes) and are automatically hidden or disabled when the current mode cannot support them (single mode, partial data, ...). When all items are selected, the _Select all_ label becomes `footerUnselectAll`. _Clear filter_ and _Apply_ have no built-in behavior: they only emit their event.
+Every button acts on its own; **none of them emits a dedicated event**. What
+they do is observed through the usual [input](events.md#input) and
+[change](events.md#change) events. A button carrying a custom behavior belongs
+to the [listFooter](slots.md#listFooter) slot.
 
-Each click also emits the corresponding event ([footer:selectAll, footer:invertSelection, footer:clearFilter, footer:apply](events.md#footer-buttons-events)).
+| Button | Behavior |
+| --- | --- |
+| _Select all_ | Selects (or unselects) every option. The label becomes `footerUnselectAll` when everything is already selected. |
+| _Invert selection_ | Reverses the selection. |
+| _Show selection_ | Restricts the list to the selected options; the label becomes `footerShowAll` to come back. A _Clear selection_ button takes the place of _Select all_ in this view. |
+| _Clear filter_ | Empties the search input. |
+| _Apply_ | Closes the list. Closing is what validates the selection, so this is when `change` is emitted. |
 
-The default labels can be replaced with [texts](changeText.md) (`footerSelectAll`, `footerUnselectAll`, `footerInvertSelection`, `footerClearFilter`, `footerApply`).
+Each button is automatically hidden or disabled when the current mode cannot
+support it (single mode, partial data, disabled component, ...). _Show
+selection_ needs a plain selection and all the options fetched. _Apply_ is not
+rendered in [multilines](#multilines) mode: the list is always displayed, so
+there is nothing to close, and `change` is already emitted with every
+modification.
+
+The default labels can be replaced with [texts](changeText.md)
+(`footerSelectAll`, `footerUnselectAll`, `footerInvertSelection`,
+`footerShowSelection`, `footerShowAll`, `footerClearSelection`,
+`footerClearFilter`, `footerApply`).
+
+`footer` is a [param](params.md), not a direct property:
 
 ```html
 <selectic
     :options="optionList"
     multiple
-    :footer="{
-        selectAll: {},
-        invertSelection: {},
-        apply: { text: 'Ok' },
+    :params="{
+        footer: {
+            selectAll: {},
+            invertSelection: {},
+            apply: { text: 'Ok' },
+        },
     }"
 />
 ```
@@ -119,9 +144,9 @@ Default: `false`
 
 If `true`, Selectic renders its content inline (search input + options list, always visible) instead of the input-with-dropdown layout. There is no main input anymore: the selection is visible through the selected state of the options.
 
-A **number** switches the mode on as well, and sets how many options the inline list displays at once before scrolling: `:multilines="5"` is a shortcut for `multilines` + [`displayedItems: 5`](params.md#displayedItems). The same rules apply: the value is an order of magnitude rather than an exact count, and the minimum is `2` (any smaller value is raised to `2`). `0` and `false` both keep the dropdown layout.
+A **number** switches the mode on as well, and sets how many options the inline list displays at once before scrolling: `:multilines="5"` is a shortcut for `multilines` + [`displayedItems: 5`](params.md#displayeditems). The same rules apply: the value is an order of magnitude rather than an exact count, and the minimum is `2` (any smaller value is raised to `2`). `0` and `false` both keep the dropdown layout.
 
-When [`params.displayedItems`](params.md#displayedItems) is given too, it takes precedence: it is the dedicated parameter, so `:multilines="5" :params="{ displayedItems: 20 }"` displays 20 options.
+When [`params.displayedItems`](params.md#displayeditems) is given too, it takes precedence: it is the dedicated parameter, so `:multilines="5" :params="{ displayedItems: 20 }"` displays 20 options.
 
 The component root gets the `selectic--multilines` class. When placed inside a flex container, the list fills the available height and scrolls internally instead of growing unbounded.
 
@@ -141,7 +166,7 @@ since clicking an option does not always move the DOM focus (Firefox and
 Safari do not focus every element on click), the pointer is watched too, so
 that interacting with the list is never reported as a blur.
 
-The [custom](slots.md#custom) slot allows adding content under the options list in this mode. The [footer](extendedProperties.md#footer) property and the [listFooter](slots.md#listFooter) slot are also supported.
+The [listFooter](slots.md#listFooter) slot allows adding content under the options list, at the same place as in the dropdown mode. The [footer](extendedProperties.md#footer) property is also supported (without the _Apply_ button).
 
 See also the [accessibility page](accessibility.md#multilines-mode) for the keyboard and screen reader behavior in this mode.
 
@@ -197,7 +222,7 @@ This allows to force the selectic to a given state. The state may be changed due
 
 It also allows to start in an open state.
 
-This attribute purpose is to change the state programmatically. To keep state unchanged there are several other attributes ([disabled](extendedProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepOpenWithOtherSelectic), ...).
+This attribute purpose is to change the state programmatically. To keep state unchanged there are several other attributes ([disabled](domProperties.md#disabled), [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic), ...).
 The current state can be updated with the [open](events.md#open) and [close](events.md#close) events.
 
 It is also possible to change the "open" state with the method [toggleOpen](methods.md#toggleOpen).
