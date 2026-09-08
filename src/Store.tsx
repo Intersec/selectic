@@ -1695,6 +1695,7 @@ export default class SelecticStore {
 
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
+        this.state.dynOptions = [];
         this.state.totalDynOptions = total;
 
         this.clearDisplay();
