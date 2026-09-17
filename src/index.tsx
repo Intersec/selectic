@@ -383,7 +383,7 @@ export default class Selectic extends Vue<Props> {
     };
     /** Multilines mode: whether the last pointer interaction started
      * inside the component (see `checkMultilinesFocus`) */
-    private _pointerIsInside = false;
+    private _pointerIsInside?: boolean;
     private _oldValue: SelectedValue; /* old values in watcher are buggy :'( */
 
     /* }}} */

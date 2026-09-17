@@ -158,6 +158,22 @@ tape.test('multilines focus tracking', (st) => {
         t.end();
     });
 
+    st.test('should report a blur without any pointer interaction', (t) => {
+        const { selectic, el } = buildFocusCase();
+        const component = selectic.component;
+
+        component.multilinesFocused = true;
+        /* no `pointerdown` happened yet: the field is still undefined */
+        global.document = { activeElement: null };
+
+        Selectic.prototype.checkMultilinesFocus.call(component, el);
+
+        t.notOk(component.multilinesFocused,
+            'no pointer inside behaves as a pointer outside');
+
+        t.end();
+    });
+
     st.test('should report a click outside', (t) => {
         const { selectic, el, outside } = buildFocusCase();
         const component = selectic.component;
