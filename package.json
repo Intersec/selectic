@@ -5,6 +5,7 @@
     "main": "dist/selectic.common.js",
     "module": "dist/selectic.esm.js",
     "types": "types/index.d.ts",
+    "style": "dist/selectic.css",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/intersec/selectic.git"

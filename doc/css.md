@@ -9,6 +9,27 @@ By using CSS variable, you are sure to not break the Selectic behavior and you
 don't have to know which are the Selectic elements' class name.
 
 
+## How the style is delivered
+
+There are two builds, and the only difference between them is the style:
+
+* `selectic` (the default one) injects its style when it is imported. The
+  style is then added after the style sheets of the application, so the
+  rules of the application need a higher specificity to override it, and
+  the page needs `style-src 'unsafe-inline'` with a strict CSP.
+
+* `selectic/dist/selectic.nostyle.esm.js` (and its `.common.js` flavor)
+  comes without any style: `dist/selectic.css` is imported separately, and
+  the application decides where it lands in the cascade.
+
+```js
+import Selectic from 'selectic/dist/selectic.nostyle.esm.js';
+import 'selectic/dist/selectic.css';
+```
+
+Import one or the other, not both: the rules would be loaded twice.
+
+
 ## Simple examples
 
 ```css
