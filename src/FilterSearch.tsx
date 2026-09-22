@@ -7,6 +7,7 @@
 import {Vue, Component, Prop, h} from 'vtyx';
 
 import Store from './Store';
+import { ownerDocument } from './tools';
 import Icon from './Icon';
 
 export interface Props {
@@ -33,6 +34,13 @@ export default class FilterSearch extends Vue<Props> {
 
     @Prop({default: false})
     private scoped: boolean;
+
+    /* }}} */
+    /* {{{ data */
+
+    /* No observer */
+    /** The element the keypress listener has been added on */
+    private _listenerEl?: Document | HTMLElement | null;
 
     /* }}} */
     /* {{{ computed */
@@ -64,8 +72,10 @@ export default class FilterSearch extends Vue<Props> {
         return this.store.optionId(state.activeItemIdx);
     }
 
-    get onKeyPressed() {
-        return this.keypressed.bind(this);
+    /** The handler is given to `addEventListener`, which types it on the
+     * generic `Event` */
+    get onKeyPressed(): EventListener {
+        return this.keypressed.bind(this) as EventListener;
     }
 
     /* }}} */
@@ -94,16 +104,6 @@ export default class FilterSearch extends Vue<Props> {
             return;
         }
 
-        /* in multilines mode the component is always displayed: only
-         * handle keys pressed inside it */
-        if (this.scoped) {
-            const rootEl = this.$el?.parentElement;
-
-            if (!rootEl || !target || !rootEl.contains(target)) {
-                return;
-            }
-        }
-
         if (el) {
             el.value += key;
             this.store.commit('searchText', el.value);
@@ -129,11 +129,17 @@ export default class FilterSearch extends Vue<Props> {
     /* {{{ Life cycle */
 
     public mounted() {
-        document.addEventListener('keypress', this.onKeyPressed);
+        /* In the dropdown mode the listener is deliberately global: typing
+         * anywhere while the list is open feeds the filter. In the
+         * `scoped` mode it is restricted to the component. */
+        this._listenerEl = this.scoped ? this.$el.parentElement
+                                       : ownerDocument(this.$el);
+        this._listenerEl?.addEventListener('keypress', this.onKeyPressed);
     }
 
     public unmounted() {
-        document.removeEventListener('keypress', this.onKeyPressed);
+        this._listenerEl?.removeEventListener('keypress', this.onKeyPressed);
+        this._listenerEl = null;
     }
 
     /* }}} */

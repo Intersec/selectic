@@ -27,7 +27,7 @@ import {Vue, Component, Emits, Prop, Watch, h} from 'vtyx';
 import { unref } from 'vue';
 import './css/selectic.css';
 
-import { deepClone } from './tools';
+import { deepClone, ownerDocument, ownerWindow } from './tools';
 
 import Store, {
     changeTexts as storeChangeTexts,
@@ -53,7 +53,7 @@ import Store, {
     FooterButtonConfig,
 } from './Store';
 import MainInput from './MainInput';
-import ExtendedList from './ExtendedList';
+import ExtendedList, { PanelContainer } from './ExtendedList';
 import MultilinesList from './MultilinesList';
 
 /* Export */
@@ -74,6 +74,7 @@ export {
     HideFilter,
     FooterConfig,
     FooterButtonConfig,
+    PanelContainer,
 };
 
 type EventType =
@@ -241,6 +242,11 @@ export interface Props {
      * the main element. */
     listClassName?: string;
 
+    /** Where the list panel should be mounted: an element, a CSS
+     * selector, or 'self' to keep it inside the component.
+     * It defaults to the body of the document the component belongs to. */
+    container?: PanelContainer;
+
     /** title on the HTML element */
     title?: string;
 
@@ -333,6 +339,9 @@ export default class Selectic extends Vue<Props> {
 
     @Prop()
     public listClassName?: string;
+
+    @Prop()
+    public container?: PanelContainer;
 
     @Prop()
     public title?: string;
@@ -620,6 +629,15 @@ export default class Selectic extends Vue<Props> {
         this.width = mainEl.offsetWidth;
     }
 
+    /** The document the component is displayed in (which is not the
+     * global one when it lives in a detached window).
+     * It is a method and not a getter: a getter is a computed, and it
+     * would cache the global document if it were read before the
+     * component is mounted. */
+    private getDocument(): Document {
+        return ownerDocument(this.$el);
+    }
+
     private computeOffset(doNotAddListener = false) {
         const mainInput = this.$refs?.mainInput;
 
@@ -644,8 +662,10 @@ export default class Selectic extends Vue<Props> {
             }
 
             /* Listening to window allows to listen to html/body scroll events for some browser (like Chrome) */
-            window.addEventListener('scroll', this.scrollListener, { passive: true });
-            _elementsListeners.push(window);
+            const currentWindow = ownerWindow(mainEl);
+
+            currentWindow.addEventListener('scroll', this.scrollListener, { passive: true });
+            _elementsListeners.push(currentWindow);
         }
 
         const box = mainEl.getBoundingClientRect();
@@ -668,8 +688,8 @@ export default class Selectic extends Vue<Props> {
 
         this._elementsListeners = [];
 
-        document.removeEventListener('click', this.outsideListener, true);
-        window.removeEventListener('resize', this.windowResize, false);
+        this.getDocument().removeEventListener('click', this.outsideListener, true);
+        ownerWindow(this.$el).removeEventListener('resize', this.windowResize, false);
     }
 
     private focusToggled() {
@@ -689,8 +709,8 @@ export default class Selectic extends Vue<Props> {
                 store.clearCache();
             }
             this.computeWidth();
-            window.addEventListener('resize', this.windowResize, false);
-            document.addEventListener('click', this.outsideListener, true);
+            ownerWindow(this.$el).addEventListener('resize', this.windowResize, false);
+            this.getDocument().addEventListener('click', this.outsideListener, true);
             this.computeOffset();
             this.emit('open');
         } else {
@@ -860,11 +880,12 @@ export default class Selectic extends Vue<Props> {
         el.addEventListener('focusin', listeners.focusin);
         el.addEventListener('focusout', listeners.focusout);
         /* on document: it must also see the interactions started outside */
-        document.addEventListener('pointerdown', listeners.pointerdown, true);
+        ownerDocument(el).addEventListener('pointerdown', listeners.pointerdown, true);
     }
 
     private checkMultilinesFocus(el: HTMLElement) {
-        const focusedEl = document.activeElement;
+        const currentDocument = ownerDocument(el);
+        const focusedEl = currentDocument.activeElement;
 
         /* the focus may just be moving between two elements of the
          * component (search input, options, footer buttons) */
@@ -877,7 +898,7 @@ export default class Selectic extends Vue<Props> {
          * Leaving with the keyboard focuses another element, so it is not
          * mistaken for this case. */
         if (this._pointerIsInside
-            && (!focusedEl || focusedEl === document.body))
+            && (!focusedEl || focusedEl === currentDocument.body))
         {
             return;
         }
@@ -897,8 +918,8 @@ export default class Selectic extends Vue<Props> {
          * may already be gone when the component unmounts */
         listeners.el.removeEventListener('focusin', listeners.focusin);
         listeners.el.removeEventListener('focusout', listeners.focusout);
-        document.removeEventListener('pointerdown', listeners.pointerdown,
-                                     true);
+        ownerDocument(listeners.el).removeEventListener(
+            'pointerdown', listeners.pointerdown, true);
         this._multilinesListeners = undefined;
     }
 
@@ -914,9 +935,10 @@ export default class Selectic extends Vue<Props> {
         }
 
         this.$nextTick(() => {
-            const activeEl = document.activeElement;
+            const currentDocument = this.getDocument();
+            const activeEl = currentDocument.activeElement;
 
-            if (!activeEl || activeEl === document.body) {
+            if (!activeEl || activeEl === currentDocument.body) {
                 this.$refs.mainInput?.focusCombobox(true);
             }
         });
@@ -925,14 +947,15 @@ export default class Selectic extends Vue<Props> {
     private checkFocus() {
         /* Await that focused element becomes active */
         setTimeout(() => {
-            const focusedEl = document.activeElement;
+            const currentDocument = this.getDocument();
+            const focusedEl = currentDocument.activeElement;
             const extendedList = this.$refs?.extendedList;
 
             /* check if there is a focused element (if none the body is
              * selected) and if it is inside current Selectic */
-            if (focusedEl === document.body
-            ||  this.$el.contains(focusedEl)
-            ||  extendedList?.$el.contains(focusedEl))
+            if (focusedEl === currentDocument.body
+                || this.$el.contains(focusedEl)
+                || extendedList?.$el.contains(focusedEl))
             {
                 return;
             }
@@ -1152,6 +1175,7 @@ export default class Selectic extends Vue<Props> {
               {this.isFocused && (
                 <ExtendedList
                     class={this.listClass}
+                    container={this.container}
                     store={store}
                     elementBottom={this.elementBottom}
                     elementTop={this.elementTop}

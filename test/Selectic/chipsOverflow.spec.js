@@ -26,6 +26,7 @@ function buildContainer(nbChips, availableWidth, moreWidth = 0) {
             : null,
         parentElement: {
             clientWidth: availableWidth,
+            isConnected: true,
             querySelector: () => null, /* no clear icon */
         },
     };
@@ -53,19 +54,16 @@ async function buildInput(params, nbSelected, container) {
 
 /* `computeSize()` measures real elements. There is no DOM here, so the
  * measurements are simulated: every size comes from the fake nodes above.
- * The globals are only defined around the call: a permanent
- * `global.document` would make Vue believe it runs in a browser. */
+ * `getComputedStyle` is only defined around the call: a permanent
+ * browser global would make Vue believe it runs in a browser. */
 function computeSize(input) {
-    const previousDocument = global.document;
     const previousStyle = global.getComputedStyle;
 
-    global.document = { contains: () => true };
     global.getComputedStyle = () => ({ getPropertyValue: () => '0px' });
 
     try {
         MainInput.prototype.computeSize.call(input);
     } finally {
-        global.document = previousDocument;
         global.getComputedStyle = previousStyle;
     }
 

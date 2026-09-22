@@ -8,6 +8,7 @@ Selectic supports common properties which are related to `<select>` element
 ([read dom properties document](domProperties.md)), but they are some more which
 are more related to the nature of selectic.
 
+* [container](extendedProperties.md#container)
 * [footer](extendedProperties.md#footer)
 * [groups](extendedProperties.md#groups)
 * [multilines](extendedProperties.md#multilines)
@@ -36,6 +37,74 @@ are more related to the nature of selectic.
     * [selectionOverflow](params.md#selectionoverflow)
     * [strictValue](params.md#strictvalue)
 
+
+## container
+
+Type: `PanelContainer` (`HTMLElement | string`)
+
+Default: `undefined` (the `body` of the document which contains the
+component)
+
+`container` tells where the list panel is moved to when the list opens.
+
+The panel is not displayed where it is rendered: it is moved out of the
+component, so that it can overflow the parents which would clip it (a
+scrollable area, a table cell...). By default it is moved into the `body` of
+the document the field itself belongs to, which is not the main one when the
+component lives in a detached window.
+
+Three forms are accepted:
+
+* an element: the panel is appended to it;
+* a CSS selector: the first matching element of the same document is used
+  (when none matches, the panel falls back to the `body`);
+* `'self'`: the panel is not moved and stays inside the component.
+
+The value is read each time the list opens, so changing it while the list is
+open takes effect at the next opening.
+
+### Modal dialogs
+
+A panel moved into the `body` is outside of the `[role="dialog"]` element of
+a modal. As Selectic moves the focus into its search field when it opens,
+the keyboard focus then leaves the dialog (and its focus trap) as soon as it
+enters the panel. Giving the dialog as `container` keeps the whole component
+inside it.
+
+### Limitation
+
+The panel is positioned with `position: fixed`, whose coordinates are
+relative to the viewport, unless one of its ancestors has a `transform`, a
+`filter`, a `backdrop-filter`, a `will-change` or a `contain: paint`: such an
+ancestor becomes the reference instead, and the panel is shifted. Avoid
+containers having one (and, with `'self'`, ancestors having one).
+
+Give the element directly:
+
+```html
+<selectic
+    :container="$refs.dialog"
+    :options="['item1', 'item2']"
+/>
+```
+
+Or give a selector, which is resolved when the list opens:
+
+```html
+<selectic
+    container="#my-dialog"
+    :options="['item1', 'item2']"
+/>
+```
+
+Or keep the panel inside the component:
+
+```html
+<selectic
+    container="self"
+    :options="['item1', 'item2']"
+/>
+```
 
 ## footer
 

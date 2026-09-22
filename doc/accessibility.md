@@ -120,16 +120,19 @@ Without such a label, screen readers announce an unnamed combobox.
 
 ## Notes and limitations
 
-* The options list is attached to `document.body` (to avoid overflow
-  issues). The link with the component is done with `aria-controls`, but
-  inside an `aria-modal="true"` dialog some screen readers may ignore
-  content outside of the dialog.
+* The options list is moved out of the component (to avoid overflow
+  issues), into the `body` by default. The link with the component is done
+  with `aria-controls`, but inside an `aria-modal="true"` dialog some
+  screen readers may ignore content outside of the dialog, and the keyboard
+  focus leaves the focus trap of the dialog when it enters the panel. Give
+  the dialog as [container](extendedProperties.md#container) to keep the
+  panel inside it.
 * In dropdown mode two elements carry the `combobox` role: the main
   input, which is the tab stop and announces the selection, and the
   search input of the open panel, which announces what is typed and
   which option is active. This is a deliberate compromise: the panel is
-  attached to the body, so it cannot be a child of the main input, and
-  each of the two needs to be announced on its own. Both point at the
+  moved out of the component, so it cannot be a child of the main input,
+  and each of the two needs to be announced on its own. Both point at the
   same listbox through `aria-controls`.
 * The default theme focus indicator uses the
   `--selectic-focus-outline-color` CSS variable, see [css](./css.md).

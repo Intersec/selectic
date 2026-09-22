@@ -180,6 +180,26 @@ export function isDeepEqual<T = any>(
     return true;
 }
 
+/**
+ * Document the given element belongs to.
+ * Selectic can be displayed in another document than the main one (like a
+ * detached window), where the global `document` is not the right one.
+ * @param el an element of the component
+ * @returns the document of `el`, or the global one if it has none yet
+ */
+export function ownerDocument(el?: Element | null): Document {
+    return el?.ownerDocument ?? document;
+}
+
+/**
+ * Window the given element belongs to (see `ownerDocument`).
+ * @param el an element of the component
+ * @returns the window of `el`, or the global one if it has none yet
+ */
+export function ownerWindow(el?: Element | null): Window {
+    return ownerDocument(el).defaultView ?? window;
+}
+
 let displayLog = false;
 export function debug(fName: string, step: string, ...args: any[]) {
     if (!displayLog) {

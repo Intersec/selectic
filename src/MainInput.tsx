@@ -5,6 +5,7 @@
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
+import { ownerDocument } from './tools';
 import Icon from './Icon';
 import OptionIcon from './OptionIcon';
 
@@ -399,7 +400,7 @@ export default class MainInput extends Vue<Props> {
 
         const parentEl = el.parentElement as HTMLDivElement;
 
-        if (!document.contains(parentEl)) {
+        if (!parentEl.isConnected) {
             /* The element is currently not in DOM */
             this.createObserver(parentEl);
             return;
@@ -484,7 +485,7 @@ export default class MainInput extends Vue<Props> {
         });
         const config = { childList: true, subtree: true };
 
-        observer.observe(document, config);
+        observer.observe(ownerDocument(el), config);
         this.domObserver = observer;
     }
 

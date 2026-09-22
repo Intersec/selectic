@@ -7,14 +7,23 @@ import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import { unref } from 'vue';
 
 import Store, { OptionId, OptionItem } from './Store';
+import { ownerDocument, ownerWindow } from './tools';
 import Filter from './Filter';
 import List from './List';
 import Icon from './Icon';
 import PanelContent from './PanelContent';
 
+/** Where the panel should be mounted: an element, a CSS selector, or
+ * 'self' to keep it where the component renders it. */
+export type PanelContainer = HTMLElement | string;
+
 export interface Props {
     store: Store;
     width?: number;
+
+    /** Where the panel should be mounted (default: the body of the
+     * document the component belongs to) */
+    container?: PanelContainer;
 
     /* positions of the main element related to current window */
     elementTop?: number;
@@ -59,6 +68,9 @@ export default class ExtendedList extends Vue<Props> {
     @Prop({default: 300})
     private width: number;
 
+    @Prop()
+    private container?: PanelContainer;
+
     /* }}} */
     /* {{{ data */
 
@@ -67,6 +79,14 @@ export default class ExtendedList extends Vue<Props> {
     private listHeight = 0;
     private listWidth = 200;
     private availableSpace = 0;
+    /** The window the panel is displayed in. It is known only once the
+     * panel is mounted, and the positions depend on it. */
+    private panelWindow: Window | null = null;
+
+    /* No observer */
+    /** The element the keydown listener has been added on (the combobox
+     * may not be found anymore when the component unmounts) */
+    private _comboboxListenerEl?: HTMLElement | null;
 
     /* }}} */
     /* {{{ computed */
@@ -87,8 +107,14 @@ export default class ExtendedList extends Vue<Props> {
         return data.itemHeight * data.itemsPerPage + PANEL_HEADER_HEIGHT;
     }
 
+    /** The window the positions must be computed against (the global one
+     * while the panel is not mounted yet) */
+    get currentWindow(): Window {
+        return this.panelWindow ?? window;
+    }
+
     get bestPosition(): 'top' | 'bottom' {
-        const windowHeight = window.innerHeight;
+        const windowHeight = this.currentWindow.innerHeight;
         const isFullyEstimated = this.isFullyEstimated;
         /* XXX: The max() is because if listHeight is greater than default,
          * it means that the value is more accurate than the default. */
@@ -122,7 +148,7 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     get horizontalStyle(): string {
-        const windowWidth = window.innerWidth;
+        const windowWidth = this.currentWindow.innerWidth;
         const listWidth = this.listWidth;
         const inputLeft = this.elementLeft;
         const inputRight = this.elementRight;
@@ -164,7 +190,7 @@ export default class ExtendedList extends Vue<Props> {
             `;
         }
         const elementBottom = this.elementBottom;
-        const availableSpace = window.innerHeight - elementBottom;
+        const availableSpace = this.currentWindow.innerHeight - elementBottom;
         this.availableSpace = availableSpace;
 
         return `
@@ -237,18 +263,9 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     private onKeyDown(evt: KeyboardEvent) {
-        /* The listener is on `document.body` because the panel is appended
-         * there. The list can be open while the focus is elsewhere in the
-         * page (with the `open` prop): only handle the keys coming from the
-         * panel or from the combobox it belongs to. */
-        const target = evt.target as Node | null;
-
-        if (!target || !(this.$el?.contains(target)
-            || !!this.comboboxEl?.contains(target)))
-        {
-            return;
-        }
-
+        /* The listeners are on the panel and on the combobox, so the keys
+         * pressed elsewhere in the page (the list can be open while the
+         * focus is outside, with the `open` prop) never come here. */
         if (evt.key === 'Tab' && this.handleTabKey(evt)) {
             return;
         }
@@ -257,14 +274,14 @@ export default class ExtendedList extends Vue<Props> {
     }
 
     /** The combobox this panel is attached to (it lives outside the panel,
-     * which is appended to the body) */
+     * which is moved into its container) */
     private get comboboxEl(): HTMLElement | null {
-        return document.querySelector<HTMLElement>(
+        return ownerDocument(this.$el).querySelector<HTMLElement>(
             `div[role="combobox"][aria-controls="${this.store.listBoxId}"]`
         );
     }
 
-    /** The panel is appended at the end of body, so its buttons are not in
+    /** The panel is moved into its container, so its buttons are not in
      * the natural tab order of the page. From the combobox, Tab enters the
      * panel; from its last element, the focus goes back to the combobox so
      * Tab leaves the component naturally.
@@ -305,17 +322,71 @@ export default class ExtendedList extends Vue<Props> {
         return false;
     }
 
+    /** The element the panel should be moved into, or null to keep it
+     * where the component has rendered it (`'self'`).
+     * It is a method and not a getter: it is resolved once, when the panel
+     * is mounted (which happens each time the list opens), and it reports
+     * an unusable selector. */
+    private getContainerEl(): HTMLElement | null {
+        const container = this.container;
+        const doc = ownerDocument(this.$el);
+
+        if (container === 'self') {
+            return null;
+        }
+
+        if (typeof container === 'string') {
+            const el = doc.querySelector<HTMLElement>(container);
+
+            if (!el) {
+                const labels = this.store.data.labels;
+
+                this.store.state.status.errorMessage =
+                    labels.unknownPropertyValue.replace(/%s/, 'container');
+
+                return doc.body;
+            }
+
+            return el;
+        }
+
+        /* By default the body of the document the component belongs to
+         * (which is not the global one in a detached window) */
+        return container ?? doc.body;
+    }
+
+    private attachPanel() {
+        const containerEl = this.getContainerEl();
+
+        if (!containerEl || this.$el.parentNode === containerEl) {
+            return;
+        }
+
+        containerEl.appendChild(this.$el);
+    }
+
     /* }}} */
     /* {{{ Life cycles */
 
     public mounted() {
-        document.body.appendChild(this.$el);
-        document.body.addEventListener('keydown', this.onKeyDown);
+        this.panelWindow = ownerWindow(this.$el);
+        this.attachPanel();
+
+        /* The listeners are set on the panel and on the combobox instead
+         * of the document: the panel can be displayed inside a modal (where
+         * a global listener escapes the focus trap) or in another document
+         * than the main one. */
+        this.$el.addEventListener('keydown', this.onKeyDown);
+        this._comboboxListenerEl = this.comboboxEl;
+        this._comboboxListenerEl?.addEventListener('keydown', this.onKeyDown);
+
         this.computeListSize();
     }
 
     public unmounted() {
-        document.body.removeEventListener('keydown', this.onKeyDown);
+        this.$el.removeEventListener('keydown', this.onKeyDown);
+        this._comboboxListenerEl?.removeEventListener('keydown', this.onKeyDown);
+        this._comboboxListenerEl = null;
 
         /* force the element to be removed from DOM */
         if (this.$el.parentNode) {

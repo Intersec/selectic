@@ -17,6 +17,7 @@ applied on main element and, unless
 
 ## Extended properties
 
+* [container](extendedProperties.md#container)
 * [footer](extendedProperties.md#footer)
 * [groups](extendedProperties.md#groups)
 * [multilines](extendedProperties.md#multilines)

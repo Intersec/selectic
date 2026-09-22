@@ -32,14 +32,6 @@ export default class MultilinesList extends Vue<Props> {
     /* {{{ methods */
 
     private onKeyDown(evt: KeyboardEvent) {
-        const target = evt.target as Node | null;
-
-        /* the listener is on document (the component is always displayed):
-         * only handle keys pressed inside the component */
-        if (!target || !this.$el?.contains(target)) {
-            return;
-        }
-
         this.store.handleKeydown(evt);
     }
 
@@ -57,11 +49,16 @@ export default class MultilinesList extends Vue<Props> {
     /* {{{ Life cycles */
 
     public mounted() {
-        document.addEventListener('keydown', this.onKeyDown);
+        /* on the component itself: the keys pressed in its focused element
+         * (search input, or list when there is no search) bubble up to it.
+         * The list is always displayed, so a listener on the document would
+         * catch the keys of the whole page (and of the whole page only, in a
+         * detached window). */
+        this.$el.addEventListener('keydown', this.onKeyDown);
     }
 
     public unmounted() {
-        document.removeEventListener('keydown', this.onKeyDown);
+        this.$el.removeEventListener('keydown', this.onKeyDown);
     }
 
     /* }}} */
