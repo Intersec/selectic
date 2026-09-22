@@ -11,6 +11,7 @@
 applied on main element and on the list element)
 * [disabled](domProperties.md#disabled)
 * [id](domProperties.md#id)
+* [listClassName](domProperties.md#listclassname)
 * [multiple](domProperties.md#multiple)
 * [placeholder](domProperties.md#placeholder)
 * [title](domProperties.md#title)
@@ -28,7 +29,8 @@ The given string will be applied as class to the main element and also to the
 list element.
 It can be used instead of class for when it is not possible to use the reserved
 keyword.
-Note that it will be applied to the inner list element too.
+Note that it will be applied to the inner list element too, unless
+[listClassName](domProperties.md#listclassname) is given.
 
 ```html
 <selectic
@@ -71,6 +73,28 @@ It is applied on an `<input>` element which contains the current state.
 ```
 ```javascript
 document.getElementById('example').value; // 'item2'
+```
+
+## listClassName
+
+Type: `string`
+
+Default: `undefined`
+
+The given string will be applied as class to the list element only.
+
+When it is not empty, it **replaces** `className` on the list: the main
+element keeps `className` and the list gets `listClassName`.
+This is what allows to style the main element without having to exclude the
+list from the selector.
+
+```html
+<selectic
+    :options="['item1', 'item2']"
+    value="item2"
+    className="my-custom-class"
+    listClassName="my-list-class"
+/>
 ```
 
 ## multiple

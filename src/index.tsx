@@ -231,6 +231,11 @@ export interface Props {
     /** CSS class of the HTML element */
     className?: string;
 
+    /** CSS class of the list panel.
+     * When not empty, it replaces `className` on the panel, which stays on
+     * the main element. */
+    listClassName?: string;
+
     /** title on the HTML element */
     title?: string;
 
@@ -320,6 +325,9 @@ export default class Selectic extends Vue<Props> {
 
     @Prop({default: ''})
     public className: string;
+
+    @Prop()
+    public listClassName?: string;
 
     @Prop()
     public title?: string;
@@ -504,6 +512,12 @@ export default class Selectic extends Vue<Props> {
             'selectic--overflow-multiline': state.selectionOverflow === 'multiline',
             'selectic--overflow-collapsed': state.selectionOverflow === 'collapsed',
         }];
+    }
+
+    /** Class applied on the list panel: `listClassName` when it is not
+     * empty, `className` otherwise. */
+    get listClass() {
+        return this.listClassName || this.className;
     }
 
     get hasGivenValue() {
@@ -1081,6 +1095,7 @@ export default class Selectic extends Vue<Props> {
                     }}
                 />
                 <MultilinesList
+                    class={this.listClass}
                     store={store}
                     ref="multilinesList"
                 >
@@ -1131,7 +1146,7 @@ export default class Selectic extends Vue<Props> {
                 />
               {this.isFocused && (
                 <ExtendedList
-                    class={this.className}
+                    class={this.listClass}
                     store={store}
                     elementBottom={this.elementBottom}
                     elementTop={this.elementTop}

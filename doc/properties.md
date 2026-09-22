@@ -5,9 +5,11 @@
 ## DOM properties
 
 * [className](domProperties.md#classname) (instead of `class` in order to be
-applied on main element and on the list element)
+applied on main element and, unless
+[listClassName](domProperties.md#listclassname) is given, on the list element)
 * [disabled](domProperties.md#disabled)
 * [id](domProperties.md#id)
+* [listClassName](domProperties.md#listclassname)
 * [multiple](domProperties.md#multiple)
 * [placeholder](domProperties.md#placeholder)
 * [title](domProperties.md#title)

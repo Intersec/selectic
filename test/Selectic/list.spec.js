@@ -24,6 +24,27 @@ function render(Component, props) {
     return renderToString(createSSRApp(Component, props));
 }
 
+/** Return the first tag (as string) having the given class */
+function extractTag(html, className) {
+    const re = new RegExp(
+        '<[a-z]+[^>]*class="[^"]*' + className + '[^"]*"[^>]*>'
+    );
+    const result = html.match(re);
+
+    return result ? result[0] : '';
+}
+
+/* The multilines mode renders the panel inline: the main element and the
+ * panel are both in the same output, which the dropdown mode cannot
+ * provide without a DOM. */
+function multilinesProps(extraProps) {
+    return Object.assign({
+        options: getOptions(20),
+        multiple: true,
+        multilines: true,
+    }, extraProps);
+}
+
 tape.test('List', (st) => {
     st.test('checkOffset() should support a not mounted component', async (t) => {
         const store = new Store({
@@ -87,6 +108,40 @@ tape.test('List', (st) => {
 
         t.notOk(html.includes('selectic--multilines'),
             '0 should keep the dropdown layout');
+
+        t.end();
+    });
+
+    st.test('listClassName should dress the panel only', async (t) => {
+        let html = await render(Selectic, multilinesProps({
+            className: 'my-field',
+        }));
+        let panel = extractTag(html, 'selectic__multilines-list');
+
+        t.ok(panel.includes('my-field'),
+            'className alone should still be propagated to the panel');
+
+        html = await render(Selectic, multilinesProps({
+            className: 'my-field',
+            listClassName: 'my-panel',
+        }));
+        panel = extractTag(html, 'selectic__multilines-list');
+
+        t.ok(panel.includes('my-panel'),
+            'listClassName should be applied on the panel');
+        t.notOk(panel.includes('my-field'),
+            'listClassName should replace className on the panel');
+        t.ok(extractTag(html, 'selectic--multilines').includes('my-field'),
+            'the main element should keep className');
+
+        html = await render(Selectic, multilinesProps({
+            className: 'my-field',
+            listClassName: '',
+        }));
+        panel = extractTag(html, 'selectic__multilines-list');
+
+        t.ok(panel.includes('my-field'),
+            'an empty listClassName should be the same as no listClassName');
 
         t.end();
     });
