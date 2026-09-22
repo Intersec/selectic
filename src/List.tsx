@@ -40,12 +40,15 @@ export default class List extends Vue<Props> {
     /* }}} */
     /* {{{ data */
 
-    private itemHeight = 27;
     private groupId: OptionId = null;
     private doNotScroll = false;
 
     /* }}} */
     /* {{{ computed */
+
+    get itemHeight() {
+        return this.store.data.itemHeight;
+    }
 
     /* The store owns the displayed list (and the "show selection" filter),
      * so the indexes used here are the ones the keyboard navigation and the

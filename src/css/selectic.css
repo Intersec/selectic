@@ -63,7 +63,8 @@
 
     /* Height of an item row in the opened list.
      * XXX: this is only a fallback; the effective value is set inline from
-     * `itemHeight` in List.tsx, so it cannot be overridden from CSS. */
+     * the `itemHeight` param, which must be used to change it (the virtual
+     * scroll relies on the same value). */
     --selectic-item-height: calc(var(--selectic-input-height) - 3px);
 
     /* Number of items displayed at once in the opened list.

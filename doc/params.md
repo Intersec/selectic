@@ -24,6 +24,7 @@ This property is an object with several attributes which are listed below.
 * [formatSelection](params.md#formatselection)
 * [getItemsCallback](params.md#getitemscallback)
 * [hideFilter](params.md#hidefilter)
+* [itemHeight](params.md#itemheight)
 * [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
 * [listPosition](params.md#listposition)
 * [optionBehavior](params.md#optionbehavior)
@@ -384,6 +385,39 @@ If `hideFilter` is set to `false`, the search input is always displayed.
 <selectic
     :params="{
         hideFilter: false,
+    }"
+    :options="optionList"
+/>
+```
+
+## itemHeight
+
+Type: `number`
+
+`itemHeight` is the height (in pixels) of a row in the opened list.
+
+The list is virtualized: only the visible options are rendered, the other
+ones being replaced by a spacer whose size is computed from this value. So
+it must match the height the rows are really displayed with, otherwise the
+scroll position and the displayed options drift apart.
+
+Change it when the options are taller than the default one, for example with
+an option image or with a font size above the default one.
+
+The value is also published as the
+[--selectic-item-height](css.md#the-list) CSS variable, so this parameter is
+all it takes to resize the rows. Do not set that variable from CSS: it would
+move the rows without moving the scroll computations.
+
+The minimum value is `1`. Values which are not finite numbers (like `NaN`)
+are ignored.
+
+_`itemHeight` default value is `27`._
+
+```html
+<selectic
+    :params="{
+        itemHeight: 40,
     }"
     :options="optionList"
 />

@@ -38,6 +38,7 @@ applied on main element and, unless
     * [formatSelection](params.md#formatselection)
     * [getItemsCallback](params.md#getitemscallback)
     * [hideFilter](params.md#hidefilter)
+    * [itemHeight](params.md#itemheight)
     * [keepOpenWithOtherSelectic](params.md#keepopenwithotherselectic)
     * [listPosition](params.md#listposition)
     * [optionBehavior](params.md#optionbehavior)

@@ -111,6 +111,11 @@ export interface ParamProps {
     /** Number of items displayed at once in the opened list (default: 10) */
     displayedItems?: number;
 
+    /** Height (in px) of an item row in the opened list (default: 27).
+     * It drives the virtual scroll offsets, so it should match the height
+     * the items are really rendered with. */
+    itemHeight?: number;
+
     /** Hide the search control */
     hideFilter?: HideFilter;
 
@@ -1190,6 +1195,8 @@ export default class Selectic extends Vue<Props> {
                  * dedicated parameter overrides when both are given. */
                 displayedItems: this.params.displayedItems
                              ?? this.multilinesItems,
+                /* it can be undefined (defaults to 27 in the store) */
+                itemHeight: this.params.itemHeight,
                 hideFilter: this.params.hideFilter ?? 'auto',
                 allowRevert: this.params.allowRevert, /* it can be undefined */
                 forceSelectAll: this.params.forceSelectAll || 'auto',

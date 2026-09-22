@@ -23,10 +23,9 @@ export interface Props {
     elementRight?: number;
 }
 
-/* list estimation height
- * 30px × 10 + 20px (for panel header)
- */
-const DEFAULT_LIST_HEIGHT = 320;
+/* Height (in px) of the panel header, added to the items height to
+ * estimate the list height before it is rendered. */
+const PANEL_HEADER_HEIGHT = 20;
 
 /** Elements of the panel which can take the focus with Tab */
 const FOCUSABLE_ELEMENTS = [
@@ -80,13 +79,21 @@ export default class ExtendedList extends Vue<Props> {
         return listHeight !== 0 && listHeight < availableSpace;
     }
 
+    /** Height the list is expected to take, used while it is not rendered
+     * yet (and so cannot be measured). */
+    get defaultListHeight(): number {
+        const data = this.store.data;
+
+        return data.itemHeight * data.itemsPerPage + PANEL_HEADER_HEIGHT;
+    }
+
     get bestPosition(): 'top' | 'bottom' {
         const windowHeight = window.innerHeight;
         const isFullyEstimated = this.isFullyEstimated;
         /* XXX: The max() is because if listHeight is greater than default,
          * it means that the value is more accurate than the default. */
         const listHeight = isFullyEstimated ? this.listHeight
-            : Math.max(DEFAULT_LIST_HEIGHT, this.listHeight);
+            : Math.max(this.defaultListHeight, this.listHeight);
         const inputTop = this.elementTop;
         const inputBottom = this.elementBottom;
         const availableTop = inputTop;

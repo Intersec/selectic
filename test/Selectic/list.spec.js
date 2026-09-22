@@ -146,6 +146,38 @@ tape.test('List', (st) => {
         t.end();
     });
 
+    st.test('itemHeight should size the items', async (t) => {
+        /* the value drives the virtual scroll offsets, and is published as
+         * the `--selectic-item-height` custom property */
+        let html = await render(Selectic, multilinesProps());
+
+        t.ok(html.includes('--selectic-item-height:27px'),
+            'the default height should be 27px');
+
+        html = await render(Selectic, multilinesProps({
+            params: { itemHeight: 40 },
+        }));
+
+        t.ok(html.includes('--selectic-item-height:40px'),
+            'the parameter should change the height');
+
+        html = await render(Selectic, multilinesProps({
+            params: { itemHeight: 0 },
+        }));
+
+        t.ok(html.includes('--selectic-item-height:1px'),
+            'a too small height should be raised to the minimum');
+
+        html = await render(Selectic, multilinesProps({
+            params: { itemHeight: NaN },
+        }));
+
+        t.ok(html.includes('--selectic-item-height:27px'),
+            'a value which is not a finite number should be ignored');
+
+        t.end();
+    });
+
     st.test('Apply should not be rendered in multilines', async (t) => {
         /* the list is always displayed: there is nothing to close, and
          * `change` is already emitted with every modification */

@@ -109,9 +109,19 @@ body {
 * **--selectic-active-item-bg** _(default: `#66afe9`)_: Background color of
   items where cursor is over or the active by the arrow keys.
 
-* **--selectic-input-height** _(default: `30px`)_: The height of each items.<br>
-**:warning: Currently this value is also hard-coded in javascript, so it can
-break the scroll height estimation if this value is changed.**
+* **--selectic-input-height** _(default: `30px`)_: The height of the main
+  element.<br>
+**:warning: It does not size the items of the list anymore: they follow the
+[itemHeight](params.md#itemheight) parameter, which is published as
+`--selectic-item-height` on the list itself. Changing this variable alone
+leaves the rows at their height.**
+
+* **--selectic-item-height** _(default: `calc(var(--selectic-input-height) -
+3px)`)_: The height of each item of the list.<br>
+**:warning: This variable is set from the
+[itemHeight](params.md#itemheight) parameter, which is the way to change it:
+the virtual scroll relies on the same value. Setting it from CSS moves the
+rows without moving the scroll computations.**
 
 ### Options
 

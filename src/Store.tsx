@@ -205,6 +205,11 @@ export interface SelecticStoreStateParams {
     /** Number of items displayed at once in the opened list (default: 10) */
     displayedItems?: number;
 
+    /** Height (in px) of an item row in the opened list (default: 27).
+     * It drives the virtual scroll offsets, so it should match the height
+     * the items are really rendered with. */
+    itemHeight?: number;
+
     /** Select the first available option */
     autoSelect?: boolean;
 
@@ -310,6 +315,9 @@ type InternalProps = MandateProps<Props>;
 export interface Data {
     /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
+
+    /** Height (in px) of an item row in the opened list */
+    itemHeight: number;
 
     /** Time (in ms) before the typeahead text is reset */
     typeaheadDelay: number;
@@ -588,6 +596,13 @@ const DEBOUNCE_REQUEST = 250;
 /* Minimum number of items displayed at once in the opened list. */
 const MIN_DISPLAYED_ITEMS = 2;
 
+/* Height (in px) of an item row in the opened list. */
+const DEFAULT_ITEM_HEIGHT = 27;
+
+/* Minimum height (in px) of an item row: below it the virtual scroll
+ * computations are not reliable anymore. */
+const MIN_ITEM_HEIGHT = 1;
+
 /**
  * Default time (in ms) between two key presses before the typeahead text
  * is reset (can be changed at runtime through `data.typeaheadDelay`).
@@ -722,6 +737,7 @@ export default class SelecticStore {
             icons: Object.assign({}, icons),
             iconFamily: defaultFamilyIcon,
             itemsPerPage: 10,
+            itemHeight: DEFAULT_ITEM_HEIGHT,
             typeaheadDelay: DEFAULT_TYPEAHEAD_DELAY,
             doNotUpdate: false,
             cacheItem: new Map(),
@@ -924,6 +940,12 @@ export default class SelecticStore {
                 stateParam.displayedItems as number);
         }
         delete stateParam.displayedItems;
+
+        if (Number.isFinite(stateParam.itemHeight)) {
+            this.data.itemHeight = Math.max(MIN_ITEM_HEIGHT,
+                stateParam.itemHeight as number);
+        }
+        delete stateParam.itemHeight;
 
         /* Update state */
         assignObject(this.state, stateParam as SelecticStoreState);
