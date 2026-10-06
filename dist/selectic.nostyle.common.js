@@ -1,35 +1,9 @@
-import { Component, Vue, h, Prop, Watch, Emits } from 'vtyx';
-import { unref, reactive, computed, watch } from 'vue';
+'use strict';
 
-function styleInject(css, ref) {
-  if ( ref === void 0 ) ref = {};
-  var insertAt = ref.insertAt;
+Object.defineProperty(exports, '__esModule', { value: true });
 
-  if (!css || typeof document === 'undefined') { return; }
-
-  var head = document.head || document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
-  style.type = 'text/css';
-
-  if (insertAt === 'top') {
-    if (head.firstChild) {
-      head.insertBefore(style, head.firstChild);
-    } else {
-      head.appendChild(style);
-    }
-  } else {
-    head.appendChild(style);
-  }
-
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css;
-  } else {
-    style.appendChild(document.createTextNode(css));
-  }
-}
-
-var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* Footer bar (displayed under the list) */\n    --selectic-footer-bg: #f1f1f1;\n    --selectic-footer-gap: 24px;\n    --selectic-footer-height: 40px;\n    --selectic-footer-link-color: #335895;\n    --selectic-footer-btn-secondary-bg: #ffffff;\n    --selectic-footer-btn-secondary-border: #cccccc;\n    --selectic-footer-btn-secondary-color: #333333;\n    --selectic-footer-btn-primary-bg: #335895;\n    --selectic-footer-btn-primary-border: #2d4d86;\n    --selectic-footer-btn-primary-color: #ffffff;\n\n    /* Image icon of an option (`icon: 'img:<url>'`) */\n    --selectic-option-image-size: 1.5em;\n    --selectic-option-image-radius: 3px;\n\n    /* Keyboard focus indicator */\n    --selectic-focus-outline-color: #66afe9;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n\n    /* Height of an item row in the opened list.\n     * XXX: this is only a fallback; the effective value is set inline from\n     * the `itemHeight` param, which must be used to change it (the virtual\n     * scroll relies on the same value). */\n    --selectic-item-height: calc(var(--selectic-input-height) - 3px);\n\n    /* Number of items displayed at once in the opened list.\n     * XXX: the effective value is set inline from the `displayedItems` param,\n     * so it cannot be overridden from CSS. */\n    --selectic-items-number: 10;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n\n.selectic .has-feedback {\n    position: relative;\n}\n\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n    /* the icon container has its own click handler to toggle the list, so it\n     * must receive pointer events despite the .form-control-feedback rule */\n    pointer-events: auto;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: flex-start;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n\n/* `margin-left: auto` keeps the icon on the right edge: the container is\n * `flex-start` so that the option icon stays glued to its value text. */\n.selectic-input__clear-icon {\n    align-self: center;\n    flex: none;\n    margin-left: auto;\n    padding-left: 3px;\n    cursor: pointer;\n}\n\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n\n.selectic__extended-list__list-container{\n    overflow: auto;\n    text-align: start;\n}\n\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-item-height) * var(--selectic-items-number));\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: var(--selectic-item-height);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__active:not(.selected) .single-select_icon {\n    opacity: 0;\n}\n\n.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-search-scope {\n    color: #e0e0e0;\n}\n\n/* Both icons are drawn at the height of the search input, and centered in\n * the area the input reserves on its right (the `padding-right` of\n * `.has-feedback .form-control`).\n * XXX: the selector must not be restricted to `.fa`: with the default\n * (`selectic`) family the icon is an inline SVG, whose width and height\n * are the drawn size, so it would keep the size of the feedback box. */\n.selectic .form-control-feedback.selectic-search-scope,\n.selectic .form-control-feedback.selectic-search-clear {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n    left: auto;\n    right: calc((var(--selectic-input-height) + 4px\n                 - var(--selectic-input-height) * 0.75) / 2);\n}\n\n/* The clear icon is drawn inside a button (`.form-control-feedback` is\n * neither clickable nor a flow container by default) */\n.selectic .selectic-search-clear {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: auto;\n    padding: 0;\n    border: none;\n    background: none;\n    color: var(--selectic-color);\n    cursor: pointer;\n}\n\n.selectic .selectic-search-clear:disabled {\n    cursor: var(--selectic-cursor-disabled);\n    opacity: 0.5;\n}\n\n.selectic .selectic-search-clear:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    margin-bottom: 0px;\n}\n\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"pre-icon value icon\" 1fr / max-content max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n\n/* Icon displayed before the text of a selected value (single and multiple).\n * The spacing with the text comes from `.selectic-icon-space-after`, which\n * `OptionIcon` applies by default (see below); consumers can override or\n * unset it. */\n.selectic-input__value-icon {\n    grid-area: pre-icon;\n    align-self: center;\n    justify-self: center;\n    flex: none;\n}\n\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ multilines */\n\n/* When placed inside a flex container, the multilines list fills the available\n * height and scrolls internally instead of growing unbounded. */\n.selectic--multilines {\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic__multilines-list {\n    flex: 1;\n    min-height: 0;\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic--multilines .selectic__extended-list__list-container {\n    flex: 1;\n    min-height: 0;\n}\n\n/* }}} */\n/* {{{ accessibility */\n\n/* Visually hidden but announced by screen readers (live region) */\n.selectic-sr-only {\n    position: absolute;\n    width: 1px;\n    height: 1px;\n    padding: 0;\n    margin: -1px;\n    overflow: hidden;\n    clip-path: inset(50%);\n    white-space: nowrap;\n    border: 0;\n}\n\n.selectic-input:focus-visible {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -2px;\n}\n\n/* The chip active while navigating with keyboard (arrow keys) */\n.selectic-input__selected-items__active {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -1px;\n}\n\n/* While navigating through chips, all of them are rendered (so the active\n * one can be reached) but the input must stay on a single line: the chips\n * overflow horizontally and the active one is scrolled into view. */\n.selectic-input.selectic-input--unfolded {\n    overflow: hidden;\n}\n\n.selectic-input--unfolded .selectic-input__selected-items {\n    flex-wrap: nowrap;\n}\n\n/* }}} */\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n/* Default spacing applied by `OptionIcon` so consumers don't have to add\n * their own spacing utility on every `option.icon` they provide. Override or\n * unset on the consumer side if a different spacing is needed. */\n.selectic-icon-space-after {\n    margin-right: 5px;\n}\n\n/* Image displayed instead of a class-based icon, when the icon of the\n * option is prefixed with `img:`.\n *\n * The size is fixed so that the box is already reserved while the image\n * loads, and stays reserved when it cannot be loaded at all: the rows of\n * the list keep the same alignment either way. `cover` handles the\n * avatars which are not square. */\n.selectic__option-image {\n    display: inline-block;\n    box-sizing: border-box;\n    vertical-align: middle;\n    flex: none;\n\n    width: var(--selectic-option-image-size);\n    height: var(--selectic-option-image-size);\n    border-radius: var(--selectic-option-image-radius);\n    object-fit: cover;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n/* {{{ footer */\n\n.selectic__list-panel__footer {\n    /* 3-column grid keeps the center cluster (Show selection / Clear\n     * selection) visually anchored at 50% regardless of how much or\n     * how little content lives on the left and right sides. */\n    display: grid;\n    grid-template-columns: 1fr auto 1fr;\n    align-items: center;\n    gap: var(--selectic-footer-gap);\n    padding: 5px 10px;\n    min-height: var(--selectic-footer-height);\n    background: var(--selectic-footer-bg);\n}\n\n.selectic__footer-left,\n.selectic__footer-center,\n.selectic__footer-right {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n}\n\n.selectic__footer-left {\n    justify-self: start;\n}\n\n.selectic__footer-center {\n    justify-self: center;\n}\n\n.selectic__footer-right {\n    justify-self: end;\n}\n\n.selectic__footer-link {\n    padding: 0;\n    border: 0;\n    background: none;\n    color: var(--selectic-footer-link-color);\n    font-size: calc(var(--selectic-font-size) - 3px);\n    line-height: 1.2;\n    text-decoration: underline dotted;\n    text-underline-offset: 3px;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-link--active {\n    font-weight: bold;\n}\n\n.selectic__footer-btn {\n    display: inline-flex;\n    align-items: center;\n    gap: 4px;\n    height: var(--selectic-input-height);\n    padding: 0 10px;\n    border-radius: 4px;\n    font-size: calc(var(--selectic-font-size) - 1px);\n    line-height: 1.2;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-btn--secondary {\n    background: var(--selectic-footer-btn-secondary-bg);\n    border: 1px solid var(--selectic-footer-btn-secondary-border);\n    color: var(--selectic-footer-btn-secondary-color);\n}\n\n.selectic__footer-btn--primary {\n    background: var(--selectic-footer-btn-primary-bg);\n    border: 1px solid var(--selectic-footer-btn-primary-border);\n    color: var(--selectic-footer-btn-primary-color);\n}\n\n.selectic__footer-link:hover:not(:disabled),\n.selectic__footer-btn:hover:not(:disabled) {\n    opacity: 0.85;\n}\n\n.selectic__footer-link:disabled,\n.selectic__footer-btn:disabled {\n    opacity: 0.5;\n    cursor: not-allowed;\n}\n\n/* }}} */\n";
-styleInject(css_248z);
+var vtyx = require('vtyx');
+var vue = require('vue');
 
 /**
  * Clone the object and its inner properties.
@@ -39,7 +13,7 @@ styleInject(css_248z);
  * @returns a copy of obj
  */
 function deepClone(origObject, ignoreAttributes = [], refs = new WeakMap()) {
-    const obj = unref(origObject);
+    const obj = vue.unref(origObject);
     /* For circular references */
     if (refs.has(obj)) {
         return refs.get(obj);
@@ -128,8 +102,8 @@ function isPrimitive(val) {
  * @returns true if objA should be considered equal to objB.
  */
 function isDeepEqual(objA, objB, ignoreAttributes = [], refs = new WeakMap()) {
-    objA = unref(objA);
-    objB = unref(objB);
+    objA = vue.unref(objA);
+    objB = vue.unref(objB);
     /* For primitive types */
     if (isPrimitive(objA)) {
         return isPrimitive(objB) && Object.is(objA, objB);
@@ -308,10 +282,10 @@ class SelecticStore {
             keepOpenWithOtherSelectic: false,
         };
         const propsVal = assignObject(defaultProps, props);
-        this.props = reactive(propsVal);
+        this.props = vue.reactive(propsVal);
         /* }}} */
         /* {{{ data */
-        this.state = reactive({
+        this.state = vue.reactive({
             activeChipIdx: -1,
             activeItemIdx: -1,
             allOptions: [],
@@ -355,7 +329,7 @@ class SelecticStore {
                 searching: false,
             },
         });
-        this.data = reactive({
+        this.data = vue.reactive({
             labels: Object.assign({}, messages),
             icons: Object.assign({}, icons),
             iconFamily: defaultFamilyIcon,
@@ -369,10 +343,10 @@ class SelecticStore {
         });
         /* }}} */
         /* {{{ computed */
-        this.marginSize = computed(() => {
+        this.marginSize = vue.computed(() => {
             return this.state.pageSize / 2;
         });
-        this.isPartial = computed(() => {
+        this.isPartial = vue.computed(() => {
             const state = this.state;
             let isPartial = typeof this.props.fetchCallback === 'function';
             if (isPartial &&
@@ -382,7 +356,7 @@ class SelecticStore {
             }
             return isPartial;
         });
-        this.displayedOptions = computed(() => {
+        this.displayedOptions = vue.computed(() => {
             const state = this.state;
             if (this.isShowingSelection) {
                 /* "Show selection" view: only the currently selected items
@@ -392,10 +366,10 @@ class SelecticStore {
             }
             return state.filteredOptions;
         });
-        this.totalDisplayedOptions = computed(() => {
+        this.totalDisplayedOptions = vue.computed(() => {
             const state = this.state;
             if (this.isShowingSelection) {
-                return unref(this.displayedOptions).length;
+                return vue.unref(this.displayedOptions).length;
             }
             const total = state.totalFilteredOptions;
             /* it is Infinity until the options have been built */
@@ -403,31 +377,31 @@ class SelecticStore {
                 ? total
                 : state.filteredOptions.length;
         });
-        this.hasAllItems = computed(() => {
+        this.hasAllItems = vue.computed(() => {
             const state = this.state;
             const nbItems = state.totalFilteredOptions + state.groups.size;
             return this.state.filteredOptions.length >= nbItems;
         });
-        this.hasFetchedAllItems = computed(() => {
-            const isPartial = unref(this.isPartial);
+        this.hasFetchedAllItems = vue.computed(() => {
+            const isPartial = vue.unref(this.isPartial);
             if (!isPartial) {
                 return true;
             }
             const state = this.state;
             return state.dynOptions.length === state.totalDynOptions;
         });
-        this.listOptions = computed(() => {
+        this.listOptions = vue.computed(() => {
             return this.getListOptions();
         });
-        this.elementOptions = computed(() => {
+        this.elementOptions = vue.computed(() => {
             return this.getElementOptions();
         });
-        this.allowGroupSelection = computed(() => {
+        this.allowGroupSelection = vue.computed(() => {
             return this.state.multiple && !this.isPartial.value && !this.state.disableGroupSelection;
         });
         /* }}} */
         /* {{{ watch */
-        watch(() => [this.props.options, this.props.childOptions], () => {
+        vue.watch(() => [this.props.options, this.props.childOptions], () => {
             this.data.cacheItem.clear();
             this.setAutomaticClose();
             this.commit('isOpen', false);
@@ -435,12 +409,12 @@ class SelecticStore {
             this.buildAllOptions(true);
             this.buildSelectedOptions();
         }, { deep: true });
-        watch(() => [this.listOptions, this.elementOptions], () => {
+        vue.watch(() => [this.listOptions, this.elementOptions], () => {
             /* TODO: transform allOptions as a computed properties and this
              * watcher become useless */
             this.buildAllOptions(true);
         }, { deep: true });
-        watch(() => this.props.value, () => {
+        vue.watch(() => this.props.value, () => {
             var _a;
             const value = (_a = this.props.value) !== null && _a !== void 0 ? _a : null;
             this.commit('internalValue', value);
@@ -449,7 +423,7 @@ class SelecticStore {
          * (either via individual unselects in that view, via the Clear
          * selection button, or via an external change). Keeps the UI from
          * being stranded on an empty list with no way back. */
-        watch(() => this.state.internalValue, () => {
+        vue.watch(() => this.state.internalValue, () => {
             if (!this.state.showSelection || !this.state.multiple) {
                 return;
             }
@@ -458,15 +432,15 @@ class SelecticStore {
                 this.state.showSelection = false;
             }
         }, { deep: true });
-        watch(() => this.props.selectionIsExcluded, () => {
+        vue.watch(() => this.props.selectionIsExcluded, () => {
             this.commit('selectionIsExcluded', this.props.selectionIsExcluded);
         });
-        watch(() => this.props.disabled, () => {
+        vue.watch(() => this.props.disabled, () => {
             this.commit('disabled', this.props.disabled);
         });
-        watch(() => this.state.filteredOptions, () => {
+        vue.watch(() => this.state.filteredOptions, () => {
             let areAllSelected = false;
-            const hasAllItems = unref(this.hasAllItems);
+            const hasAllItems = vue.unref(this.hasAllItems);
             if (hasAllItems) {
                 const selectionIsExcluded = +this.state.selectionIsExcluded;
                 /* eslint-disable-next-line no-bitwise */
@@ -474,7 +448,7 @@ class SelecticStore {
             }
             this.state.status.areAllSelected = areAllSelected;
         }, { deep: true });
-        watch(() => this.state.internalValue, () => {
+        vue.watch(() => this.state.internalValue, () => {
             this.buildSelectedOptions();
             /* If there is only one item, and the previous selected value was
              * different, then if we change it to the only available item we
@@ -482,11 +456,11 @@ class SelecticStore {
              * This is why it is needed to check autoDisabled here. */
             this.checkAutoDisabled();
         }, { deep: true });
-        watch(() => this.state.allOptions, () => {
+        vue.watch(() => this.state.allOptions, () => {
             this.checkAutoSelect();
             this.checkAutoDisabled();
         }, { deep: true });
-        watch(() => this.state.totalAllOptions, () => {
+        vue.watch(() => this.state.totalAllOptions, () => {
             this.checkHideFilter();
         });
         /* }}} */
@@ -660,7 +634,7 @@ class SelecticStore {
     }
     selectGroup(id, itemsSelected) {
         const state = this.state;
-        if (!unref(this.allowGroupSelection)) {
+        if (!vue.unref(this.allowGroupSelection)) {
             return;
         }
         const selectItem = this.selectItem.bind(this);
@@ -797,7 +771,7 @@ class SelecticStore {
         if (!this.state.multiple) {
             return;
         }
-        const hasAllItems = unref(this.hasAllItems);
+        const hasAllItems = vue.unref(this.hasAllItems);
         if (!hasAllItems) {
             const labels = this.data.labels;
             if (this.state.searchText) {
@@ -830,7 +804,7 @@ class SelecticStore {
     moveActiveItem(action) {
         var _a, _b;
         const state = this.state;
-        const totalItems = unref(this.totalDisplayedOptions);
+        const totalItems = vue.unref(this.totalDisplayedOptions);
         const lastIdx = totalItems - 1;
         if (lastIdx < 0) {
             return;
@@ -878,7 +852,7 @@ class SelecticStore {
             return;
         }
         const state = this.state;
-        const options = unref(this.displayedOptions);
+        const options = vue.unref(this.displayedOptions);
         if (!options.length) {
             return;
         }
@@ -971,7 +945,7 @@ class SelecticStore {
         if (index === -1) {
             return;
         }
-        const item = unref(this.displayedOptions)[index];
+        const item = vue.unref(this.displayedOptions)[index];
         if (!item || item.disabled) {
             return;
         }
@@ -1106,8 +1080,8 @@ class SelecticStore {
      * options, around offsetItem). */
     activateItemAt(idx) {
         const state = this.state;
-        const marginSize = unref(this.marginSize);
-        const totalItems = unref(this.totalDisplayedOptions);
+        const marginSize = vue.unref(this.marginSize);
+        const totalItems = vue.unref(this.totalDisplayedOptions);
         /* Same formulas as the ones used by List to compute the slice of
          * rendered options */
         const endIndex = Math.min(state.offsetItem + marginSize, totalItems);
@@ -1121,7 +1095,7 @@ class SelecticStore {
      * Options not fetched yet are considered enabled. */
     findEnabledItem(fromIdx, untilIdx) {
         var _a;
-        const options = unref(this.displayedOptions);
+        const options = vue.unref(this.displayedOptions);
         const step = fromIdx <= untilIdx ? 1 : -1;
         const stopIdx = untilIdx + step;
         for (let idx = fromIdx; idx !== stopIdx; idx += step) {
@@ -1144,7 +1118,7 @@ class SelecticStore {
             && !state.selectionIsExcluded
             /* in dynamic mode the not-yet-fetched selected items are not
              * in `filteredOptions`, so the view would be incomplete */
-            && unref(this.hasFetchedAllItems);
+            && vue.unref(this.hasFetchedAllItems);
     }
     /** Id of the listbox element (the list of options) */
     get listBoxId() {
@@ -1163,7 +1137,7 @@ class SelecticStore {
     }
     clearCache(forceReset = false) {
         debug('clearCache', 'start', forceReset);
-        const isPartial = unref(this.isPartial);
+        const isPartial = vue.unref(this.isPartial);
         const total = isPartial ? Infinity : 0;
         this.data.cacheItem.clear();
         this.state.allOptions = [];
@@ -1216,8 +1190,8 @@ class SelecticStore {
         }
         return this.state.filteredOptions.find(findId) ||
             this.state.dynOptions.find(findId) ||
-            unref(this.listOptions).find(findId) ||
-            unref(this.elementOptions).find(findId);
+            vue.unref(this.listOptions).find(findId) ||
+            vue.unref(this.elementOptions).find(findId);
     }
     convertTypeValue(oldValue) {
         const state = this.state;
@@ -1253,9 +1227,9 @@ class SelecticStore {
         const isMultiple = state.multiple;
         const checkStrict = state.strictValue;
         let newValue = internalValue;
-        const isPartial = unref(this.isPartial);
+        const isPartial = vue.unref(this.isPartial);
         if (isMultiple) {
-            const hasFetchedAllItems = unref(this.hasFetchedAllItems);
+            const hasFetchedAllItems = vue.unref(this.hasFetchedAllItems);
             if (selectionIsExcluded && hasFetchedAllItems) {
                 newValue = state.allOptions.reduce((values, option) => {
                     const id = option.id;
@@ -1397,7 +1371,7 @@ class SelecticStore {
         let elementOptions = [];
         const optionBehaviorOrder = this.state.optionBehaviorOrder;
         let length = Infinity;
-        const isPartial = unref(this.isPartial);
+        const isPartial = vue.unref(this.isPartial);
         const arrayFromOrder = (orderValue) => {
             switch (orderValue) {
                 case 'O': return listOptions;
@@ -1423,8 +1397,8 @@ class SelecticStore {
                 this.state.totalDynOptions = 0;
             }
         }
-        listOptions = unref(this.listOptions);
-        elementOptions = unref(this.elementOptions);
+        listOptions = vue.unref(this.listOptions);
+        elementOptions = vue.unref(this.elementOptions);
         if (this.state.optionBehaviorOperation === 'force') {
             const orderValue = optionBehaviorOrder.find((value) => lengthFromOrder(value) > 0);
             allOptions.push(...arrayFromOrder(orderValue));
@@ -1493,13 +1467,13 @@ class SelecticStore {
         const totalAllOptions = state.totalAllOptions;
         const allOptionsLength = allOptions.length;
         let filteredOptionsLength = state.filteredOptions.length;
-        const hasAllItems = unref(this.hasAllItems);
+        const hasAllItems = vue.unref(this.hasAllItems);
         debug('buildFilteredOptions', 'start', 'hasAllItems:', hasAllItems, 'allOptions', allOptions.length, 'search:', search, 'filteredOptionsLength:', filteredOptionsLength);
         if (hasAllItems) {
             /* Everything has already been fetched and stored in filteredOptions */
             return;
         }
-        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
+        const hasFetchedAllItems = vue.unref(this.hasFetchedAllItems);
         /* Check if all options have been fetched */
         if (hasFetchedAllItems) {
             if (!search) {
@@ -1512,7 +1486,7 @@ class SelecticStore {
         }
         /* When we only have partial options */
         const offsetItem = state.offsetItem;
-        const marginSize = unref(this.marginSize);
+        const marginSize = vue.unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
         debug('buildFilteredOptions', 'partial options', 'offsetItem:', offsetItem, 'marginSize:', marginSize, 'filteredOptionsLength', filteredOptionsLength);
         if (endIndex <= filteredOptionsLength) {
@@ -1520,7 +1494,7 @@ class SelecticStore {
         }
         if (!search && endIndex <= allOptionsLength) {
             this.setFilteredOptions(this.buildGroupItems(allOptions), false, totalAllOptions + state.groups.size);
-            const isPartial = unref(this.isPartial);
+            const isPartial = vue.unref(this.isPartial);
             if (isPartial && state.totalDynOptions === Infinity) {
                 this.fetchData();
             }
@@ -1633,7 +1607,7 @@ class SelecticStore {
         const filteredOptionsLength = state.filteredOptions.length;
         const offsetItem = state.offsetItem;
         const pageSize = state.pageSize;
-        const marginSize = unref(this.marginSize);
+        const marginSize = vue.unref(this.marginSize);
         const endIndex = offsetItem + marginSize;
         const dynOffset = this.data.dynOffset;
         /* Run the query */
@@ -1673,7 +1647,7 @@ class SelecticStore {
                      * Stop fetching to avoid infinite loop
                      */
                     debug('fetchData', 'no new values');
-                    if (!unref(this.hasFetchedAllItems)) {
+                    if (!vue.unref(this.hasFetchedAllItems)) {
                         /* Display error if all items are not fetch
                          * We can have the case where old value and result
                          * are the same but total is correct when the
@@ -1762,10 +1736,10 @@ class SelecticStore {
             }
             switch (order) {
                 case 'O':
-                    options = this.filterOptions(unref(this.listOptions), search);
+                    options = this.filterOptions(vue.unref(this.listOptions), search);
                     break;
                 case 'E':
-                    options = this.filterOptions(unref(this.elementOptions), search);
+                    options = this.filterOptions(vue.unref(this.elementOptions), search);
                     break;
             }
             this.setFilteredOptions(options, true);
@@ -1874,9 +1848,9 @@ class SelecticStore {
     }
     checkAutoDisabled() {
         const state = this.state;
-        const isPartial = unref(this.isPartial);
+        const isPartial = vue.unref(this.isPartial);
         const doNotCheck = isPartial || this.props.disabled || !state.autoDisabled;
-        const hasFetchedAllItems = unref(this.hasFetchedAllItems);
+        const hasFetchedAllItems = vue.unref(this.hasFetchedAllItems);
         if (doNotCheck || !hasFetchedAllItems) {
             return;
         }
@@ -1926,7 +1900,7 @@ class SelecticStore {
             return;
         }
         const state = this.state;
-        const isPartial = unref(this.isPartial);
+        const isPartial = vue.unref(this.isPartial);
         if (state.multiple || isPartial) {
             state.hideFilter = false;
         }
@@ -1937,7 +1911,7 @@ class SelecticStore {
     /** update group item, to mark them as selected if needed */
     updateGroupSelection() {
         const state = this.state;
-        if (!unref(this.allowGroupSelection)) {
+        if (!vue.unref(this.allowGroupSelection)) {
             return;
         }
         const filteredOptions = state.filteredOptions;
@@ -1990,14 +1964,14 @@ var __decorate$j = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconCaretDown = class IconCaretDown extends Vue {
+let IconCaretDown = class IconCaretDown extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M7,10L12,15L17,10H7Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7,10L12,15L17,10H7Z" })));
     }
 };
 IconCaretDown = __decorate$j([
-    Component
+    vtyx.Component
 ], IconCaretDown);
 var IconCaretDown$1 = IconCaretDown;
 
@@ -2010,14 +1984,14 @@ var __decorate$i = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconCaretUp = class IconCaretUp extends Vue {
+let IconCaretUp = class IconCaretUp extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M7,15L12,10L17,15H7Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7,15L12,10L17,15H7Z" })));
     }
 };
 IconCaretUp = __decorate$i([
-    Component
+    vtyx.Component
 ], IconCaretUp);
 var IconCaretUp$1 = IconCaretUp;
 
@@ -2030,14 +2004,14 @@ var __decorate$h = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconCheck = class IconCheck extends Vue {
+let IconCheck = class IconCheck extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" })));
     }
 };
 IconCheck = __decorate$h([
-    Component
+    vtyx.Component
 ], IconCheck);
 var IconCheck$1 = IconCheck;
 
@@ -2047,14 +2021,14 @@ var __decorate$g = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconDot = class IconDot extends Vue {
+let IconDot = class IconDot extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("circle", { cx: "8", cy: "16", r: "3.5" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("circle", { cx: "8", cy: "16", r: "3.5" })));
     }
 };
 IconDot = __decorate$g([
-    Component
+    vtyx.Component
 ], IconDot);
 var IconDot$1 = IconDot;
 
@@ -2067,14 +2041,14 @@ var __decorate$f = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconQuestion = class IconQuestion extends Vue {
+let IconQuestion = class IconQuestion extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z" })));
     }
 };
 IconQuestion = __decorate$f([
-    Component
+    vtyx.Component
 ], IconQuestion);
 var IconQuestion$1 = IconQuestion;
 
@@ -2087,14 +2061,14 @@ var __decorate$e = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconSearch = class IconSearch extends Vue {
+let IconSearch = class IconSearch extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" })));
     }
 };
 IconSearch = __decorate$e([
-    Component
+    vtyx.Component
 ], IconSearch);
 var IconSearch$1 = IconSearch;
 
@@ -2107,14 +2081,14 @@ var __decorate$d = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconSpinner = class IconSpinner extends Vue {
+let IconSpinner = class IconSpinner extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" })));
     }
 };
 IconSpinner = __decorate$d([
-    Component
+    vtyx.Component
 ], IconSpinner);
 var IconSpinner$1 = IconSpinner;
 
@@ -2127,14 +2101,14 @@ var __decorate$c = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconStrikeThrough = class IconStrikeThrough extends Vue {
+let IconStrikeThrough = class IconStrikeThrough extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M7.2 9.8C6 7.5 7.7 4.8 10.1 4.3C13.2 3.3 17.7 4.7 17.6 8.5H14.6C14.6 8.2 14.5 7.9 14.5 7.7C14.3 7.1 13.9 6.8 13.3 6.6C12.5 6.3 11.2 6.4 10.5 6.9C9 8.2 10.4 9.5 12 10H7.4C7.3 9.9 7.3 9.8 7.2 9.8M21 13V11H3V13H12.6C12.8 13.1 13 13.1 13.2 13.2C13.8 13.5 14.3 13.7 14.5 14.3C14.6 14.7 14.7 15.2 14.5 15.6C14.3 16.1 13.9 16.3 13.4 16.5C11.6 17 9.4 16.3 9.5 14.1H6.5C6.4 16.7 8.6 18.5 11 18.8C14.8 19.6 19.3 17.2 17.3 12.9L21 13Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M7.2 9.8C6 7.5 7.7 4.8 10.1 4.3C13.2 3.3 17.7 4.7 17.6 8.5H14.6C14.6 8.2 14.5 7.9 14.5 7.7C14.3 7.1 13.9 6.8 13.3 6.6C12.5 6.3 11.2 6.4 10.5 6.9C9 8.2 10.4 9.5 12 10H7.4C7.3 9.9 7.3 9.8 7.2 9.8M21 13V11H3V13H12.6C12.8 13.1 13 13.1 13.2 13.2C13.8 13.5 14.3 13.7 14.5 14.3C14.6 14.7 14.7 15.2 14.5 15.6C14.3 16.1 13.9 16.3 13.4 16.5C11.6 17 9.4 16.3 9.5 14.1H6.5C6.4 16.7 8.6 18.5 11 18.8C14.8 19.6 19.3 17.2 17.3 12.9L21 13Z" })));
     }
 };
 IconStrikeThrough = __decorate$c([
-    Component
+    vtyx.Component
 ], IconStrikeThrough);
 var IconStrikeThrough$1 = IconStrikeThrough;
 
@@ -2147,14 +2121,14 @@ var __decorate$b = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let IconTimes = class IconTimes extends Vue {
+let IconTimes = class IconTimes extends vtyx.Vue {
     render() {
-        return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
-            h("path", { d: "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" })));
+        return (vtyx.h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24" },
+            vtyx.h("path", { d: "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" })));
     }
 };
 IconTimes = __decorate$b([
-    Component
+    vtyx.Component
 ], IconTimes);
 var IconTimes$1 = IconTimes;
 
@@ -2167,7 +2141,7 @@ var __decorate$a = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let Icon = class Icon extends Vue {
+let Icon = class Icon extends vtyx.Vue {
     /* }}} */
     /* {{{ computed */
     get rawIconValue() {
@@ -2278,7 +2252,7 @@ let Icon = class Icon extends Vue {
     }
     renderInnerIcon() {
         const component = this.vueIcon;
-        return h(component, Object.assign({
+        return vtyx.h(component, Object.assign({
             class: {
                 'selectic__icon': true,
                 [this.spinClass]: this.spinActive,
@@ -2288,7 +2262,7 @@ let Icon = class Icon extends Vue {
     }
     renderSpanIcon(prefix) {
         const classSpin = this.spinActive && this.spinClass || '';
-        return (h("span", Object.assign({ class: `${prefix}${this.iconValue} ${classSpin}`, title: this.title }, this.ariaAttributes)));
+        return (vtyx.h("span", Object.assign({ class: `${prefix}${this.iconValue} ${classSpin}`, title: this.title }, this.ariaAttributes)));
     }
     render() {
         const family = this.family;
@@ -2313,19 +2287,19 @@ let Icon = class Icon extends Vue {
     }
 };
 __decorate$a([
-    Prop()
+    vtyx.Prop()
 ], Icon.prototype, "store", void 0);
 __decorate$a([
-    Prop()
+    vtyx.Prop()
 ], Icon.prototype, "icon", void 0);
 __decorate$a([
-    Prop()
+    vtyx.Prop()
 ], Icon.prototype, "spin", void 0);
 __decorate$a([
-    Prop()
+    vtyx.Prop()
 ], Icon.prototype, "title", void 0);
 Icon = __decorate$a([
-    Component
+    vtyx.Component
 ], Icon);
 var Icon$1 = Icon;
 
@@ -2349,7 +2323,7 @@ var __decorate$9 = (this && this.__decorate) || function (decorators, target, ke
 };
 /** Marks the icon of an option as an image URL instead of a class name. */
 const IMAGE_PREFIX = 'img:';
-let OptionIcon = class OptionIcon extends Vue {
+let OptionIcon = class OptionIcon extends vtyx.Vue {
     constructor() {
         /* {{{ props */
         super(...arguments);
@@ -2399,9 +2373,9 @@ let OptionIcon = class OptionIcon extends Vue {
             /* The box is rendered even without a usable URL, so that the
              * option stays aligned with the ones having an image. */
             if (!url || this.hasFailed) {
-                return (h("span", { class: this.imageClass, "aria-hidden": "true" }));
+                return (vtyx.h("span", { class: this.imageClass, "aria-hidden": "true" }));
             }
-            return (h("img", { class: this.imageClass, src: url, 
+            return (vtyx.h("img", { class: this.imageClass, src: url, 
                 /* the text of the option already carries the name: a
                  * description here would be read twice */
                 alt: "", "aria-hidden": "true", on: {
@@ -2411,23 +2385,23 @@ let OptionIcon = class OptionIcon extends Vue {
         if (!this.icon) {
             return;
         }
-        return (h(Icon$1, { icon: this.normalizedIcon, store: this.store, class: `selectic-icon-space-after ${this.className}` }));
+        return (vtyx.h(Icon$1, { icon: this.normalizedIcon, store: this.store, class: `selectic-icon-space-after ${this.className}` }));
     }
 };
 __decorate$9([
-    Prop()
+    vtyx.Prop()
 ], OptionIcon.prototype, "store", void 0);
 __decorate$9([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], OptionIcon.prototype, "icon", void 0);
 __decorate$9([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], OptionIcon.prototype, "className", void 0);
 __decorate$9([
-    Watch('icon')
+    vtyx.Watch('icon')
 ], OptionIcon.prototype, "onIconChange", null);
 OptionIcon = __decorate$9([
-    Component
+    vtyx.Component
 ], OptionIcon);
 var OptionIcon$1 = OptionIcon;
 
@@ -2443,7 +2417,7 @@ var __decorate$8 = (this && this.__decorate) || function (decorators, target, ke
 };
 /** Minimal width (in px) needed to display a chip */
 const MIN_CHIP_WIDTH = 50;
-let MainInput = class MainInput extends Vue {
+let MainInput = class MainInput extends vtyx.Vue {
     constructor() {
         super(...arguments);
         /* }}} */
@@ -2828,11 +2802,11 @@ let MainInput = class MainInput extends Vue {
     /* }}} */
     render() {
         var _a;
-        return (h("div", { class: "selectic-container has-feedback", on: {
+        return (vtyx.h("div", { class: "selectic-container has-feedback", on: {
                 mousedown: this.onMousedown,
                 'click.prevent.stop': () => this.toggleFocus(),
             } },
-            h("div", { id: this.selecticId, class: ['selectic-input form-control',
+            vtyx.h("div", { id: this.selecticId, class: ['selectic-input form-control',
                     {
                         focused: this.store.state.isOpen,
                         disabled: this.store.state.disabled,
@@ -2842,51 +2816,51 @@ let MainInput = class MainInput extends Vue {
                     blur: this.onComboboxBlur,
                     keydown: this.onComboboxKeydown,
                 } },
-                this.hasValue && !this.store.state.multiple && (h(OptionIcon$1, { icon: (_a = this.singleSelectedItem) === null || _a === void 0 ? void 0 : _a.icon, store: this.store, className: "selectic-input__value-icon" })),
-                this.hasValue && !this.store.state.multiple && (h("span", { class: "selectic-item_text", style: this.singleStyle, title: this.singleSelectedItemTitle }, this.singleSelectedItemText)),
-                this.displayPlaceholder && (h("span", { class: [
+                this.hasValue && !this.store.state.multiple && (vtyx.h(OptionIcon$1, { icon: (_a = this.singleSelectedItem) === null || _a === void 0 ? void 0 : _a.icon, store: this.store, className: "selectic-input__value-icon" })),
+                this.hasValue && !this.store.state.multiple && (vtyx.h("span", { class: "selectic-item_text", style: this.singleStyle, title: this.singleSelectedItemTitle }, this.singleSelectedItemText)),
+                this.displayPlaceholder && (vtyx.h("span", { class: [
                         'selectic-input__selected-items__placeholder',
                         'selectic-item_text',
                     ], title: this.store.state.placeholder }, this.store.state.placeholder)),
-                this.store.state.multiple && (h("div", { class: "selectic-input__selected-items", ref: "selectedItems" },
-                    this.isSelectionReversed && (h(Icon$1, { icon: "strikethrough", store: this.store, class: "selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
-                    this.showSelectedOptions.map((item, idx) => (h("div", { class: ['single-value', {
+                this.store.state.multiple && (vtyx.h("div", { class: "selectic-input__selected-items", ref: "selectedItems" },
+                    this.isSelectionReversed && (vtyx.h(Icon$1, { icon: "strikethrough", store: this.store, class: "selectic-input__reverse-icon", title: this.reverseSelectionLabel })),
+                    this.showSelectedOptions.map((item, idx) => (vtyx.h("div", { class: ['single-value', {
                                 'selectic-input__selected-items__active': idx === this.store.state.activeChipIdx,
                             }], style: item.style, title: item.title || item.text, on: {
                             click: () => this.$emit('item:click', item.id),
                         } },
-                        h(OptionIcon$1, { icon: item.icon, store: this.store, className: "selectic-input__value-icon" }),
-                        h("span", { class: "selectic-input__selected-items__value" }, item.text),
-                        !this.isDisabled && !item.disabled && (h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, title: this.removeItemLabel(item), "aria-hidden": "true", on: {
+                        vtyx.h(OptionIcon$1, { icon: item.icon, store: this.store, className: "selectic-input__value-icon" }),
+                        vtyx.h("span", { class: "selectic-input__selected-items__value" }, item.text),
+                        !this.isDisabled && !item.disabled && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, title: this.removeItemLabel(item), "aria-hidden": "true", on: {
                                 'click.prevent.stop': () => this.selectItem(item.id),
                             } }))))),
-                    this.moreSelectedNb && (h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb)))),
-                this.showClearAll && (h(Icon$1, { icon: "times", class: "selectic-input__clear-icon", title: this.clearedLabel, "aria-hidden": "true", store: this.store, on: { 'click.prevent.stop': this.clearSelection } }))),
-            h("span", { class: "selectic-sr-only", role: "status" }, this.chipsAnnouncement),
-            h("div", { class: [
+                    this.moreSelectedNb && (vtyx.h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb)))),
+                this.showClearAll && (vtyx.h(Icon$1, { icon: "times", class: "selectic-input__clear-icon", title: this.clearedLabel, "aria-hidden": "true", store: this.store, on: { 'click.prevent.stop': this.clearSelection } }))),
+            vtyx.h("span", { class: "selectic-sr-only", role: "status" }, this.chipsAnnouncement),
+            vtyx.h("div", { class: [
                     'selectic__icon-container',
                     'form-control-feedback',
                     { focused: this.store.state.isOpen }
                 ], "data-test": "selectic-toggle", on: {
                     'click.prevent.stop': () => this.toggleFocus(),
                 } },
-                h(Icon$1, { icon: "caret-down", class: "selectic-icon", store: this.store }))));
+                vtyx.h(Icon$1, { icon: "caret-down", class: "selectic-icon", store: this.store }))));
     }
 };
 __decorate$8([
-    Prop()
+    vtyx.Prop()
 ], MainInput.prototype, "store", void 0);
 __decorate$8([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], MainInput.prototype, "id", void 0);
 __decorate$8([
-    Watch('store.state.internalValue', { deep: true })
+    vtyx.Watch('store.state.internalValue', { deep: true })
 ], MainInput.prototype, "onInternalChange", null);
 __decorate$8([
-    Watch('store.state.activeChipIdx')
+    vtyx.Watch('store.state.activeChipIdx')
 ], MainInput.prototype, "onActiveChipChange", null);
 MainInput = __decorate$8([
-    Component
+    vtyx.Component
 ], MainInput);
 var MainInput$1 = MainInput;
 
@@ -2903,7 +2877,7 @@ var __decorate$7 = (this && this.__decorate) || function (decorators, target, ke
 };
 /** Elements from which typed keys must not be stolen */
 const INTERACTIVE_TAGS = ['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'];
-let FilterSearch = class FilterSearch extends Vue {
+let FilterSearch = class FilterSearch extends vtyx.Vue {
     /* }}} */
     /* {{{ computed */
     get searchPlaceholder() {
@@ -2987,24 +2961,24 @@ let FilterSearch = class FilterSearch extends Vue {
     render() {
         const store = this.store;
         const state = store.state;
-        return (h("div", { class: "filter-panel__input form-group has-feedback" },
-            h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, "aria-label": this.searchPlaceholder, role: "combobox", "aria-expanded": "true", "aria-autocomplete": "list", "aria-controls": this.listBoxId, "aria-activedescendant": this.activeDescendant, value: state.searchText, disabled: state.disabled, on: {
+        return (vtyx.h("div", { class: "filter-panel__input form-group has-feedback" },
+            vtyx.h("input", { type: "text", class: "form-control filter-input", placeholder: this.searchPlaceholder, "aria-label": this.searchPlaceholder, role: "combobox", "aria-expanded": "true", "aria-autocomplete": "list", "aria-controls": this.listBoxId, "aria-activedescendant": this.activeDescendant, value: state.searchText, disabled: state.disabled, on: {
                     'input.stop.prevent': this.onInput,
                 }, ref: "filterInput" }),
-            this.hasSearch ? (h("button", { type: "button", class: "selectic-search-clear form-control-feedback", title: this.clearSearchLabel, "aria-label": this.clearSearchLabel, disabled: state.disabled, on: {
+            this.hasSearch ? (vtyx.h("button", { type: "button", class: "selectic-search-clear form-control-feedback", title: this.clearSearchLabel, "aria-label": this.clearSearchLabel, disabled: state.disabled, on: {
                     'click.stop.prevent': this.clearSearch,
                 } },
-                h(Icon$1, { icon: "times", store: store }))) : (h(Icon$1, { icon: "search", store: store, class: "selectic-search-scope form-control-feedback" }))));
+                vtyx.h(Icon$1, { icon: "times", store: store }))) : (vtyx.h(Icon$1, { icon: "search", store: store, class: "selectic-search-scope form-control-feedback" }))));
     }
 };
 __decorate$7([
-    Prop()
+    vtyx.Prop()
 ], FilterSearch.prototype, "store", void 0);
 __decorate$7([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], FilterSearch.prototype, "scoped", void 0);
 FilterSearch = __decorate$7([
-    Component
+    vtyx.Component
 ], FilterSearch);
 var FilterSearch$1 = FilterSearch;
 
@@ -3017,7 +2991,7 @@ var __decorate$6 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let FilterPanel = class FilterPanel extends Vue {
+let FilterPanel = class FilterPanel extends vtyx.Vue {
     /* }}} */
     /* {{{ Life cycle */
     mounted() {
@@ -3026,15 +3000,15 @@ let FilterPanel = class FilterPanel extends Vue {
     }
     /* }}} */
     render() {
-        return (h("div", { class: "filter-panel" },
-            h(FilterSearch$1, { store: this.store, ref: "filterSearch" })));
+        return (vtyx.h("div", { class: "filter-panel" },
+            vtyx.h(FilterSearch$1, { store: this.store, ref: "filterSearch" })));
     }
 };
 __decorate$6([
-    Prop()
+    vtyx.Prop()
 ], FilterPanel.prototype, "store", void 0);
 FilterPanel = __decorate$6([
-    Component
+    vtyx.Component
 ], FilterPanel);
 var Filter = FilterPanel;
 
@@ -3048,7 +3022,7 @@ var __decorate$5 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let List = class List extends Vue {
+let List = class List extends vtyx.Vue {
     constructor() {
         super(...arguments);
         /* }}} */
@@ -3065,7 +3039,7 @@ let List = class List extends Vue {
      * so the indexes used here are the ones the keyboard navigation and the
      * ARIA ids are built on. */
     get filteredOptions() {
-        return unref(this.store.displayedOptions);
+        return vue.unref(this.store.displayedOptions);
     }
     get isMultiple() {
         return this.store.state.multiple;
@@ -3075,7 +3049,7 @@ let List = class List extends Vue {
     }
     get itemsMargin() {
         /* XXX: I don't really know when we should use value or not... */
-        return unref(this.store.marginSize);
+        return vue.unref(this.store.marginSize);
     }
     get shortOptions() {
         const endIndex = this.endIndex;
@@ -3099,7 +3073,7 @@ let List = class List extends Vue {
         return shortOptions;
     }
     get totalItems() {
-        return unref(this.store.totalDisplayedOptions);
+        return vue.unref(this.store.totalDisplayedOptions);
     }
     get endIndex() {
         return Math.min(this.store.state.offsetItem + this.itemsMargin, this.totalItems);
@@ -3245,23 +3219,23 @@ let List = class List extends Vue {
     }
     /* }}} */
     render() {
-        return (h("div", { class: "selectic__extended-list__list-container", 
+        return (vtyx.h("div", { class: "selectic__extended-list__list-container", 
             /* scrollable elements are focusable by default in some
              * browsers; the list is driven with arrow keys */
             tabIndex: -1, on: {
                 scroll: this.checkOffset,
             }, ref: "elList" },
-            h("ul", { class: "selectic__extended-list__list-items", style: `--selectic-items-number:${this.store.data.itemsPerPage};
+            vtyx.h("ul", { class: "selectic__extended-list__list-items", style: `--selectic-items-number:${this.store.data.itemsPerPage};
                         --selectic-item-height:${this.itemHeight}px;`, id: this.store.listBoxId, role: "listbox", "aria-multiselectable": this.isMultiple ? 'true' : undefined, tabIndex: this.focusable && !this.isDisabled ? 0 : undefined, "aria-disabled": this.isDisabled ? 'true' : undefined, "aria-activedescendant": this.activeDescendant, ref: "listItems" },
-                !!this.topOffset && (h("li", { class: "selectic-item", style: `height:${this.topOffset}px;`, role: "presentation", "aria-hidden": "true" })),
+                !!this.topOffset && (vtyx.h("li", { class: "selectic-item", style: `height:${this.topOffset}px;`, role: "presentation", "aria-hidden": "true" })),
                 this.shortOptions.map((option, idx) => {
                     const absoluteIdx = idx + this.startIndex;
-                    return (h("li", { on: {
+                    return (vtyx.h("li", { on: {
                             'click.prevent.stop': () => this.click(option),
                             'mouseover': () => this.onMouseOver(idx),
                         }, class: ['selectic-item', option.className || '', {
                                 'selected': option.selected,
-                                'selectable': unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
+                                'selectable': vue.unref(this.store.allowGroupSelection) && option.isGroup && !option.disabled,
                                 'selectic-item__active': absoluteIdx === this.store.state.activeItemIdx,
                                 'selectic-item__disabled': !!option.disabled,
                                 'selectic-item__exclusive': !!option.exclusive,
@@ -3270,34 +3244,34 @@ let List = class List extends Vue {
                             }], style: option.style, title: option.title, id: this.store.optionId(absoluteIdx), role: "option", "aria-roledescription": option.isGroup
                             ? this.store.data.labels.groupRoleDescription
                             : undefined, "aria-selected": option.selected ? 'true' : 'false', "aria-disabled": option.disabled ? 'true' : undefined, "aria-posinset": absoluteIdx + 1, "aria-setsize": this.totalItems, key: 'selectic-item-' + absoluteIdx },
-                        this.isMultiple && (h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
-                        !this.isMultiple && (h(Icon$1, { icon: "dot", store: this.store, class: "selectic-item_icon single-select_icon" })),
-                        h(OptionIcon$1, { icon: option.icon, store: this.store }),
+                        this.isMultiple && (vtyx.h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
+                        !this.isMultiple && (vtyx.h(Icon$1, { icon: "dot", store: this.store, class: "selectic-item_icon single-select_icon" })),
+                        vtyx.h(OptionIcon$1, { icon: option.icon, store: this.store }),
                         option.text));
                 }),
-                !!this.bottomOffset && (h("li", { class: "selectic-item", style: `height:${this.bottomOffset}px;`, role: "presentation", "aria-hidden": "true" })))));
+                !!this.bottomOffset && (vtyx.h("li", { class: "selectic-item", style: `height:${this.bottomOffset}px;`, role: "presentation", "aria-hidden": "true" })))));
     }
 };
 __decorate$5([
-    Prop()
+    vtyx.Prop()
 ], List.prototype, "store", void 0);
 __decorate$5([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], List.prototype, "focusable", void 0);
 __decorate$5([
-    Watch('store.state.activeItemIdx')
+    vtyx.Watch('store.state.activeItemIdx')
 ], List.prototype, "onIndexChange", null);
 __decorate$5([
-    Watch('store.state.offsetItem')
+    vtyx.Watch('store.state.offsetItem')
 ], List.prototype, "onOffsetChange", null);
 __decorate$5([
-    Watch('filteredOptions', { deep: true })
+    vtyx.Watch('filteredOptions', { deep: true })
 ], List.prototype, "onFilteredOptionsChange", null);
 __decorate$5([
-    Watch('groupId')
+    vtyx.Watch('groupId')
 ], List.prototype, "onGroupIdChange", null);
 List = __decorate$5([
-    Component
+    vtyx.Component
 ], List);
 var List$1 = List;
 
@@ -3321,11 +3295,11 @@ var __decorate$4 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let Footer = class Footer extends Vue {
+let Footer = class Footer extends vtyx.Vue {
     /* }}} */
     /* {{{ computed */
     get hasNotAllItems() {
-        return !unref(this.store.hasAllItems);
+        return !vue.unref(this.store.hasAllItems);
     }
     /** In multilines mode the footer is rendered even when the component is
      * disabled: none of its actions must be reachable then. */
@@ -3356,7 +3330,7 @@ let Footer = class Footer extends Vue {
     }
     get disableRevert() {
         return this.isDisabled || !this.store.state.multiple
-            || !unref(this.store.hasFetchedAllItems);
+            || !vue.unref(this.store.hasFetchedAllItems);
     }
     /** True in multiple mode when at least one item is selected.
      *
@@ -3376,7 +3350,7 @@ let Footer = class Footer extends Vue {
      * missing from a view whose hint counts them. */
     get canShowSelection() {
         return !this.store.state.selectionIsExcluded
-            && unref(this.store.hasFetchedAllItems);
+            && vue.unref(this.store.hasFetchedAllItems);
     }
     /* }}} */
     /* {{{ methods */
@@ -3504,38 +3478,38 @@ let Footer = class Footer extends Vue {
         const selectAllDisabled = !!(selectAllCfg === null || selectAllCfg === void 0 ? void 0 : selectAllCfg.disabled) || this.disableSelectAll;
         const invertDisabled = !!(invertCfg === null || invertCfg === void 0 ? void 0 : invertCfg.disabled) || this.disableRevert;
         const showSelectionDisabled = !!(showSelectionCfg === null || showSelectionCfg === void 0 ? void 0 : showSelectionCfg.disabled) || this.isDisabled;
-        return (h("div", { class: "selectic__list-panel__footer" },
-            h("div", { class: "selectic__footer-left" },
-                inShowSelectionView && (h("button", { type: "button", class: "selectic__footer-link", disabled: this.isDisabled, on: {
+        return (vtyx.h("div", { class: "selectic__list-panel__footer" },
+            vtyx.h("div", { class: "selectic__footer-left" },
+                inShowSelectionView && (vtyx.h("button", { type: "button", class: "selectic__footer-link", disabled: this.isDisabled, on: {
                         'click.stop.prevent': this.onClearSelection,
                     } }, labels.footerClearSelection)),
-                selectAllCfg && (h("button", { type: "button", class: ['selectic__footer-link', {
+                selectAllCfg && (vtyx.h("button", { type: "button", class: ['selectic__footer-link', {
                             'selectic__footer-link--active': areAllSelected,
                         }], disabled: selectAllDisabled, title: (_a = selectAllCfg.title) !== null && _a !== void 0 ? _a : this.titleSelectAll, "aria-pressed": this.togglePressed('selectAll', 'footerSelectAll', areAllSelected), on: {
                         'click.stop.prevent': this.onSelectAll,
                     } }, this.getLabel('selectAll', 'footerSelectAll'))),
-                invertCfg && (h("button", { type: "button", class: ['selectic__footer-link', {
+                invertCfg && (vtyx.h("button", { type: "button", class: ['selectic__footer-link', {
                             'selectic__footer-link--active': state.selectionIsExcluded,
                         }], disabled: invertDisabled, title: invertCfg.title, "aria-pressed": this.togglePressed('invertSelection', 'footerInvertSelection', state.selectionIsExcluded), on: {
                         'click.stop.prevent': this.onInvertSelection,
                     } }, this.getLabel('invertSelection', 'footerInvertSelection')))),
-            h("div", { class: "selectic__footer-center" }, showSelectionCfg && (h("button", { type: "button", class: "selectic__footer-link", disabled: showSelectionDisabled, title: showSelectionCfg.title, "aria-pressed": this.togglePressed('showSelection', 'footerShowSelection', state.showSelection), on: {
+            vtyx.h("div", { class: "selectic__footer-center" }, showSelectionCfg && (vtyx.h("button", { type: "button", class: "selectic__footer-link", disabled: showSelectionDisabled, title: showSelectionCfg.title, "aria-pressed": this.togglePressed('showSelection', 'footerShowSelection', state.showSelection), on: {
                     'click.stop.prevent': this.onShowSelection,
                 } }, this.getLabel('showSelection', 'footerShowSelection')))),
-            h("div", { class: "selectic__footer-right" },
-                clearCfg && (h("button", { type: "button", class: "selectic__footer-btn selectic__footer-btn--secondary", disabled: !!clearCfg.disabled || this.isDisabled, title: clearCfg.title, on: {
+            vtyx.h("div", { class: "selectic__footer-right" },
+                clearCfg && (vtyx.h("button", { type: "button", class: "selectic__footer-btn selectic__footer-btn--secondary", disabled: !!clearCfg.disabled || this.isDisabled, title: clearCfg.title, on: {
                         'click.stop.prevent': this.onClearFilter,
                     } }, this.getLabel('clearFilter', 'footerClearFilter'))),
-                applyCfg && (h("button", { type: "button", class: "selectic__footer-btn selectic__footer-btn--primary", disabled: !!applyCfg.disabled || this.isDisabled, title: applyCfg.title, on: {
+                applyCfg && (vtyx.h("button", { type: "button", class: "selectic__footer-btn selectic__footer-btn--primary", disabled: !!applyCfg.disabled || this.isDisabled, title: applyCfg.title, on: {
                         'click.stop.prevent': this.onApply,
                     } }, this.getLabel('apply', 'footerApply'))))));
     }
 };
 __decorate$4([
-    Prop()
+    vtyx.Prop()
 ], Footer.prototype, "store", void 0);
 Footer = __decorate$4([
-    Component
+    vtyx.Component
 ], Footer);
 var Footer$1 = Footer;
 
@@ -3553,7 +3527,7 @@ var __decorate$3 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let PanelContent = class PanelContent extends Vue {
+let PanelContent = class PanelContent extends vtyx.Vue {
     /* }}} */
     /* {{{ computed */
     get searchingLabel() {
@@ -3600,20 +3574,20 @@ let PanelContent = class PanelContent extends Vue {
         const store = this.store;
         return [
             (_b = (_a = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a),
-            this.infoMessage && (h("div", { class: "selectic__message alert-info", role: "status" }, this.infoMessage)),
-            this.searching && (h("div", { class: "selectic__message", role: "status" },
-                h(Icon$1, { icon: "spinner", store: store, spin: true }),
+            this.infoMessage && (vtyx.h("div", { class: "selectic__message alert-info", role: "status" }, this.infoMessage)),
+            this.searching && (vtyx.h("div", { class: "selectic__message", role: "status" },
+                vtyx.h(Icon$1, { icon: "spinner", store: store, spin: true }),
                 this.searchingLabel)),
-            this.errorMessage && (h("div", { class: "selectic__message alert-danger", role: "alert", on: { click: () => store.resetErrorMessage() } }, this.errorMessage)),
-            this.hasFooter && (h(Footer$1, { store: store })),
+            this.errorMessage && (vtyx.h("div", { class: "selectic__message alert-danger", role: "alert", on: { click: () => store.resetErrorMessage() } }, this.errorMessage)),
+            this.hasFooter && (vtyx.h(Footer$1, { store: store })),
         ];
     }
 };
 __decorate$3([
-    Prop()
+    vtyx.Prop()
 ], PanelContent.prototype, "store", void 0);
 PanelContent = __decorate$3([
-    Component
+    vtyx.Component
 ], PanelContent);
 var PanelContent$1 = PanelContent;
 
@@ -3639,7 +3613,7 @@ const FOCUSABLE_ELEMENTS = [
     'textarea:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
-let ExtendedList = class ExtendedList extends Vue {
+let ExtendedList = class ExtendedList extends vtyx.Vue {
     constructor() {
         /* {{{ props */
         super(...arguments);
@@ -3899,58 +3873,58 @@ let ExtendedList = class ExtendedList extends Vue {
         const state = store.state;
         const isGroup = state.groups.size > 0 &&
             state.totalFilteredOptions > store.data.itemsPerPage;
-        return (h("div", { style: this.positionStyle, class: [
+        return (vtyx.h("div", { style: this.positionStyle, class: [
                 'selectic selectic__list-panel selectic__extended-list',
                 `selectic-position-${this.position}`,
             ] },
-            !state.hideFilter && (h(Filter, { store: this.store })),
-            isGroup && (h("span", { "aria-hidden": "true", class: [
+            !state.hideFilter && (vtyx.h(Filter, { store: this.store })),
+            isGroup && (vtyx.h("span", { "aria-hidden": "true", class: [
                     'selectic-item selectic-item--header selectic-item__is-group',
                     {
                         selected: this.topGroupSelected,
-                        selectable: unref(this.store.allowGroupSelection) && !this.topGroupDisabled,
+                        selectable: vue.unref(this.store.allowGroupSelection) && !this.topGroupDisabled,
                         disabled: this.topGroupDisabled,
                     },
                 ], on: {
                     click: () => this.clickHeaderGroup(),
                 } },
-                this.topGroupSelected && (h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
+                this.topGroupSelected && (vtyx.h(Icon$1, { icon: "check", store: this.store, class: "selectic-item_icon" })),
                 this.topGroupName)),
-            h(List$1, { store: store, on: {
+            vtyx.h(List$1, { store: store, on: {
                     groupId: this.getGroup,
                 } }),
-            h(PanelContent$1, { store: store }, (_b = (_a = this.$slots).listFooter) === null || _b === void 0 ? void 0 : _b.call(_a))));
+            vtyx.h(PanelContent$1, { store: store }, (_b = (_a = this.$slots).listFooter) === null || _b === void 0 ? void 0 : _b.call(_a))));
     }
 };
 __decorate$2([
-    Prop()
+    vtyx.Prop()
 ], ExtendedList.prototype, "store", void 0);
 __decorate$2([
-    Prop({ default: 0 })
+    vtyx.Prop({ default: 0 })
 ], ExtendedList.prototype, "elementLeft", void 0);
 __decorate$2([
-    Prop({ default: 0 })
+    vtyx.Prop({ default: 0 })
 ], ExtendedList.prototype, "elementRight", void 0);
 __decorate$2([
-    Prop({ default: 0 })
+    vtyx.Prop({ default: 0 })
 ], ExtendedList.prototype, "elementTop", void 0);
 __decorate$2([
-    Prop({ default: 0 })
+    vtyx.Prop({ default: 0 })
 ], ExtendedList.prototype, "elementBottom", void 0);
 __decorate$2([
-    Prop({ default: 300 })
+    vtyx.Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
 __decorate$2([
-    Prop()
+    vtyx.Prop()
 ], ExtendedList.prototype, "container", void 0);
 __decorate$2([
-    Watch('store.state.filteredOptions', { deep: true })
+    vtyx.Watch('store.state.filteredOptions', { deep: true })
 ], ExtendedList.prototype, "onFilteredOptionsChange", null);
 __decorate$2([
-    Watch('store.state.hideFilter')
+    vtyx.Watch('store.state.hideFilter')
 ], ExtendedList.prototype, "onHideFilterChange", null);
 ExtendedList = __decorate$2([
-    Component
+    vtyx.Component
 ], ExtendedList);
 var ExtendedList$1 = ExtendedList;
 
@@ -3965,7 +3939,7 @@ var __decorate$1 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-let MultilinesList = class MultilinesList extends Vue {
+let MultilinesList = class MultilinesList extends vtyx.Vue {
     /* }}} */
     /* }}} */
     /* {{{ methods */
@@ -3998,17 +3972,17 @@ let MultilinesList = class MultilinesList extends Vue {
     render() {
         var _a, _b;
         const store = this.store;
-        return (h("div", { class: "selectic selectic__list-panel selectic__multilines-list" },
-            !store.state.hideFilter && (h(FilterSearch$1, { store: store, scoped: true, ref: "filterSearch" })),
-            h(List$1, { store: store, focusable: store.state.hideFilter, ref: "list" }),
-            h(PanelContent$1, { store: store }, (_b = (_a = this.$slots).listFooter) === null || _b === void 0 ? void 0 : _b.call(_a))));
+        return (vtyx.h("div", { class: "selectic selectic__list-panel selectic__multilines-list" },
+            !store.state.hideFilter && (vtyx.h(FilterSearch$1, { store: store, scoped: true, ref: "filterSearch" })),
+            vtyx.h(List$1, { store: store, focusable: store.state.hideFilter, ref: "list" }),
+            vtyx.h(PanelContent$1, { store: store }, (_b = (_a = this.$slots).listFooter) === null || _b === void 0 ? void 0 : _b.call(_a))));
     }
 };
 __decorate$1([
-    Prop()
+    vtyx.Prop()
 ], MultilinesList.prototype, "store", void 0);
 MultilinesList = __decorate$1([
-    Component
+    vtyx.Component
 ], MultilinesList);
 var MultilinesList$1 = MultilinesList;
 
@@ -4030,7 +4004,7 @@ function changeTexts(texts) {
 function changeIcons(icons, iconFamily) {
     changeIcons$1(icons, iconFamily);
 }
-let Selectic = class Selectic extends Vue {
+let Selectic = class Selectic extends vtyx.Vue {
     constructor() {
         super(...arguments);
         /* }}} */
@@ -4150,7 +4124,7 @@ let Selectic = class Selectic extends Vue {
         return this.listClassName || this.className;
     }
     get hasGivenValue() {
-        const value = unref(this.value);
+        const value = vue.unref(this.value);
         return value !== null && value !== undefined;
     }
     get defaultValue() {
@@ -4602,26 +4576,26 @@ let Selectic = class Selectic extends Vue {
     //     return opt;
     // }
     renderMultilines(id, store) {
-        return (h("div", { class: [...this.selecticClass, 'selectic--multilines'], title: this.title, "data-selectic": "true" },
-            h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", readOnly: true, tabIndex: -1, "aria-hidden": "true", on: {
+        return (vtyx.h("div", { class: [...this.selecticClass, 'selectic--multilines'], title: this.title, "data-selectic": "true" },
+            vtyx.h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", readOnly: true, tabIndex: -1, "aria-hidden": "true", on: {
                     focus: () => { var _a; return (_a = this.$refs.multilinesList) === null || _a === void 0 ? void 0 : _a.focus(); },
                 } }),
-            h(MultilinesList$1, { class: this.listClass, store: store, ref: "multilinesList" }, this.$slots.listFooter && (h("div", { slot: "listFooter" }, this.$slots.listFooter())))));
+            vtyx.h(MultilinesList$1, { class: this.listClass, store: store, ref: "multilinesList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter())))));
     }
     renderDefault(id, store) {
-        return (h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
+        return (vtyx.h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
                 'click.prevent.stop': () => store.commit('isOpen', true),
             } },
-            h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", readOnly: true, tabIndex: -1, "aria-hidden": "true", on: {
+            vtyx.h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", readOnly: true, tabIndex: -1, "aria-hidden": "true", on: {
                     focus: this.onInputValueFocus,
                     blur: this.checkFocus,
                 } }),
-            h(MainInput$1, { store: store, id: id, on: {
+            vtyx.h(MainInput$1, { store: store, id: id, on: {
                     'item:click': (id) => this.emit('item:click', id),
                     focus: () => store.commit('isOpen', true),
                     blur: this.checkFocus,
                 }, ref: "mainInput" }),
-            this.isFocused && (h(ExtendedList$1, { class: this.listClass, container: this.container, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }, this.$slots.listFooter && (h("div", { slot: "listFooter" }, this.$slots.listFooter()))))));
+            this.isFocused && (vtyx.h(ExtendedList$1, { class: this.listClass, container: this.container, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter()))))));
     }
     /* }}} */
     /* {{{ Life cycle */
@@ -4729,114 +4703,116 @@ let Selectic = class Selectic extends Vue {
     }
 };
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "value", void 0);
 __decorate([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], Selectic.prototype, "selectionIsExcluded", void 0);
 __decorate([
-    Prop({ default: () => [] })
+    vtyx.Prop({ default: () => [] })
 ], Selectic.prototype, "options", void 0);
 __decorate([
-    Prop({ default: () => [] })
+    vtyx.Prop({ default: () => [] })
 ], Selectic.prototype, "groups", void 0);
 __decorate([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], Selectic.prototype, "multiple", void 0);
 __decorate([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], Selectic.prototype, "disabled", void 0);
 __decorate([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], Selectic.prototype, "placeholder", void 0);
 __decorate([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], Selectic.prototype, "id", void 0);
 __decorate([
-    Prop({ default: '' })
+    vtyx.Prop({ default: '' })
 ], Selectic.prototype, "className", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "listClassName", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "container", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "title", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "texts", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "icons", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "iconFamily", void 0);
 __decorate([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], Selectic.prototype, "noCache", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "open", void 0);
 __decorate([
-    Prop({ default: false })
+    vtyx.Prop({ default: false })
 ], Selectic.prototype, "multilines", void 0);
 __decorate([
-    Prop({ default: () => ({
+    vtyx.Prop({ default: () => ({
             allowClearSelection: false,
             strictValue: false,
             selectionOverflow: 'collapsed',
         }) })
 ], Selectic.prototype, "params", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "_on", void 0);
 __decorate([
-    Prop()
+    vtyx.Prop()
 ], Selectic.prototype, "_getMethods", void 0);
 __decorate([
-    Watch('value', { deep: true })
+    vtyx.Watch('value', { deep: true })
 ], Selectic.prototype, "onValueChange", null);
 __decorate([
-    Watch('selectionIsExcluded')
+    vtyx.Watch('selectionIsExcluded')
 ], Selectic.prototype, "onExcludedChange", null);
 __decorate([
-    Watch('options', { deep: true })
+    vtyx.Watch('options', { deep: true })
 ], Selectic.prototype, "onOptionsChange", null);
 __decorate([
-    Watch('texts', { deep: true })
+    vtyx.Watch('texts', { deep: true })
 ], Selectic.prototype, "onTextsChange", null);
 __decorate([
-    Watch('iconFamily'),
-    Watch('icons', { deep: true })
+    vtyx.Watch('iconFamily'),
+    vtyx.Watch('icons', { deep: true })
 ], Selectic.prototype, "onIconsChange", null);
 __decorate([
-    Watch('disabled')
+    vtyx.Watch('disabled')
 ], Selectic.prototype, "onDisabledChange", null);
 __decorate([
-    Watch('groups', { deep: true })
+    vtyx.Watch('groups', { deep: true })
 ], Selectic.prototype, "onGroupsChanged", null);
 __decorate([
-    Watch('placeholder')
+    vtyx.Watch('placeholder')
 ], Selectic.prototype, "onPlaceholderChanged", null);
 __decorate([
-    Watch('open')
+    vtyx.Watch('open')
 ], Selectic.prototype, "onOpenChanged", null);
 __decorate([
-    Watch('isFocused')
+    vtyx.Watch('isFocused')
 ], Selectic.prototype, "onFocusChanged", null);
 __decorate([
-    Watch('store.state.internalValue', { deep: true })
+    vtyx.Watch('store.state.internalValue', { deep: true })
 ], Selectic.prototype, "onInternalValueChange", null);
 __decorate([
-    Emits([
+    vtyx.Emits([
         'input', 'change', 'open', 'focus', 'close', 'blur', 'item:click',
     ])
 ], Selectic.prototype, "render", null);
 Selectic = __decorate([
-    Component
+    vtyx.Component
 ], Selectic);
 var Selectic$1 = Selectic;
 
-export { changeIcons, changeTexts, Selectic$1 as default };
+exports.changeIcons = changeIcons;
+exports.changeTexts = changeTexts;
+exports["default"] = Selectic$1;

@@ -2,9 +2,9 @@ import { Vue, h } from 'vtyx';
 import './css/selectic.css';
 import { OptionProp, OptionId, StrictOptionId, GroupValue, SelectedValue, FetchCallback, GetCallback, PartialMessages, OptionValue, OptionItem, FormatCallback, SelectionOverflow, ListPosition, HideFilter, SelectAllOption, PartialIcons, IconFamily, FooterConfig, FooterButtonConfig } from './Store';
 import MainInput from './MainInput';
-import ExtendedList from './ExtendedList';
+import ExtendedList, { PanelContainer } from './ExtendedList';
 import MultilinesList from './MultilinesList';
-export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, FooterConfig, FooterButtonConfig, };
+export { GroupValue, OptionValue, OptionItem, OptionProp, OptionId, StrictOptionId, SelectedValue, PartialMessages, GetCallback, FetchCallback, FormatCallback, SelectionOverflow, ListPosition, HideFilter, FooterConfig, FooterButtonConfig, PanelContainer, };
 type EventType = 'input' | 'change' | 'open' | 'close' | 'focus' | 'blur' | 'item:click';
 export interface EventOptions {
     instance: Selectic;
@@ -26,6 +26,10 @@ export interface ParamProps {
     pageSize?: number;
     /** Number of items displayed at once in the opened list (default: 10) */
     displayedItems?: number;
+    /** Height (in px) of an item row in the opened list (default: 27).
+     * It drives the virtual scroll offsets, so it should match the height
+     * the items are really rendered with. */
+    itemHeight?: number;
     /** Hide the search control */
     hideFilter?: HideFilter;
     /** Allow to reverse selection.
@@ -119,6 +123,14 @@ export interface Props {
     id?: string;
     /** CSS class of the HTML element */
     className?: string;
+    /** CSS class of the list panel.
+     * When not empty, it replaces `className` on the panel, which stays on
+     * the main element. */
+    listClassName?: string;
+    /** Where the list panel should be mounted: an element, a CSS
+     * selector, or 'self' to keep it inside the component.
+     * It defaults to the body of the document the component belongs to. */
+    container?: PanelContainer;
     /** title on the HTML element */
     title?: string;
     /** Replace the default texts used in Selectic */
@@ -171,6 +183,8 @@ export default class Selectic extends Vue<Props> {
     placeholder: string;
     id: string;
     className: string;
+    listClassName?: string;
+    container?: PanelContainer;
     title?: string;
     texts?: PartialMessages;
     icons?: PartialIcons;
@@ -196,7 +210,7 @@ export default class Selectic extends Vue<Props> {
     private _multilinesListeners?;
     /** Multilines mode: whether the last pointer interaction started
      * inside the component (see `checkMultilinesFocus`) */
-    private _pointerIsInside;
+    private _pointerIsInside?;
     private _oldValue;
     /** The inline layout is on for `true` as well as for a number of items
      * (`0` and `false` both keep the dropdown layout) */
@@ -214,6 +228,9 @@ export default class Selectic extends Vue<Props> {
         'selectic--overflow-multiline': boolean;
         'selectic--overflow-collapsed': boolean;
     })[];
+    /** Class applied on the list panel: `listClassName` when it is not
+     * empty, `className` otherwise. */
+    get listClass(): string;
     get hasGivenValue(): boolean;
     get defaultValue(): string | number | StrictOptionId[] | null;
     /** Reset the inner cache (mainly for dynamic mode if context has changed) */
@@ -230,6 +247,12 @@ export default class Selectic extends Vue<Props> {
     isEmpty(): boolean;
     toggleOpen(open?: boolean): boolean;
     private computeWidth;
+    /** The document the component is displayed in (which is not the
+     * global one when it lives in a detached window).
+     * It is a method and not a getter: a getter is a computed, and it
+     * would cache the global document if it were read before the
+     * component is mounted. */
+    private getDocument;
     private computeOffset;
     private removeListeners;
     private focusToggled;

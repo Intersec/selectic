@@ -31,6 +31,20 @@ export declare function assignObject<T>(obj: Partial<T>, ...sourceObjects: Array
  * @returns true if objA should be considered equal to objB.
  */
 export declare function isDeepEqual<T = any>(objA: T, objB: T, ignoreAttributes?: string[], refs?: WeakMap<any, any>): boolean;
+/**
+ * Document the given element belongs to.
+ * Selectic can be displayed in another document than the main one (like a
+ * detached window), where the global `document` is not the right one.
+ * @param el an element of the component
+ * @returns the document of `el`, or the global one if it has none yet
+ */
+export declare function ownerDocument(el?: Element | null): Document;
+/**
+ * Window the given element belongs to (see `ownerDocument`).
+ * @param el an element of the component
+ * @returns the window of `el`, or the global one if it has none yet
+ */
+export declare function ownerWindow(el?: Element | null): Window;
 export declare function debug(fName: string, step: string, ...args: any[]): void;
 export declare namespace debug {
     var enable: (display: boolean) => void;

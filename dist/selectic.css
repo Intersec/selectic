@@ -1,0 +1,675 @@
+/* {{{ Variables */
+
+:root {
+    --selectic-font-size: 14px;
+    --selectic-cursor-disabled: not-allowed;
+
+    /* The main element */
+    --selectic-color: #555555;
+    --selectic-bg: #ffffff;
+
+    /* The main element (when disabled) */
+    --selectic-color-disabled: #787878;
+    --selectic-bg-disabled: #eeeeee;
+
+    /* The list */
+    --selectic-panel-bg: #f0f0f0;
+    --selectic-separator-bordercolor: #cccccc;
+    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */
+
+    /* The current selected item */
+    --selectic-selected-item-color: #428bca;
+
+    /* When mouse is over items or by selecting with key arrows */
+    --selectic-active-item-color: #ffffff;
+    --selectic-active-item-bg: #66afe9;
+
+    /* Selected values in main element */
+    --selectic-value-bg: #f0f0f0;
+    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */
+    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */
+    --selectic-more-items-bg-disabled: #cccccc;
+
+    /* Information message */
+    --selectic-info-bg: #5bc0de;
+    --selectic-info-color: #ffffff;
+
+    /* Error message */
+    --selectic-error-bg: #b72c29;
+    --selectic-error-color: #ffffff;
+
+    /* Footer bar (displayed under the list) */
+    --selectic-footer-bg: #f1f1f1;
+    --selectic-footer-gap: 24px;
+    --selectic-footer-height: 40px;
+    --selectic-footer-link-color: #335895;
+    --selectic-footer-btn-secondary-bg: #ffffff;
+    --selectic-footer-btn-secondary-border: #cccccc;
+    --selectic-footer-btn-secondary-color: #333333;
+    --selectic-footer-btn-primary-bg: #335895;
+    --selectic-footer-btn-primary-border: #2d4d86;
+    --selectic-footer-btn-primary-color: #ffffff;
+
+    /* Image icon of an option (`icon: 'img:<url>'`) */
+    --selectic-option-image-size: 1.5em;
+    --selectic-option-image-radius: 3px;
+
+    /* Keyboard focus indicator */
+    --selectic-focus-outline-color: #66afe9;
+
+    /* XXX: Currently it is important to keep this size for a correct scroll
+     * height estimation */
+    --selectic-input-height: 30px;
+
+    /* Height of an item row in the opened list.
+     * XXX: this is only a fallback; the effective value is set inline from
+     * the `itemHeight` param, which must be used to change it (the virtual
+     * scroll relies on the same value). */
+    --selectic-item-height: calc(var(--selectic-input-height) - 3px);
+
+    /* Number of items displayed at once in the opened list.
+     * XXX: the effective value is set inline from the `displayedItems` param,
+     * so it cannot be overridden from CSS. */
+    --selectic-items-number: 10;
+}
+
+/* }}} */
+/* {{{ Bootstrap equivalent style */
+
+.selectic .form-control {
+    display: block;
+    width: 100%;
+    height: calc(var(--selectic-input-height) - 2px);
+    font-size: var(--selectic-font-size);
+    line-height: 1.42857143;
+    color: var(--selectic-color);
+    background-color: var(--selectic-bg);
+    background-image: none;
+    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+
+.selectic .has-feedback {
+    position: relative;
+}
+
+.selectic .has-feedback .form-control {
+    padding-right: calc(var(--selectic-input-height) + 4px);
+}
+
+.selectic .form-control-feedback.fa,
+.selectic .form-control-feedback {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    display: block;
+    width: calc(var(--selectic-input-height) + 4px);
+    height: calc(var(--selectic-input-height) + 4px);
+    line-height: var(--selectic-input-height);
+    text-align: center;
+    pointer-events: none;
+}
+
+.selectic .alert-info {
+    background-color: var(--selectic-info-bg);
+    color: var(--selectic-info-color);
+}
+
+.selectic .alert-danger {
+    background-color: var(--selectic-error-bg);
+    color: var(--selectic-error-color);
+}
+
+/* }}} */
+
+.selectic * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.selectic.form-control {
+    display: inline-block;
+    padding: 0;
+    cursor: pointer;
+    border: unset;
+}
+
+.has-feedback .selectic__icon-container.form-control-feedback {
+    right: 0;
+    /* the icon container has its own click handler to toggle the list, so it
+     * must receive pointer events despite the .form-control-feedback rule */
+    pointer-events: auto;
+}
+
+/* The input which contains the selected value
+ * XXX: This input should stay hidden behind other elements, but is "visible"
+ * (in term of DOM point of view) in order to get and to trigger the `focus`
+ * DOM event. */
+.selectic__input-value {
+    position: fixed;
+    opacity: 0;
+    z-index: -1000;
+    top: -100px;
+}
+
+/* XXX: .form-control has been added to this selector to improve priority and
+ * override some rules of the original .form-control */
+.selectic-input.form-control {
+    display: inline-flex;
+    justify-content: flex-start;
+    overflow: hidden;
+    width: 100%;
+    min-height: var(--selectic-input-height);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 5px;
+    line-height: calc(var(--selectic-input-height) - 4px);
+    color: var(--selectic-color);
+}
+
+.selectic-input__reverse-icon {
+    align-self: center;
+    margin-right: 3px;
+    cursor: default;
+}
+
+/* `margin-left: auto` keeps the icon on the right edge: the container is
+ * `flex-start` so that the option icon stays glued to its value text. */
+.selectic-input__clear-icon {
+    align-self: center;
+    flex: none;
+    margin-left: auto;
+    padding-left: 3px;
+    cursor: pointer;
+}
+
+.selectic-input__clear-icon:hover {
+    color: var(--selectic-selected-item-color);
+}
+
+.selectic-input.focused {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.selectic-input.disabled {
+    cursor: var(--selectic-cursor-disabled);
+    background-color: var(--selectic-bg-disabled);
+}
+
+.selectic-input.disabled .more-items {
+	background-color: var(--selectic-more-items-bg-disabled);
+}
+
+.selectic-input__selected-items {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.selectic-input__selected-items__placeholder {
+    font-style: italic;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.selectic-icon {
+    color: var(--selectic-color);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.selectic__extended-list {
+    position: fixed;
+    top: var(--top-position, 0);
+    z-index: 2000;
+    height: auto;
+    max-height: var(--availableSpace);
+    background-color: var(--selectic-bg, #ffffff);
+    box-shadow: 2px 5px 12px 0px #888888;
+    border-radius: 0 0 4px 4px;
+    padding: 0;
+    width: var(--list-width, 200px);
+    min-width: 200px;
+    display: grid;
+    grid-template-rows: minmax(0, max-content) 1fr;
+}
+
+.selectic__extended-list.selectic-position-top {
+    box-shadow: 2px -3px 12px 0px #888888;
+}
+
+.selectic__extended-list__list-container{
+    overflow: auto;
+    text-align: start;
+}
+
+.selectic__extended-list__list-items {
+    max-height: calc(var(--selectic-item-height) * var(--selectic-items-number));
+    min-width: max-content;
+    padding-left: 0;
+}
+
+.selectic-item {
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+    padding: 2px 8px;
+    color: var(--selectic-item-color, var(--selectic-color));
+    min-height: var(--selectic-item-height);
+    list-style-type: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.selectic-item_text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.selectic-item:not(.selected) .selectic-item_icon {
+    opacity: 0;
+}
+
+.selectic-item_text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.selectic-item__active {
+    background-color: var(--selectic-active-item-bg);
+    color: var(--selectic-active-item-color);
+}
+
+.selectic-item__active:not(.selected) .selectic-item_icon {
+    opacity: 0.2;
+}
+
+.selectic-item__active:not(.selected) .single-select_icon {
+    opacity: 0;
+}
+
+.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {
+    opacity: 0;
+}
+
+.selectic-item__disabled {
+    color: var(--selectic-color-disabled);
+    background-color: var(--selectic-bg-disabled);
+}
+
+.selectic-item__is-in-group {
+    padding-left: 2em;
+}
+
+.selectic-item__is-group {
+    font-weight: bold;
+    cursor: default;
+}
+
+.selectic-item__is-group.selectable {
+    cursor: pointer;
+}
+
+.selectic-item.selected {
+    color: var(--selectic-selected-item-color);
+}
+
+.selectic-search-scope {
+    color: #e0e0e0;
+}
+
+/* Both icons are drawn at the height of the search input, and centered in
+ * the area the input reserves on its right (the `padding-right` of
+ * `.has-feedback .form-control`).
+ * XXX: the selector must not be restricted to `.fa`: with the default
+ * (`selectic`) family the icon is an inline SVG, whose width and height
+ * are the drawn size, so it would keep the size of the feedback box. */
+.selectic .form-control-feedback.selectic-search-scope,
+.selectic .form-control-feedback.selectic-search-clear {
+    width: calc(var(--selectic-input-height) * 0.75);
+    height: calc(var(--selectic-input-height) * 0.75);
+    line-height: calc(var(--selectic-input-height) * 0.75);
+    left: auto;
+    right: calc((var(--selectic-input-height) + 4px
+                 - var(--selectic-input-height) * 0.75) / 2);
+}
+
+/* The clear icon is drawn inside a button (`.form-control-feedback` is
+ * neither clickable nor a flow container by default) */
+.selectic .selectic-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--selectic-color);
+    cursor: pointer;
+}
+
+.selectic .selectic-search-clear:disabled {
+    cursor: var(--selectic-cursor-disabled);
+    opacity: 0.5;
+}
+
+.selectic .selectic-search-clear:hover {
+    color: var(--selectic-selected-item-color);
+}
+
+.selectic__message {
+    text-align: center;
+    padding: 3px;
+}
+
+.selectic .filter-panel {
+    padding: 3px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: var(--selectic-panel-bg);
+    border-bottom: 1px solid var(--selectic-separator-bordercolor);
+}
+
+.selectic .filter-panel__input {
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-bottom: 0px;
+}
+
+.selectic .filter-input {
+    height: calc(var(--selectic-input-height) * 0.75);
+}
+
+.selectic .single-value {
+    display: grid;
+    grid-template: "pre-icon value icon" 1fr / max-content max-content max-content;
+
+    padding: 2px;
+    padding-left: 5px;
+    margin-left: 0;
+    margin-right: 5px;
+    /* margin top/bottom are mainly to create a gutter in multilines */
+    margin-top: 2px;
+    margin-bottom: 2px;
+
+    border-radius: 3px;
+    background-color: var(--selectic-value-bg);
+    max-height: calc(var(--selectic-input-height) - 10px);
+    max-width: 100%;
+    min-width: 30px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: initial;
+    vertical-align: middle;
+}
+
+.selectic .more-items {
+    display: inline-block;
+
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 10px;
+
+    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));
+    color: var(--selectic-more-items-color, var(--selectic-info-color));
+    cursor: help;
+}
+
+/* Icon displayed before the text of a selected value (single and multiple).
+ * The spacing with the text comes from `.selectic-icon-space-after`, which
+ * `OptionIcon` applies by default (see below); consumers can override or
+ * unset it. */
+.selectic-input__value-icon {
+    grid-area: pre-icon;
+    align-self: center;
+    justify-self: center;
+    flex: none;
+}
+
+.selectic-input__selected-items__value {
+    grid-area: value;
+    align-self: center;
+    justify-self: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.selectic-input__selected-items__icon {
+    grid-area: icon;
+    align-self: center;
+    justify-self: center;
+    margin-left: 5px;
+}
+
+.selectic-input__selected-items__icon:hover {
+    color: var(--selectic-selected-item-color);
+}
+
+/* XXX: override padding of bootstrap input-sm.
+ * This padding introduce a line shift. */
+.selectic.input-sm {
+    padding: 0;
+}
+
+/* {{{ overflow multiline */
+
+.selectic--overflow-multiline,
+.selectic--overflow-multiline.form-control,
+.selectic--overflow-multiline .form-control {
+    height: unset;
+}
+
+.selectic--overflow-multiline .selectic-input {
+    overflow: unset;
+}
+
+.selectic--overflow-multiline .selectic-input__selected-items {
+    flex-wrap: wrap;
+}
+
+/* {{{ multilines */
+
+/* When placed inside a flex container, the multilines list fills the available
+ * height and scrolls internally instead of growing unbounded. */
+.selectic--multilines {
+    display: flex;
+    flex-direction: column;
+}
+
+.selectic__multilines-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.selectic--multilines .selectic__extended-list__list-container {
+    flex: 1;
+    min-height: 0;
+}
+
+/* }}} */
+/* {{{ accessibility */
+
+/* Visually hidden but announced by screen readers (live region) */
+.selectic-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.selectic-input:focus-visible {
+    outline: 2px solid var(--selectic-focus-outline-color);
+    outline-offset: -2px;
+}
+
+/* The chip active while navigating with keyboard (arrow keys) */
+.selectic-input__selected-items__active {
+    outline: 2px solid var(--selectic-focus-outline-color);
+    outline-offset: -1px;
+}
+
+/* While navigating through chips, all of them are rendered (so the active
+ * one can be reached) but the input must stay on a single line: the chips
+ * overflow horizontally and the active one is scrolled into view. */
+.selectic-input.selectic-input--unfolded {
+    overflow: hidden;
+}
+
+.selectic-input--unfolded .selectic-input__selected-items {
+    flex-wrap: nowrap;
+}
+
+/* }}} */
+/* {{{ icons */
+
+@keyframes selectic-animation-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+.selectic__icon {
+    height: 1em;
+    fill: currentColor;
+}
+
+/* Default spacing applied by `OptionIcon` so consumers don't have to add
+ * their own spacing utility on every `option.icon` they provide. Override or
+ * unset on the consumer side if a different spacing is needed. */
+.selectic-icon-space-after {
+    margin-right: 5px;
+}
+
+/* Image displayed instead of a class-based icon, when the icon of the
+ * option is prefixed with `img:`.
+ *
+ * The size is fixed so that the box is already reserved while the image
+ * loads, and stays reserved when it cannot be loaded at all: the rows of
+ * the list keep the same alignment either way. `cover` handles the
+ * avatars which are not square. */
+.selectic__option-image {
+    display: inline-block;
+    box-sizing: border-box;
+    vertical-align: middle;
+    flex: none;
+
+    width: var(--selectic-option-image-size);
+    height: var(--selectic-option-image-size);
+    border-radius: var(--selectic-option-image-radius);
+    object-fit: cover;
+}
+
+.selectic-spin {
+    animation: selectic-animation-spin 2s infinite linear;
+}
+
+/* }}} */
+/* {{{ footer */
+
+.selectic__list-panel__footer {
+    /* 3-column grid keeps the center cluster (Show selection / Clear
+     * selection) visually anchored at 50% regardless of how much or
+     * how little content lives on the left and right sides. */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--selectic-footer-gap);
+    padding: 5px 10px;
+    min-height: var(--selectic-footer-height);
+    background: var(--selectic-footer-bg);
+}
+
+.selectic__footer-left,
+.selectic__footer-center,
+.selectic__footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selectic__footer-left {
+    justify-self: start;
+}
+
+.selectic__footer-center {
+    justify-self: center;
+}
+
+.selectic__footer-right {
+    justify-self: end;
+}
+
+.selectic__footer-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--selectic-footer-link-color);
+    font-size: calc(var(--selectic-font-size) - 3px);
+    line-height: 1.2;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.selectic__footer-link--active {
+    font-weight: bold;
+}
+
+.selectic__footer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--selectic-input-height);
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: calc(var(--selectic-font-size) - 1px);
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.selectic__footer-btn--secondary {
+    background: var(--selectic-footer-btn-secondary-bg);
+    border: 1px solid var(--selectic-footer-btn-secondary-border);
+    color: var(--selectic-footer-btn-secondary-color);
+}
+
+.selectic__footer-btn--primary {
+    background: var(--selectic-footer-btn-primary-bg);
+    border: 1px solid var(--selectic-footer-btn-primary-border);
+    color: var(--selectic-footer-btn-primary-color);
+}
+
+.selectic__footer-link:hover:not(:disabled),
+.selectic__footer-btn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.selectic__footer-link:disabled,
+.selectic__footer-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* }}} */

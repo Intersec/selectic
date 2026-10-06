@@ -32,7 +32,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* Footer bar (displayed under the list) */\n    --selectic-footer-bg: #f1f1f1;\n    --selectic-footer-gap: 24px;\n    --selectic-footer-height: 40px;\n    --selectic-footer-link-color: #335895;\n    --selectic-footer-btn-secondary-bg: #ffffff;\n    --selectic-footer-btn-secondary-border: #cccccc;\n    --selectic-footer-btn-secondary-color: #333333;\n    --selectic-footer-btn-primary-bg: #335895;\n    --selectic-footer-btn-primary-border: #2d4d86;\n    --selectic-footer-btn-primary-color: #ffffff;\n\n    /* Image icon of an option (`icon: 'img:<url>'`) */\n    --selectic-option-image-size: 1.5em;\n    --selectic-option-image-radius: 3px;\n\n    /* Keyboard focus indicator */\n    --selectic-focus-outline-color: #66afe9;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n\n    /* Height of an item row in the opened list.\n     * XXX: this is only a fallback; the effective value is set inline from\n     * `itemHeight` in List.tsx, so it cannot be overridden from CSS. */\n    --selectic-item-height: calc(var(--selectic-input-height) - 3px);\n\n    /* Number of items displayed at once in the opened list.\n     * XXX: the effective value is set inline from the `displayedItems` param,\n     * so it cannot be overridden from CSS. */\n    --selectic-items-number: 10;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n\n.selectic .has-feedback {\n    position: relative;\n}\n\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n    /* the icon container has its own click handler to toggle the list, so it\n     * must receive pointer events despite the .form-control-feedback rule */\n    pointer-events: auto;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: flex-start;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n\n/* `margin-left: auto` keeps the icon on the right edge: the container is\n * `flex-start` so that the option icon stays glued to its value text. */\n.selectic-input__clear-icon {\n    align-self: center;\n    flex: none;\n    margin-left: auto;\n    padding-left: 3px;\n    cursor: pointer;\n}\n\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n\n.selectic__extended-list__list-container{\n    overflow: auto;\n    text-align: start;\n}\n\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-item-height) * var(--selectic-items-number));\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: var(--selectic-item-height);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__active:not(.selected) .single-select_icon {\n    opacity: 0;\n}\n\n.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-search-scope {\n    color: #e0e0e0;\n}\n\n/* Both icons are drawn at the height of the search input, and centered in\n * the area the input reserves on its right (the `padding-right` of\n * `.has-feedback .form-control`).\n * XXX: the selector must not be restricted to `.fa`: with the default\n * (`selectic`) family the icon is an inline SVG, whose width and height\n * are the drawn size, so it would keep the size of the feedback box. */\n.selectic .form-control-feedback.selectic-search-scope,\n.selectic .form-control-feedback.selectic-search-clear {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n    left: auto;\n    right: calc((var(--selectic-input-height) + 4px\n                 - var(--selectic-input-height) * 0.75) / 2);\n}\n\n/* The clear icon is drawn inside a button (`.form-control-feedback` is\n * neither clickable nor a flow container by default) */\n.selectic .selectic-search-clear {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: auto;\n    padding: 0;\n    border: none;\n    background: none;\n    color: var(--selectic-color);\n    cursor: pointer;\n}\n\n.selectic .selectic-search-clear:disabled {\n    cursor: var(--selectic-cursor-disabled);\n    opacity: 0.5;\n}\n\n.selectic .selectic-search-clear:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    margin-bottom: 0px;\n}\n\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"pre-icon value icon\" 1fr / max-content max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n\n/* Icon displayed before the text of a selected value (single and multiple).\n * The spacing with the text comes from `.selectic-icon-space-after`, which\n * `OptionIcon` applies by default (see below); consumers can override or\n * unset it. */\n.selectic-input__value-icon {\n    grid-area: pre-icon;\n    align-self: center;\n    justify-self: center;\n    flex: none;\n}\n\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ multilines */\n\n/* When placed inside a flex container, the multilines list fills the available\n * height and scrolls internally instead of growing unbounded. */\n.selectic--multilines {\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic__multilines-list {\n    flex: 1;\n    min-height: 0;\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic--multilines .selectic__extended-list__list-container {\n    flex: 1;\n    min-height: 0;\n}\n\n/* }}} */\n/* {{{ accessibility */\n\n/* Visually hidden but announced by screen readers (live region) */\n.selectic-sr-only {\n    position: absolute;\n    width: 1px;\n    height: 1px;\n    padding: 0;\n    margin: -1px;\n    overflow: hidden;\n    clip-path: inset(50%);\n    white-space: nowrap;\n    border: 0;\n}\n\n.selectic-input:focus-visible {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -2px;\n}\n\n/* The chip active while navigating with keyboard (arrow keys) */\n.selectic-input__selected-items__active {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -1px;\n}\n\n/* While navigating through chips, all of them are rendered (so the active\n * one can be reached) but the input must stay on a single line: the chips\n * overflow horizontally and the active one is scrolled into view. */\n.selectic-input.selectic-input--unfolded {\n    overflow: hidden;\n}\n\n.selectic-input--unfolded .selectic-input__selected-items {\n    flex-wrap: nowrap;\n}\n\n/* }}} */\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n/* Default spacing applied by `OptionIcon` so consumers don't have to add\n * their own spacing utility on every `option.icon` they provide. Override or\n * unset on the consumer side if a different spacing is needed. */\n.selectic-icon-space-after {\n    margin-right: 5px;\n}\n\n/* Image displayed instead of a class-based icon, when the icon of the\n * option is prefixed with `img:`.\n *\n * The size is fixed so that the box is already reserved while the image\n * loads, and stays reserved when it cannot be loaded at all: the rows of\n * the list keep the same alignment either way. `cover` handles the\n * avatars which are not square. */\n.selectic__option-image {\n    display: inline-block;\n    box-sizing: border-box;\n    vertical-align: middle;\n    flex: none;\n\n    width: var(--selectic-option-image-size);\n    height: var(--selectic-option-image-size);\n    border-radius: var(--selectic-option-image-radius);\n    object-fit: cover;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n/* {{{ footer */\n\n.selectic__list-panel__footer {\n    /* 3-column grid keeps the center cluster (Show selection / Clear\n     * selection) visually anchored at 50% regardless of how much or\n     * how little content lives on the left and right sides. */\n    display: grid;\n    grid-template-columns: 1fr auto 1fr;\n    align-items: center;\n    gap: var(--selectic-footer-gap);\n    padding: 5px 10px;\n    min-height: var(--selectic-footer-height);\n    background: var(--selectic-footer-bg);\n}\n\n.selectic__footer-left,\n.selectic__footer-center,\n.selectic__footer-right {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n}\n\n.selectic__footer-left {\n    justify-self: start;\n}\n\n.selectic__footer-center {\n    justify-self: center;\n}\n\n.selectic__footer-right {\n    justify-self: end;\n}\n\n.selectic__footer-link {\n    padding: 0;\n    border: 0;\n    background: none;\n    color: var(--selectic-footer-link-color);\n    font-size: calc(var(--selectic-font-size) - 3px);\n    line-height: 1.2;\n    text-decoration: underline dotted;\n    text-underline-offset: 3px;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-link--active {\n    font-weight: bold;\n}\n\n.selectic__footer-btn {\n    display: inline-flex;\n    align-items: center;\n    gap: 4px;\n    height: var(--selectic-input-height);\n    padding: 0 10px;\n    border-radius: 4px;\n    font-size: calc(var(--selectic-font-size) - 1px);\n    line-height: 1.2;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-btn--secondary {\n    background: var(--selectic-footer-btn-secondary-bg);\n    border: 1px solid var(--selectic-footer-btn-secondary-border);\n    color: var(--selectic-footer-btn-secondary-color);\n}\n\n.selectic__footer-btn--primary {\n    background: var(--selectic-footer-btn-primary-bg);\n    border: 1px solid var(--selectic-footer-btn-primary-border);\n    color: var(--selectic-footer-btn-primary-color);\n}\n\n.selectic__footer-link:hover:not(:disabled),\n.selectic__footer-btn:hover:not(:disabled) {\n    opacity: 0.85;\n}\n\n.selectic__footer-link:disabled,\n.selectic__footer-btn:disabled {\n    opacity: 0.5;\n    cursor: not-allowed;\n}\n\n/* }}} */\n";
+var css_248z = "/* {{{ Variables */\n\n:root {\n    --selectic-font-size: 14px;\n    --selectic-cursor-disabled: not-allowed;\n\n    /* The main element */\n    --selectic-color: #555555;\n    --selectic-bg: #ffffff;\n\n    /* The main element (when disabled) */\n    --selectic-color-disabled: #787878;\n    --selectic-bg-disabled: #eeeeee;\n\n    /* The list */\n    --selectic-panel-bg: #f0f0f0;\n    --selectic-separator-bordercolor: #cccccc;\n    /* --selectic-item-color: var(--selectic-color); /* Can be set in any CSS configuration */\n\n    /* The current selected item */\n    --selectic-selected-item-color: #428bca;\n\n    /* When mouse is over items or by selecting with key arrows */\n    --selectic-active-item-color: #ffffff;\n    --selectic-active-item-bg: #66afe9;\n\n    /* Selected values in main element */\n    --selectic-value-bg: #f0f0f0;\n    /* --selectic-more-items-bg: var(--selectic-info-bg); /* can be set in any CSS configuration */\n    /* --selectic-more-items-color: var(--selectic-info-color); /* can be set in any CSS configuration */\n    --selectic-more-items-bg-disabled: #cccccc;\n\n    /* Information message */\n    --selectic-info-bg: #5bc0de;\n    --selectic-info-color: #ffffff;\n\n    /* Error message */\n    --selectic-error-bg: #b72c29;\n    --selectic-error-color: #ffffff;\n\n    /* Footer bar (displayed under the list) */\n    --selectic-footer-bg: #f1f1f1;\n    --selectic-footer-gap: 24px;\n    --selectic-footer-height: 40px;\n    --selectic-footer-link-color: #335895;\n    --selectic-footer-btn-secondary-bg: #ffffff;\n    --selectic-footer-btn-secondary-border: #cccccc;\n    --selectic-footer-btn-secondary-color: #333333;\n    --selectic-footer-btn-primary-bg: #335895;\n    --selectic-footer-btn-primary-border: #2d4d86;\n    --selectic-footer-btn-primary-color: #ffffff;\n\n    /* Image icon of an option (`icon: 'img:<url>'`) */\n    --selectic-option-image-size: 1.5em;\n    --selectic-option-image-radius: 3px;\n\n    /* Keyboard focus indicator */\n    --selectic-focus-outline-color: #66afe9;\n\n    /* XXX: Currently it is important to keep this size for a correct scroll\n     * height estimation */\n    --selectic-input-height: 30px;\n\n    /* Height of an item row in the opened list.\n     * XXX: this is only a fallback; the effective value is set inline from\n     * the `itemHeight` param, which must be used to change it (the virtual\n     * scroll relies on the same value). */\n    --selectic-item-height: calc(var(--selectic-input-height) - 3px);\n\n    /* Number of items displayed at once in the opened list.\n     * XXX: the effective value is set inline from the `displayedItems` param,\n     * so it cannot be overridden from CSS. */\n    --selectic-items-number: 10;\n}\n\n/* }}} */\n/* {{{ Bootstrap equivalent style */\n\n.selectic .form-control {\n    display: block;\n    width: 100%;\n    height: calc(var(--selectic-input-height) - 2px);\n    font-size: var(--selectic-font-size);\n    line-height: 1.42857143;\n    color: var(--selectic-color);\n    background-color: var(--selectic-bg);\n    background-image: none;\n    border: 1px solid var(--selectic-separator-bordercolor); /* should use a better variable */\n    border-radius: 4px;\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);\n    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n}\n\n.selectic .has-feedback {\n    position: relative;\n}\n\n.selectic .has-feedback .form-control {\n    padding-right: calc(var(--selectic-input-height) + 4px);\n}\n\n.selectic .form-control-feedback.fa,\n.selectic .form-control-feedback {\n    position: absolute;\n    top: 0;\n    right: 0;\n    z-index: 2;\n    display: block;\n    width: calc(var(--selectic-input-height) + 4px);\n    height: calc(var(--selectic-input-height) + 4px);\n    line-height: var(--selectic-input-height);\n    text-align: center;\n    pointer-events: none;\n}\n\n.selectic .alert-info {\n    background-color: var(--selectic-info-bg);\n    color: var(--selectic-info-color);\n}\n\n.selectic .alert-danger {\n    background-color: var(--selectic-error-bg);\n    color: var(--selectic-error-color);\n}\n\n/* }}} */\n\n.selectic * {\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    box-sizing: border-box;\n}\n\n.selectic.form-control {\n    display: inline-block;\n    padding: 0;\n    cursor: pointer;\n    border: unset;\n}\n\n.has-feedback .selectic__icon-container.form-control-feedback {\n    right: 0;\n    /* the icon container has its own click handler to toggle the list, so it\n     * must receive pointer events despite the .form-control-feedback rule */\n    pointer-events: auto;\n}\n\n/* The input which contains the selected value\n * XXX: This input should stay hidden behind other elements, but is \"visible\"\n * (in term of DOM point of view) in order to get and to trigger the `focus`\n * DOM event. */\n.selectic__input-value {\n    position: fixed;\n    opacity: 0;\n    z-index: -1000;\n    top: -100px;\n}\n\n/* XXX: .form-control has been added to this selector to improve priority and\n * override some rules of the original .form-control */\n.selectic-input.form-control {\n    display: inline-flex;\n    justify-content: flex-start;\n    overflow: hidden;\n    width: 100%;\n    min-height: var(--selectic-input-height);\n    padding-top: 0;\n    padding-bottom: 0;\n    padding-left: 5px;\n    line-height: calc(var(--selectic-input-height) - 4px);\n    color: var(--selectic-color);\n}\n\n.selectic-input__reverse-icon {\n    align-self: center;\n    margin-right: 3px;\n    cursor: default;\n}\n\n/* `margin-left: auto` keeps the icon on the right edge: the container is\n * `flex-start` so that the option icon stays glued to its value text. */\n.selectic-input__clear-icon {\n    align-self: center;\n    flex: none;\n    margin-left: auto;\n    padding-left: 3px;\n    cursor: pointer;\n}\n\n.selectic-input__clear-icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-input.focused {\n    border-bottom-left-radius: 0px;\n    border-bottom-right-radius: 0px;\n}\n\n.selectic-input.disabled {\n    cursor: var(--selectic-cursor-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-input.disabled .more-items {\n\tbackground-color: var(--selectic-more-items-bg-disabled);\n}\n\n.selectic-input__selected-items {\n    display: inline-flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__placeholder {\n    font-style: italic;\n    opacity: 0.7;\n    white-space: nowrap;\n}\n\n.selectic-icon {\n    color: var(--selectic-color);\n    text-align: center;\n    vertical-align: middle;\n}\n\n.selectic__extended-list {\n    position: fixed;\n    top: var(--top-position, 0);\n    z-index: 2000;\n    height: auto;\n    max-height: var(--availableSpace);\n    background-color: var(--selectic-bg, #ffffff);\n    box-shadow: 2px 5px 12px 0px #888888;\n    border-radius: 0 0 4px 4px;\n    padding: 0;\n    width: var(--list-width, 200px);\n    min-width: 200px;\n    display: grid;\n    grid-template-rows: minmax(0, max-content) 1fr;\n}\n\n.selectic__extended-list.selectic-position-top {\n    box-shadow: 2px -3px 12px 0px #888888;\n}\n\n.selectic__extended-list__list-container{\n    overflow: auto;\n    text-align: start;\n}\n\n.selectic__extended-list__list-items {\n    max-height: calc(var(--selectic-item-height) * var(--selectic-items-number));\n    min-width: max-content;\n    padding-left: 0;\n}\n\n.selectic-item {\n    display: block;\n    position: relative;\n    box-sizing: border-box;\n    padding: 2px 8px;\n    color: var(--selectic-item-color, var(--selectic-color));\n    min-height: var(--selectic-item-height);\n    list-style-type: none;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item_text {\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n}\n\n.selectic-item__active {\n    background-color: var(--selectic-active-item-bg);\n    color: var(--selectic-active-item-color);\n}\n\n.selectic-item__active:not(.selected) .selectic-item_icon {\n    opacity: 0.2;\n}\n\n.selectic-item__active:not(.selected) .single-select_icon {\n    opacity: 0;\n}\n\n.selectic-item__active.selectic-item__disabled:not(.selected) .selectic-item_icon {\n    opacity: 0;\n}\n\n.selectic-item__disabled {\n    color: var(--selectic-color-disabled);\n    background-color: var(--selectic-bg-disabled);\n}\n\n.selectic-item__is-in-group {\n    padding-left: 2em;\n}\n\n.selectic-item__is-group {\n    font-weight: bold;\n    cursor: default;\n}\n\n.selectic-item__is-group.selectable {\n    cursor: pointer;\n}\n\n.selectic-item.selected {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic-search-scope {\n    color: #e0e0e0;\n}\n\n/* Both icons are drawn at the height of the search input, and centered in\n * the area the input reserves on its right (the `padding-right` of\n * `.has-feedback .form-control`).\n * XXX: the selector must not be restricted to `.fa`: with the default\n * (`selectic`) family the icon is an inline SVG, whose width and height\n * are the drawn size, so it would keep the size of the feedback box. */\n.selectic .form-control-feedback.selectic-search-scope,\n.selectic .form-control-feedback.selectic-search-clear {\n    width: calc(var(--selectic-input-height) * 0.75);\n    height: calc(var(--selectic-input-height) * 0.75);\n    line-height: calc(var(--selectic-input-height) * 0.75);\n    left: auto;\n    right: calc((var(--selectic-input-height) + 4px\n                 - var(--selectic-input-height) * 0.75) / 2);\n}\n\n/* The clear icon is drawn inside a button (`.form-control-feedback` is\n * neither clickable nor a flow container by default) */\n.selectic .selectic-search-clear {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    pointer-events: auto;\n    padding: 0;\n    border: none;\n    background: none;\n    color: var(--selectic-color);\n    cursor: pointer;\n}\n\n.selectic .selectic-search-clear:disabled {\n    cursor: var(--selectic-cursor-disabled);\n    opacity: 0.5;\n}\n\n.selectic .selectic-search-clear:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n.selectic__message {\n    text-align: center;\n    padding: 3px;\n}\n\n.selectic .filter-panel {\n    padding: 3px;\n    margin-left: 0px;\n    margin-right: 0px;\n    background-color: var(--selectic-panel-bg);\n    border-bottom: 1px solid var(--selectic-separator-bordercolor);\n}\n\n.selectic .filter-panel__input {\n    padding-left: 0px;\n    padding-right: 0px;\n    margin-bottom: 0px;\n}\n\n.selectic .filter-input {\n    height: calc(var(--selectic-input-height) * 0.75);\n}\n\n.selectic .single-value {\n    display: grid;\n    grid-template: \"pre-icon value icon\" 1fr / max-content max-content max-content;\n\n    padding: 2px;\n    padding-left: 5px;\n    margin-left: 0;\n    margin-right: 5px;\n    /* margin top/bottom are mainly to create a gutter in multilines */\n    margin-top: 2px;\n    margin-bottom: 2px;\n\n    border-radius: 3px;\n    background-color: var(--selectic-value-bg);\n    max-height: calc(var(--selectic-input-height) - 10px);\n    max-width: 100%;\n    min-width: 30px;\n\n    overflow: hidden;\n    white-space: nowrap;\n    line-height: initial;\n    vertical-align: middle;\n}\n\n.selectic .more-items {\n    display: inline-block;\n\n    padding-left: 5px;\n    padding-right: 5px;\n    border-radius: 10px;\n\n    background-color: var(--selectic-more-items-bg, var(--selectic-info-bg));\n    color: var(--selectic-more-items-color, var(--selectic-info-color));\n    cursor: help;\n}\n\n/* Icon displayed before the text of a selected value (single and multiple).\n * The spacing with the text comes from `.selectic-icon-space-after`, which\n * `OptionIcon` applies by default (see below); consumers can override or\n * unset it. */\n.selectic-input__value-icon {\n    grid-area: pre-icon;\n    align-self: center;\n    justify-self: center;\n    flex: none;\n}\n\n.selectic-input__selected-items__value {\n    grid-area: value;\n    align-self: center;\n    justify-self: normal;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.selectic-input__selected-items__icon {\n    grid-area: icon;\n    align-self: center;\n    justify-self: center;\n    margin-left: 5px;\n}\n\n.selectic-input__selected-items__icon:hover {\n    color: var(--selectic-selected-item-color);\n}\n\n/* XXX: override padding of bootstrap input-sm.\n * This padding introduce a line shift. */\n.selectic.input-sm {\n    padding: 0;\n}\n\n/* {{{ overflow multiline */\n\n.selectic--overflow-multiline,\n.selectic--overflow-multiline.form-control,\n.selectic--overflow-multiline .form-control {\n    height: unset;\n}\n\n.selectic--overflow-multiline .selectic-input {\n    overflow: unset;\n}\n\n.selectic--overflow-multiline .selectic-input__selected-items {\n    flex-wrap: wrap;\n}\n\n/* {{{ multilines */\n\n/* When placed inside a flex container, the multilines list fills the available\n * height and scrolls internally instead of growing unbounded. */\n.selectic--multilines {\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic__multilines-list {\n    flex: 1;\n    min-height: 0;\n    display: flex;\n    flex-direction: column;\n}\n\n.selectic--multilines .selectic__extended-list__list-container {\n    flex: 1;\n    min-height: 0;\n}\n\n/* }}} */\n/* {{{ accessibility */\n\n/* Visually hidden but announced by screen readers (live region) */\n.selectic-sr-only {\n    position: absolute;\n    width: 1px;\n    height: 1px;\n    padding: 0;\n    margin: -1px;\n    overflow: hidden;\n    clip-path: inset(50%);\n    white-space: nowrap;\n    border: 0;\n}\n\n.selectic-input:focus-visible {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -2px;\n}\n\n/* The chip active while navigating with keyboard (arrow keys) */\n.selectic-input__selected-items__active {\n    outline: 2px solid var(--selectic-focus-outline-color);\n    outline-offset: -1px;\n}\n\n/* While navigating through chips, all of them are rendered (so the active\n * one can be reached) but the input must stay on a single line: the chips\n * overflow horizontally and the active one is scrolled into view. */\n.selectic-input.selectic-input--unfolded {\n    overflow: hidden;\n}\n\n.selectic-input--unfolded .selectic-input__selected-items {\n    flex-wrap: nowrap;\n}\n\n/* }}} */\n/* {{{ icons */\n\n@keyframes selectic-animation-spin {\n    0% {\n        transform: rotate(0deg);\n    }\n    100% {\n        transform: rotate(359deg);\n    }\n}\n\n.selectic__icon {\n    height: 1em;\n    fill: currentColor;\n}\n\n/* Default spacing applied by `OptionIcon` so consumers don't have to add\n * their own spacing utility on every `option.icon` they provide. Override or\n * unset on the consumer side if a different spacing is needed. */\n.selectic-icon-space-after {\n    margin-right: 5px;\n}\n\n/* Image displayed instead of a class-based icon, when the icon of the\n * option is prefixed with `img:`.\n *\n * The size is fixed so that the box is already reserved while the image\n * loads, and stays reserved when it cannot be loaded at all: the rows of\n * the list keep the same alignment either way. `cover` handles the\n * avatars which are not square. */\n.selectic__option-image {\n    display: inline-block;\n    box-sizing: border-box;\n    vertical-align: middle;\n    flex: none;\n\n    width: var(--selectic-option-image-size);\n    height: var(--selectic-option-image-size);\n    border-radius: var(--selectic-option-image-radius);\n    object-fit: cover;\n}\n\n.selectic-spin {\n    animation: selectic-animation-spin 2s infinite linear;\n}\n\n/* }}} */\n/* {{{ footer */\n\n.selectic__list-panel__footer {\n    /* 3-column grid keeps the center cluster (Show selection / Clear\n     * selection) visually anchored at 50% regardless of how much or\n     * how little content lives on the left and right sides. */\n    display: grid;\n    grid-template-columns: 1fr auto 1fr;\n    align-items: center;\n    gap: var(--selectic-footer-gap);\n    padding: 5px 10px;\n    min-height: var(--selectic-footer-height);\n    background: var(--selectic-footer-bg);\n}\n\n.selectic__footer-left,\n.selectic__footer-center,\n.selectic__footer-right {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n}\n\n.selectic__footer-left {\n    justify-self: start;\n}\n\n.selectic__footer-center {\n    justify-self: center;\n}\n\n.selectic__footer-right {\n    justify-self: end;\n}\n\n.selectic__footer-link {\n    padding: 0;\n    border: 0;\n    background: none;\n    color: var(--selectic-footer-link-color);\n    font-size: calc(var(--selectic-font-size) - 3px);\n    line-height: 1.2;\n    text-decoration: underline dotted;\n    text-underline-offset: 3px;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-link--active {\n    font-weight: bold;\n}\n\n.selectic__footer-btn {\n    display: inline-flex;\n    align-items: center;\n    gap: 4px;\n    height: var(--selectic-input-height);\n    padding: 0 10px;\n    border-radius: 4px;\n    font-size: calc(var(--selectic-font-size) - 1px);\n    line-height: 1.2;\n    white-space: nowrap;\n    cursor: pointer;\n}\n\n.selectic__footer-btn--secondary {\n    background: var(--selectic-footer-btn-secondary-bg);\n    border: 1px solid var(--selectic-footer-btn-secondary-border);\n    color: var(--selectic-footer-btn-secondary-color);\n}\n\n.selectic__footer-btn--primary {\n    background: var(--selectic-footer-btn-primary-bg);\n    border: 1px solid var(--selectic-footer-btn-primary-border);\n    color: var(--selectic-footer-btn-primary-color);\n}\n\n.selectic__footer-link:hover:not(:disabled),\n.selectic__footer-btn:hover:not(:disabled) {\n    opacity: 0.85;\n}\n\n.selectic__footer-link:disabled,\n.selectic__footer-btn:disabled {\n    opacity: 0.5;\n    cursor: not-allowed;\n}\n\n/* }}} */\n";
 styleInject(css_248z);
 
 /**
@@ -182,6 +182,26 @@ function isDeepEqual(objA, objB, ignoreAttributes = [], refs = new WeakMap()) {
     }
     return true;
 }
+/**
+ * Document the given element belongs to.
+ * Selectic can be displayed in another document than the main one (like a
+ * detached window), where the global `document` is not the right one.
+ * @param el an element of the component
+ * @returns the document of `el`, or the global one if it has none yet
+ */
+function ownerDocument(el) {
+    var _a;
+    return (_a = el === null || el === void 0 ? void 0 : el.ownerDocument) !== null && _a !== void 0 ? _a : document;
+}
+/**
+ * Window the given element belongs to (see `ownerDocument`).
+ * @param el an element of the component
+ * @returns the window of `el`, or the global one if it has none yet
+ */
+function ownerWindow(el) {
+    var _a;
+    return (_a = ownerDocument(el).defaultView) !== null && _a !== void 0 ? _a : window;
+}
 let displayLog = false;
 function debug(fName, step, ...args) {
     if (!displayLog) {
@@ -252,6 +272,11 @@ let closePreviousSelectic;
 const DEBOUNCE_REQUEST = 250;
 /* Minimum number of items displayed at once in the opened list. */
 const MIN_DISPLAYED_ITEMS = 2;
+/* Height (in px) of an item row in the opened list. */
+const DEFAULT_ITEM_HEIGHT = 27;
+/* Minimum height (in px) of an item row: below it the virtual scroll
+ * computations are not reliable anymore. */
+const MIN_ITEM_HEIGHT = 1;
 /**
  * Default time (in ms) between two key presses before the typeahead text
  * is reset (can be changed at runtime through `data.typeaheadDelay`).
@@ -339,6 +364,7 @@ class SelecticStore {
             icons: Object.assign({}, icons),
             iconFamily: defaultFamilyIcon,
             itemsPerPage: 10,
+            itemHeight: DEFAULT_ITEM_HEIGHT,
             typeaheadDelay: DEFAULT_TYPEAHEAD_DELAY,
             doNotUpdate: false,
             cacheItem: new Map(),
@@ -493,6 +519,10 @@ class SelecticStore {
             this.data.itemsPerPage = Math.max(MIN_DISPLAYED_ITEMS, stateParam.displayedItems);
         }
         delete stateParam.displayedItems;
+        if (Number.isFinite(stateParam.itemHeight)) {
+            this.data.itemHeight = Math.max(MIN_ITEM_HEIGHT, stateParam.itemHeight);
+        }
+        delete stateParam.itemHeight;
         /* Update state */
         assignObject(this.state, stateParam);
         /* XXX: should be done in 2 lines, in order to set the multiple state
@@ -1142,6 +1172,7 @@ class SelecticStore {
         this.data.cacheItem.clear();
         this.state.allOptions = [];
         this.state.totalAllOptions = total;
+        this.state.dynOptions = [];
         this.state.totalDynOptions = total;
         this.clearDisplay();
         this.state.status.errorMessage = '';
@@ -2694,7 +2725,7 @@ let MainInput = class MainInput extends vtyx.Vue {
             return;
         }
         const parentEl = el.parentElement;
-        if (!document.contains(parentEl)) {
+        if (!parentEl.isConnected) {
             /* The element is currently not in DOM */
             this.createObserver(parentEl);
             return;
@@ -2766,7 +2797,7 @@ let MainInput = class MainInput extends vtyx.Vue {
             }
         });
         const config = { childList: true, subtree: true };
-        observer.observe(document, config);
+        observer.observe(ownerDocument(el), config);
         this.domObserver = observer;
     }
     /* }}} */
@@ -2899,13 +2930,14 @@ let FilterSearch = class FilterSearch extends vtyx.Vue {
         }
         return this.store.optionId(state.activeItemIdx);
     }
+    /** The handler is given to `addEventListener`, which types it on the
+     * generic `Event` */
     get onKeyPressed() {
         return this.keypressed.bind(this);
     }
     /* }}} */
     /* {{{ methods */
     keypressed(evt) {
-        var _a;
         const key = evt.key;
         /* handle only printable characters */
         if (key.length !== 1 || this.store.state.disabled) {
@@ -2921,14 +2953,6 @@ let FilterSearch = class FilterSearch extends vtyx.Vue {
         if (target && (INTERACTIVE_TAGS.includes(target.tagName)
             || target.isContentEditable)) {
             return;
-        }
-        /* in multilines mode the component is always displayed: only
-         * handle keys pressed inside it */
-        if (this.scoped) {
-            const rootEl = (_a = this.$el) === null || _a === void 0 ? void 0 : _a.parentElement;
-            if (!rootEl || !target || !rootEl.contains(target)) {
-                return;
-            }
         }
         if (el) {
             el.value += key;
@@ -2950,10 +2974,18 @@ let FilterSearch = class FilterSearch extends vtyx.Vue {
     /* }}} */
     /* {{{ Life cycle */
     mounted() {
-        document.addEventListener('keypress', this.onKeyPressed);
+        var _a;
+        /* In the dropdown mode the listener is deliberately global: typing
+         * anywhere while the list is open feeds the filter. In the
+         * `scoped` mode it is restricted to the component. */
+        this._listenerEl = this.scoped ? this.$el.parentElement
+            : ownerDocument(this.$el);
+        (_a = this._listenerEl) === null || _a === void 0 ? void 0 : _a.addEventListener('keypress', this.onKeyPressed);
     }
     unmounted() {
-        document.removeEventListener('keypress', this.onKeyPressed);
+        var _a;
+        (_a = this._listenerEl) === null || _a === void 0 ? void 0 : _a.removeEventListener('keypress', this.onKeyPressed);
+        this._listenerEl = null;
     }
     /* }}} */
     render() {
@@ -3025,12 +3057,14 @@ let List = class List extends vtyx.Vue {
         super(...arguments);
         /* }}} */
         /* {{{ data */
-        this.itemHeight = 27;
         this.groupId = null;
         this.doNotScroll = false;
     }
     /* }}} */
     /* {{{ computed */
+    get itemHeight() {
+        return this.store.data.itemHeight;
+    }
     /* The store owns the displayed list (and the "show selection" filter),
      * so the indexes used here are the ones the keyboard navigation and the
      * ARIA ids are built on. */
@@ -3597,10 +3631,9 @@ var __decorate$2 = (this && this.__decorate) || function (decorators, target, ke
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-/* list estimation height
- * 30px × 10 + 20px (for panel header)
- */
-const DEFAULT_LIST_HEIGHT = 320;
+/* Height (in px) of the panel header, added to the items height to
+ * estimate the list height before it is rendered. */
+const PANEL_HEADER_HEIGHT = 20;
 /** Elements of the panel which can take the focus with Tab */
 const FOCUSABLE_ELEMENTS = [
     'button:not([disabled])',
@@ -3621,6 +3654,9 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         this.listHeight = 0;
         this.listWidth = 200;
         this.availableSpace = 0;
+        /** The window the panel is displayed in. It is known only once the
+         * panel is mounted, and the positions depend on it. */
+        this.panelWindow = null;
     }
     /* }}} */
     /* {{{ computed */
@@ -3630,13 +3666,25 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         const availableSpace = this.availableSpace;
         return listHeight !== 0 && listHeight < availableSpace;
     }
+    /** Height the list is expected to take, used while it is not rendered
+     * yet (and so cannot be measured). */
+    get defaultListHeight() {
+        const data = this.store.data;
+        return data.itemHeight * data.itemsPerPage + PANEL_HEADER_HEIGHT;
+    }
+    /** The window the positions must be computed against (the global one
+     * while the panel is not mounted yet) */
+    get currentWindow() {
+        var _a;
+        return (_a = this.panelWindow) !== null && _a !== void 0 ? _a : window;
+    }
     get bestPosition() {
-        const windowHeight = window.innerHeight;
+        const windowHeight = this.currentWindow.innerHeight;
         const isFullyEstimated = this.isFullyEstimated;
         /* XXX: The max() is because if listHeight is greater than default,
          * it means that the value is more accurate than the default. */
         const listHeight = isFullyEstimated ? this.listHeight
-            : Math.max(DEFAULT_LIST_HEIGHT, this.listHeight);
+            : Math.max(this.defaultListHeight, this.listHeight);
         const inputTop = this.elementTop;
         const inputBottom = this.elementBottom;
         const availableTop = inputTop;
@@ -3658,7 +3706,7 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         return listPosition;
     }
     get horizontalStyle() {
-        const windowWidth = window.innerWidth;
+        const windowWidth = this.currentWindow.innerWidth;
         const listWidth = this.listWidth;
         const inputLeft = this.elementLeft;
         const inputRight = this.elementRight;
@@ -3694,7 +3742,7 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
             `;
         }
         const elementBottom = this.elementBottom;
-        const availableSpace = window.innerHeight - elementBottom;
+        const availableSpace = this.currentWindow.innerHeight - elementBottom;
         this.availableSpace = availableSpace;
         return `
             --top-position: ${elementBottom}px;
@@ -3746,27 +3794,20 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         this.store.selectGroup(this.topGroupId, !this.topGroupSelected);
     }
     onKeyDown(evt) {
-        var _a, _b;
-        /* The listener is on `document.body` because the panel is appended
-         * there. The list can be open while the focus is elsewhere in the
-         * page (with the `open` prop): only handle the keys coming from the
-         * panel or from the combobox it belongs to. */
-        const target = evt.target;
-        if (!target || !(((_a = this.$el) === null || _a === void 0 ? void 0 : _a.contains(target))
-            || !!((_b = this.comboboxEl) === null || _b === void 0 ? void 0 : _b.contains(target)))) {
-            return;
-        }
+        /* The listeners are on the panel and on the combobox, so the keys
+         * pressed elsewhere in the page (the list can be open while the
+         * focus is outside, with the `open` prop) never come here. */
         if (evt.key === 'Tab' && this.handleTabKey(evt)) {
             return;
         }
         this.store.handleKeydown(evt);
     }
     /** The combobox this panel is attached to (it lives outside the panel,
-     * which is appended to the body) */
+     * which is moved into its container) */
     get comboboxEl() {
-        return document.querySelector(`div[role="combobox"][aria-controls="${this.store.listBoxId}"]`);
+        return ownerDocument(this.$el).querySelector(`div[role="combobox"][aria-controls="${this.store.listBoxId}"]`);
     }
-    /** The panel is appended at the end of body, so its buttons are not in
+    /** The panel is moved into its container, so its buttons are not in
      * the natural tab order of the page. From the combobox, Tab enters the
      * panel; from its last element, the focus goes back to the combobox so
      * Tab leaves the component naturally.
@@ -3798,15 +3839,58 @@ let ExtendedList = class ExtendedList extends vtyx.Vue {
         }
         return false;
     }
+    /** The element the panel should be moved into, or null to keep it
+     * where the component has rendered it (`'self'`).
+     * It is a method and not a getter: it is resolved once, when the panel
+     * is mounted (which happens each time the list opens), and it reports
+     * an unusable selector. */
+    getContainerEl() {
+        const container = this.container;
+        const doc = ownerDocument(this.$el);
+        if (container === 'self') {
+            return null;
+        }
+        if (typeof container === 'string') {
+            const el = doc.querySelector(container);
+            if (!el) {
+                const labels = this.store.data.labels;
+                this.store.state.status.errorMessage =
+                    labels.unknownPropertyValue.replace(/%s/, 'container');
+                return doc.body;
+            }
+            return el;
+        }
+        /* By default the body of the document the component belongs to
+         * (which is not the global one in a detached window) */
+        return container !== null && container !== void 0 ? container : doc.body;
+    }
+    attachPanel() {
+        const containerEl = this.getContainerEl();
+        if (!containerEl || this.$el.parentNode === containerEl) {
+            return;
+        }
+        containerEl.appendChild(this.$el);
+    }
     /* }}} */
     /* {{{ Life cycles */
     mounted() {
-        document.body.appendChild(this.$el);
-        document.body.addEventListener('keydown', this.onKeyDown);
+        var _a;
+        this.panelWindow = ownerWindow(this.$el);
+        this.attachPanel();
+        /* The listeners are set on the panel and on the combobox instead
+         * of the document: the panel can be displayed inside a modal (where
+         * a global listener escapes the focus trap) or in another document
+         * than the main one. */
+        this.$el.addEventListener('keydown', this.onKeyDown);
+        this._comboboxListenerEl = this.comboboxEl;
+        (_a = this._comboboxListenerEl) === null || _a === void 0 ? void 0 : _a.addEventListener('keydown', this.onKeyDown);
         this.computeListSize();
     }
     unmounted() {
-        document.body.removeEventListener('keydown', this.onKeyDown);
+        var _a;
+        this.$el.removeEventListener('keydown', this.onKeyDown);
+        (_a = this._comboboxListenerEl) === null || _a === void 0 ? void 0 : _a.removeEventListener('keydown', this.onKeyDown);
+        this._comboboxListenerEl = null;
         /* force the element to be removed from DOM */
         if (this.$el.parentNode) {
             this.$el.parentNode.removeChild(this.$el);
@@ -3861,6 +3945,9 @@ __decorate$2([
     vtyx.Prop({ default: 300 })
 ], ExtendedList.prototype, "width", void 0);
 __decorate$2([
+    vtyx.Prop()
+], ExtendedList.prototype, "container", void 0);
+__decorate$2([
     vtyx.Watch('store.state.filteredOptions', { deep: true })
 ], ExtendedList.prototype, "onFilteredOptionsChange", null);
 __decorate$2([
@@ -3887,13 +3974,6 @@ let MultilinesList = class MultilinesList extends vtyx.Vue {
     /* }}} */
     /* {{{ methods */
     onKeyDown(evt) {
-        var _a;
-        const target = evt.target;
-        /* the listener is on document (the component is always displayed):
-         * only handle keys pressed inside the component */
-        if (!target || !((_a = this.$el) === null || _a === void 0 ? void 0 : _a.contains(target))) {
-            return;
-        }
         this.store.handleKeydown(evt);
     }
     /** Move the DOM focus to the search input (or to the list) */
@@ -3908,10 +3988,15 @@ let MultilinesList = class MultilinesList extends vtyx.Vue {
     /* }}} */
     /* {{{ Life cycles */
     mounted() {
-        document.addEventListener('keydown', this.onKeyDown);
+        /* on the component itself: the keys pressed in its focused element
+         * (search input, or list when there is no search) bubble up to it.
+         * The list is always displayed, so a listener on the document would
+         * catch the keys of the whole page (and of the whole page only, in a
+         * detached window). */
+        this.$el.addEventListener('keydown', this.onKeyDown);
     }
     unmounted() {
-        document.removeEventListener('keydown', this.onKeyDown);
+        this.$el.removeEventListener('keydown', this.onKeyDown);
     }
     /* }}} */
     render() {
@@ -3964,9 +4049,6 @@ let Selectic = class Selectic extends vtyx.Vue {
          * component (there is no dropdown lifecycle to rely on) */
         this.multilinesFocused = false;
         this.store = {};
-        /** Multilines mode: whether the last pointer interaction started
-         * inside the component (see `checkMultilinesFocus`) */
-        this._pointerIsInside = false;
     }
     /* }}} */
     /* {{{ computed */
@@ -4066,6 +4148,11 @@ let Selectic = class Selectic extends vtyx.Vue {
                 'selectic--overflow-collapsed': state.selectionOverflow === 'collapsed',
             }];
     }
+    /** Class applied on the list panel: `listClassName` when it is not
+     * empty, `className` otherwise. */
+    get listClass() {
+        return this.listClassName || this.className;
+    }
     get hasGivenValue() {
         const value = vue.unref(this.value);
         return value !== null && value !== undefined;
@@ -4140,6 +4227,14 @@ let Selectic = class Selectic extends vtyx.Vue {
         }
         this.width = mainEl.offsetWidth;
     }
+    /** The document the component is displayed in (which is not the
+     * global one when it lives in a detached window).
+     * It is a method and not a getter: a getter is a computed, and it
+     * would cache the global document if it were read before the
+     * component is mounted. */
+    getDocument() {
+        return ownerDocument(this.$el);
+    }
     computeOffset(doNotAddListener = false) {
         var _a;
         const mainInput = (_a = this.$refs) === null || _a === void 0 ? void 0 : _a.mainInput;
@@ -4159,8 +4254,9 @@ let Selectic = class Selectic extends vtyx.Vue {
                 el = el.parentElement;
             }
             /* Listening to window allows to listen to html/body scroll events for some browser (like Chrome) */
-            window.addEventListener('scroll', this.scrollListener, { passive: true });
-            _elementsListeners.push(window);
+            const currentWindow = ownerWindow(mainEl);
+            currentWindow.addEventListener('scroll', this.scrollListener, { passive: true });
+            _elementsListeners.push(currentWindow);
         }
         const box = mainEl.getBoundingClientRect();
         const elementBottom = box.bottom;
@@ -4177,8 +4273,8 @@ let Selectic = class Selectic extends vtyx.Vue {
             el.removeEventListener('scroll', this.scrollListener, { passive: true });
         });
         this._elementsListeners = [];
-        document.removeEventListener('click', this.outsideListener, true);
-        window.removeEventListener('resize', this.windowResize, false);
+        this.getDocument().removeEventListener('click', this.outsideListener, true);
+        ownerWindow(this.$el).removeEventListener('resize', this.windowResize, false);
     }
     focusToggled() {
         const store = this.store;
@@ -4194,8 +4290,8 @@ let Selectic = class Selectic extends vtyx.Vue {
                 store.clearCache();
             }
             this.computeWidth();
-            window.addEventListener('resize', this.windowResize, false);
-            document.addEventListener('click', this.outsideListener, true);
+            ownerWindow(this.$el).addEventListener('resize', this.windowResize, false);
+            this.getDocument().addEventListener('click', this.outsideListener, true);
             this.computeOffset();
             this.emit('open');
         }
@@ -4324,10 +4420,11 @@ let Selectic = class Selectic extends vtyx.Vue {
         el.addEventListener('focusin', listeners.focusin);
         el.addEventListener('focusout', listeners.focusout);
         /* on document: it must also see the interactions started outside */
-        document.addEventListener('pointerdown', listeners.pointerdown, true);
+        ownerDocument(el).addEventListener('pointerdown', listeners.pointerdown, true);
     }
     checkMultilinesFocus(el) {
-        const focusedEl = document.activeElement;
+        const currentDocument = ownerDocument(el);
+        const focusedEl = currentDocument.activeElement;
         /* the focus may just be moving between two elements of the
          * component (search input, options, footer buttons) */
         if (focusedEl && el.contains(focusedEl)) {
@@ -4338,7 +4435,7 @@ let Selectic = class Selectic extends vtyx.Vue {
          * Leaving with the keyboard focuses another element, so it is not
          * mistaken for this case. */
         if (this._pointerIsInside
-            && (!focusedEl || focusedEl === document.body)) {
+            && (!focusedEl || focusedEl === currentDocument.body)) {
             return;
         }
         this.multilinesFocused = false;
@@ -4353,7 +4450,7 @@ let Selectic = class Selectic extends vtyx.Vue {
          * may already be gone when the component unmounts */
         listeners.el.removeEventListener('focusin', listeners.focusin);
         listeners.el.removeEventListener('focusout', listeners.focusout);
-        document.removeEventListener('pointerdown', listeners.pointerdown, true);
+        ownerDocument(listeners.el).removeEventListener('pointerdown', listeners.pointerdown, true);
         this._multilinesListeners = undefined;
     }
     onInputValueFocus() {
@@ -4368,8 +4465,9 @@ let Selectic = class Selectic extends vtyx.Vue {
         }
         this.$nextTick(() => {
             var _a;
-            const activeEl = document.activeElement;
-            if (!activeEl || activeEl === document.body) {
+            const currentDocument = this.getDocument();
+            const activeEl = currentDocument.activeElement;
+            if (!activeEl || activeEl === currentDocument.body) {
                 (_a = this.$refs.mainInput) === null || _a === void 0 ? void 0 : _a.focusCombobox(true);
             }
         });
@@ -4378,11 +4476,12 @@ let Selectic = class Selectic extends vtyx.Vue {
         /* Await that focused element becomes active */
         setTimeout(() => {
             var _a;
-            const focusedEl = document.activeElement;
+            const currentDocument = this.getDocument();
+            const focusedEl = currentDocument.activeElement;
             const extendedList = (_a = this.$refs) === null || _a === void 0 ? void 0 : _a.extendedList;
             /* check if there is a focused element (if none the body is
              * selected) and if it is inside current Selectic */
-            if (focusedEl === document.body
+            if (focusedEl === currentDocument.body
                 || this.$el.contains(focusedEl)
                 || (extendedList === null || extendedList === void 0 ? void 0 : extendedList.$el.contains(focusedEl))) {
                 return;
@@ -4511,7 +4610,7 @@ let Selectic = class Selectic extends vtyx.Vue {
             vtyx.h("input", { type: "text", id: id, value: this.inputValue, class: "selectic__input-value", readOnly: true, tabIndex: -1, "aria-hidden": "true", on: {
                     focus: () => { var _a; return (_a = this.$refs.multilinesList) === null || _a === void 0 ? void 0 : _a.focus(); },
                 } }),
-            vtyx.h(MultilinesList$1, { store: store, ref: "multilinesList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter())))));
+            vtyx.h(MultilinesList$1, { class: this.listClass, store: store, ref: "multilinesList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter())))));
     }
     renderDefault(id, store) {
         return (vtyx.h("div", { class: this.selecticClass, title: this.title, "data-selectic": "true", on: {
@@ -4526,7 +4625,7 @@ let Selectic = class Selectic extends vtyx.Vue {
                     focus: () => store.commit('isOpen', true),
                     blur: this.checkFocus,
                 }, ref: "mainInput" }),
-            this.isFocused && (vtyx.h(ExtendedList$1, { class: this.className, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter()))))));
+            this.isFocused && (vtyx.h(ExtendedList$1, { class: this.listClass, container: this.container, store: store, elementBottom: this.elementBottom, elementTop: this.elementTop, elementLeft: this.elementLeft, elementRight: this.elementRight, width: this.width, ref: "extendedList" }, this.$slots.listFooter && (vtyx.h("div", { slot: "listFooter" }, this.$slots.listFooter()))))));
     }
     /* }}} */
     /* {{{ Life cycle */
@@ -4550,6 +4649,8 @@ let Selectic = class Selectic extends vtyx.Vue {
                  * `multilines: <number>` is a shortcut for it, which the
                  * dedicated parameter overrides when both are given. */
                 displayedItems: (_b = this.params.displayedItems) !== null && _b !== void 0 ? _b : this.multilinesItems,
+                /* it can be undefined (defaults to 27 in the store) */
+                itemHeight: this.params.itemHeight,
                 hideFilter: (_c = this.params.hideFilter) !== null && _c !== void 0 ? _c : 'auto',
                 allowRevert: this.params.allowRevert, /* it can be undefined */
                 forceSelectAll: this.params.forceSelectAll || 'auto',
@@ -4658,6 +4759,12 @@ __decorate([
 __decorate([
     vtyx.Prop({ default: '' })
 ], Selectic.prototype, "className", void 0);
+__decorate([
+    vtyx.Prop()
+], Selectic.prototype, "listClassName", void 0);
+__decorate([
+    vtyx.Prop()
+], Selectic.prototype, "container", void 0);
 __decorate([
     vtyx.Prop()
 ], Selectic.prototype, "title", void 0);

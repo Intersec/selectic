@@ -13,9 +13,9 @@ export default class List extends Vue<Props> {
     };
     private store;
     private focusable;
-    private itemHeight;
     private groupId;
     private doNotScroll;
+    get itemHeight(): number;
     get filteredOptions(): OptionItem[];
     get isMultiple(): boolean;
     get isDisabled(): boolean;

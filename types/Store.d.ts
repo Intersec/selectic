@@ -146,6 +146,10 @@ export interface SelecticStoreStateParams {
     pageSize?: number;
     /** Number of items displayed at once in the opened list (default: 10) */
     displayedItems?: number;
+    /** Height (in px) of an item row in the opened list (default: 27).
+     * It drives the virtual scroll offsets, so it should match the height
+     * the items are really rendered with. */
+    itemHeight?: number;
     /** Select the first available option */
     autoSelect?: boolean;
     /** Disable the select if only one option is given and must be selected. */
@@ -225,6 +229,8 @@ type InternalProps = MandateProps<Props>;
 export interface Data {
     /** Number of items displayed in a page (before scrolling) */
     itemsPerPage: number;
+    /** Height (in px) of an item row in the opened list */
+    itemHeight: number;
     /** Time (in ms) before the typeahead text is reset */
     typeaheadDelay: number;
     labels: Messages;

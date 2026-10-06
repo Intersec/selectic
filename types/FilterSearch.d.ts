@@ -12,13 +12,17 @@ export default class FilterSearch extends Vue<Props> {
     };
     private store;
     private scoped;
+    /** The element the keypress listener has been added on */
+    private _listenerEl?;
     get searchPlaceholder(): string;
     get clearSearchLabel(): string;
     /** The clear action is only offered when there is something to clear */
     get hasSearch(): boolean;
     get listBoxId(): string;
     get activeDescendant(): string | undefined;
-    get onKeyPressed(): (evt: KeyboardEvent) => void;
+    /** The handler is given to `addEventListener`, which types it on the
+     * generic `Event` */
+    get onKeyPressed(): EventListener;
     private keypressed;
     private clearSearch;
     private onInput;
