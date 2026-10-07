@@ -592,6 +592,12 @@
     animation: selectic-animation-spin 2s infinite linear;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .selectic-spin {
+        animation: none;
+    }
+}
+
 /* }}} */
 /* {{{ footer */
 
