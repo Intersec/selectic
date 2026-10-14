@@ -273,6 +273,12 @@
     overflow: hidden;
 }
 
+.selectic-item_icon {
+    /* Explicit default, as CSS resets center SVG and lift the mark above
+     * the text. */
+    vertical-align: baseline;
+}
+
 .selectic-item:not(.selected) .selectic-item_icon {
     opacity: 0;
 }
@@ -549,6 +555,9 @@
 }
 
 .selectic__icon {
+    /* Explicit defaults, as CSS resets (Tailwind preflight) turn SVG into
+     * blocks. */
+    display: inline;
     height: 1em;
     fill: currentColor;
 }
@@ -581,6 +590,12 @@
 
 .selectic-spin {
     animation: selectic-animation-spin 2s infinite linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .selectic-spin {
+        animation: none;
+    }
 }
 
 /* }}} */
