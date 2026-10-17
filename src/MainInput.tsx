@@ -288,6 +288,16 @@ export default class MainInput extends Vue<Props> {
         }
     }
 
+    /** The toggle icon is not focusable: give the focus to the combobox,
+     * which carries the keyboard listener of the opened list. */
+    private onToggleClick() {
+        this.toggleFocus();
+
+        if (this.store.state.isOpen) {
+            this.focusCombobox();
+        }
+    }
+
     /** Move the DOM focus on the combobox element.
      * With doNotOpen, getting the focus does not open the list. */
     public focusCombobox(doNotOpen = false) {
@@ -683,7 +693,8 @@ export default class MainInput extends Vue<Props> {
                 ]}
                 data-test="selectic-toggle"
                 on={{
-                    'click.prevent.stop': () => this.toggleFocus(),
+                    'mousedown.prevent': () => {},
+                    'click.prevent.stop': this.onToggleClick,
                 }}
             >
                 <Icon icon="caret-down" class="selectic-icon" store={this.store} />
