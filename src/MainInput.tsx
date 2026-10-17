@@ -635,6 +635,7 @@ export default class MainInput extends Vue<Props> {
                                         title={this.removeItemLabel(item)}
                                         aria-hidden="true"
                                         on={{
+                                            'mousedown.prevent': () => {},
                                             'click.prevent.stop': () => this.selectItem(item.id),
                                         }}
                                     />
@@ -659,7 +660,12 @@ export default class MainInput extends Vue<Props> {
                     title={this.clearedLabel}
                     aria-hidden="true"
                     store={this.store}
-                    on={{ 'click.prevent.stop': this.clearSelection }}
+                    on={{
+                        /* keep the focus out of the combobox, which would
+                         * open the list and defer `change` to its closing */
+                        'mousedown.prevent': () => {},
+                        'click.prevent.stop': this.clearSelection,
+                    }}
                 />
             )}
             </div>
