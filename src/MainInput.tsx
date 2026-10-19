@@ -5,7 +5,7 @@
 
 import {Vue, Component, Prop, Watch, h} from 'vtyx';
 import Store, {OptionId, OptionItem} from './Store';
-import { ownerDocument } from './tools';
+import { noop, ownerDocument } from './tools';
 import Icon from './Icon';
 import OptionIcon from './OptionIcon';
 
@@ -645,7 +645,7 @@ export default class MainInput extends Vue<Props> {
                                         title={this.removeItemLabel(item)}
                                         aria-hidden="true"
                                         on={{
-                                            'mousedown.prevent': () => {},
+                                            'mousedown.prevent': noop,
                                             'click.prevent.stop': () => this.selectItem(item.id),
                                         }}
                                     />
@@ -673,7 +673,7 @@ export default class MainInput extends Vue<Props> {
                     on={{
                         /* keep the focus out of the combobox, which would
                          * open the list and defer `change` to its closing */
-                        'mousedown.prevent': () => {},
+                        'mousedown.prevent': noop,
                         'click.prevent.stop': this.clearSelection,
                     }}
                 />
@@ -693,7 +693,7 @@ export default class MainInput extends Vue<Props> {
                 ]}
                 data-test="selectic-toggle"
                 on={{
-                    'mousedown.prevent': () => {},
+                    'mousedown.prevent': noop,
                     'click.prevent.stop': this.onToggleClick,
                 }}
             >

@@ -200,6 +200,9 @@ export function ownerWindow(el?: Element | null): Window {
     return ownerDocument(el).defaultView ?? window;
 }
 
+/** Function that does nothing, for listeners that only need modifiers */
+export function noop() {}
+
 let displayLog = false;
 export function debug(fName: string, step: string, ...args: any[]) {
     if (!displayLog) {
