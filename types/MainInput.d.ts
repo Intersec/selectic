@@ -43,6 +43,9 @@ export default class MainInput extends Vue<Props> {
     get moreSelectedTitle(): string;
     private onMousedown;
     private toggleFocus;
+    /** The toggle icon is not focusable: give the focus to the combobox,
+     * which carries the keyboard listener of the opened list. */
+    private onToggleClick;
     /** Move the DOM focus on the combobox element.
      * With doNotOpen, getting the focus does not open the list. */
     focusCombobox(doNotOpen?: boolean): void;

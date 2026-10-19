@@ -168,6 +168,8 @@ function ownerWindow(el) {
     var _a;
     return (_a = ownerDocument(el).defaultView) !== null && _a !== void 0 ? _a : window;
 }
+/** Function that does nothing, for listeners that only need modifiers */
+function noop() { }
 let displayLog = false;
 function debug(fName, step, ...args) {
     if (!displayLog) {
@@ -2606,6 +2608,14 @@ let MainInput = class MainInput extends Vue {
             this.store.commit('isOpen', !this.wasOpenAtMousedown);
         }
     }
+    /** The toggle icon is not focusable: give the focus to the combobox,
+     * which carries the keyboard listener of the opened list. */
+    onToggleClick() {
+        this.toggleFocus();
+        if (this.store.state.isOpen) {
+            this.focusCombobox();
+        }
+    }
     /** Move the DOM focus on the combobox element.
      * With doNotOpen, getting the focus does not open the list. */
     focusCombobox(doNotOpen = false) {
@@ -2828,17 +2838,24 @@ let MainInput = class MainInput extends Vue {
                         h(OptionIcon$1, { icon: item.icon, store: this.store, className: "selectic-input__value-icon" }),
                         h("span", { class: "selectic-input__selected-items__value" }, item.text),
                         !this.isDisabled && !item.disabled && (h(Icon$1, { icon: "times", class: "selectic-input__selected-items__icon", store: this.store, title: this.removeItemLabel(item), "aria-hidden": "true", on: {
+                                'mousedown.prevent': noop,
                                 'click.prevent.stop': () => this.selectItem(item.id),
                             } }))))),
                     this.moreSelectedNb && (h("div", { class: "single-value more-items", title: this.moreSelectedTitle }, this.moreSelectedNb)))),
-                this.showClearAll && (h(Icon$1, { icon: "times", class: "selectic-input__clear-icon", title: this.clearedLabel, "aria-hidden": "true", store: this.store, on: { 'click.prevent.stop': this.clearSelection } }))),
+                this.showClearAll && (h(Icon$1, { icon: "times", class: "selectic-input__clear-icon", title: this.clearedLabel, "aria-hidden": "true", store: this.store, on: {
+                        /* keep the focus out of the combobox, which would
+                         * open the list and defer `change` to its closing */
+                        'mousedown.prevent': noop,
+                        'click.prevent.stop': this.clearSelection,
+                    } }))),
             h("span", { class: "selectic-sr-only", role: "status" }, this.chipsAnnouncement),
             h("div", { class: [
                     'selectic__icon-container',
                     'form-control-feedback',
                     { focused: this.store.state.isOpen }
                 ], "data-test": "selectic-toggle", on: {
-                    'click.prevent.stop': () => this.toggleFocus(),
+                    'mousedown.prevent': noop,
+                    'click.prevent.stop': this.onToggleClick,
                 } },
                 h(Icon$1, { icon: "caret-down", class: "selectic-icon", store: this.store }))));
     }

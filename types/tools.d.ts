@@ -45,6 +45,8 @@ export declare function ownerDocument(el?: Element | null): Document;
  * @returns the window of `el`, or the global one if it has none yet
  */
 export declare function ownerWindow(el?: Element | null): Window;
+/** Function that does nothing, for listeners that only need modifiers */
+export declare function noop(): void;
 export declare function debug(fName: string, step: string, ...args: any[]): void;
 export declare namespace debug {
     var enable: (display: boolean) => void;
